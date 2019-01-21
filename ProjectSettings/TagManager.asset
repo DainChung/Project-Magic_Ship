@@ -6,6 +6,8 @@ TagManager:
   tags:
   - SampleBottom
   - SampleEnemy
+  - SampleBullet
+  - SampleObstacle
   layers:
   - Default
   - TransparentFX
