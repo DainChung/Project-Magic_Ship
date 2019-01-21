@@ -92,6 +92,7 @@ public class SkillBaseStat {
         _Skill_Code_T = skill_Code._Skill_Code_T;
     }
 
+    //Debug.Log로 확인하는 용도
     public void Sample__ReadAll()
     {
         Debug.Log("name: "+_Skill_Name + ", rate: " + _Skill_Rate + ", cT: " + _Skill_Cool_Time + ", iT: " + _Skill_ING_Time);

@@ -37,13 +37,13 @@ public class Player_Info_Manager : MonoBehaviour {
 
     //Read_EquippedSkills()에서 읽은 ID를 이용하여 Sample__SkilLDataBase.csv에서
     //해당되는 ID값의 SkillStat만 resultSkill에 넣어 반환할 것
-    public List<SkillBaseStat> Read_SkillBaseStat()
+    public static List<SkillBaseStat> Read_SkillBaseStat()
     {
         List<SkillBaseStat> resultSkills = new List<SkillBaseStat>();
         List<string> equippedSkills = IO_CSV.Reader_CSV("/Sample__PlayerEquippedInfo.csv");
 
-        //필요없는 정보는 지운다.
-        equippedSkills.Remove("Skill_ID");
+        //필요없는 정보는 지운다. Reader_CSV에서 직접 지우도록 변경됨
+        //equippedSkills.Remove("Skill_ID");
 
         //플레이어가 장착하고 있는 스킬들의 정보를 읽어온다.
         for (int i = 0; i < equippedSkills.Count; i++)
