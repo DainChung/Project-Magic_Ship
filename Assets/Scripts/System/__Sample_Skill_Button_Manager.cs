@@ -42,6 +42,7 @@ public class __Sample_Skill_Button_Manager : MonoBehaviour {
         }
 
         //====================================================================================
+
         [Serializable]
         public class EmptySkillInventoryException : Exception {
             public EmptySkillInventoryException() { }
@@ -53,6 +54,25 @@ public class __Sample_Skill_Button_Manager : MonoBehaviour {
             if (isEmpty == "Empty")
             {
                 throw new EmptySkillInventoryException();
+            }
+        }
+
+        //====================================================================================
+
+        [Serializable]
+        public class SkillOverlapped_IN_InventoryException : Exception {
+            public SkillOverlapped_IN_InventoryException() { }
+        }
+
+        //장착하려고 하는 스킬이 이미 장착되어 있는지를 확인한다.
+        public static void Validate_SkillOverlapped_IN_InventoryException(string isOverlapped, List<SkillBaseStat> listEquipped)
+        {
+            foreach (SkillBaseStat skillStat in listEquipped)
+            {
+                if (isOverlapped == skillStat.__GET_Skill_Name)
+                {
+                    throw new SkillOverlapped_IN_InventoryException();
+                }
             }
         }
     }
@@ -84,24 +104,7 @@ public class __Sample_Skill_Button_Manager : MonoBehaviour {
             sampleButtons[i].GetComponent<Button>().onClick.AddListener( () => Equip_Skill(logForSample) );
         }
 
-        //장착 스킬 버튼에 장착한 스킬들 이름이 나오도록 한다.
-        //비어있으면 "Empty"로 대신 출력하도록 한다.
-        for (int i = 0; i < 3; i++)
-        {
-            try
-            {
-                string logForSkillInventory = equippedSkills[i].__GET_Skill_Name + "를 해제합니다";
-
-                sampleSkillInventory[i].GetChild(0).GetComponent<Text>().text = equippedSkills[i].__GET_Skill_Name;
-                string sampleSkillInven_Text = sampleSkillInventory[i].GetChild(0).GetComponent<Text>().text;
-                sampleSkillInventory[i].GetComponent<Button>().onClick.AddListener( () => UnEquip_Skill(sampleSkillInven_Text) );
-            }
-            //장착한 스킬이 3개 미만인 경우, "Empty"로 대신 출력하도록 한다.
-            catch (System.NullReferenceException)
-            {
-                sampleSkillInventory[i].GetChild(0).GetComponent<Text>().text = "Empty";
-            }
-        }
+        UpdateSkillInventory();
     }
 
     void Update()
@@ -110,6 +113,7 @@ public class __Sample_Skill_Button_Manager : MonoBehaviour {
     }
 
     //스킬을 장착하는 함수
+    //스킬 중복 장착하는 경우가 없도록 Exception을 추가해야 됨.
     void Equip_Skill(string log)
     {
         try
@@ -129,6 +133,7 @@ public class __Sample_Skill_Button_Manager : MonoBehaviour {
     }
 
     //스킬을 장착해제하는 함수
+    //아직 파일에 쓰는 기능이 없음 20190122
     void UnEquip_Skill(string buttonText)
     {
         try
@@ -137,13 +142,63 @@ public class __Sample_Skill_Button_Manager : MonoBehaviour {
             Exception_FOR___Sample_Skill_Button_Manager.Validate_EmptySkillInventoryException(buttonText);
 
             //스킬을 제거한다.
-            Debug.Log("해당 스킬을 제거합니다");
+            Debug.Log(buttonText + "스킬을 제거합니다");
+
+            equippedSkills.Remove(Search_SkillBaseStat_BY_Name_IN_List(buttonText, equippedSkills));
+            //정보를 업데이트한다.
+            UpdateSkillInventory();
         }
-        //비어있는 스킬 창을 누른 경우
-        catch (Exception_FOR___Sample_Skill_Button_Manager.EmptySkillInventoryException)
+        catch(Exception_FOR___Sample_Skill_Button_Manager.EmptySkillInventoryException)
         {
-            //아무것도 하지 않는다.
             Debug.Log("비어있습니다");
+        }
+    }
+
+    //스킬 이름으로 특정 SkillBaseStat을 찾는 함수
+    private SkillBaseStat Search_SkillBaseStat_BY_Name_IN_List(string skillName, List<SkillBaseStat> searchedList)
+    {
+        SkillBaseStat resultSBSt = new SkillBaseStat();
+
+        foreach (SkillBaseStat sBSt in searchedList)
+        {
+            if (skillName == sBSt.__GET_Skill_Name)
+            {
+                resultSBSt = sBSt;
+                break;
+            }
+        }
+
+        return resultSBSt;
+    }
+
+    //장착된 스킬을 업데이트해주는 함수
+    private void UpdateSkillInventory()
+    {
+        //장착 스킬 버튼에 장착한 스킬들 이름이 나오도록 한다.
+        //비어있으면 "Empty"로 대신 출력하도록 한다.
+        for (int i = 0; i < 3; i++)
+        {
+            //Listener를 모두 제거한다. (이렇게 안 하면 Listener가 계속 중첩되어 정상작동이 되지 않음)
+            sampleSkillInventory[i].GetComponent<Button>().onClick.RemoveAllListeners();
+
+            try
+            { 
+                //버튼 Text를 장착한 스킬 이름으로 변경한다.
+                sampleSkillInventory[i].GetChild(0).GetComponent<Text>().text = equippedSkills[i].__GET_Skill_Name;
+
+                //Listener에 넣기 위한 string 설정
+                string sampleSkillInven_Text = sampleSkillInventory[i].GetChild(0).GetComponent<Text>().text;
+                //Listener를 새로 추가한다.
+                sampleSkillInventory[i].GetComponent<Button>().onClick.AddListener(() => UnEquip_Skill(sampleSkillInven_Text));
+            }
+            //장착한 스킬이 3개 미만인 경우, "Empty"로 대신 출력하도록 한다.
+            catch (System.ArgumentOutOfRangeException)
+            {
+                //빈 칸의 경우 Empty가 출력되도록 한다.
+                sampleSkillInventory[i].GetChild(0).GetComponent<Text>().text = "Empty";
+                //Empty Listener를 추가하여 Exception이 정상작동하도록 한다.
+                sampleSkillInventory[i].GetComponent<Button>().onClick.AddListener(() => UnEquip_Skill("Empty"));
+            }
         }
     }
 }
