@@ -53,4 +53,27 @@ public class Player_Info_Manager : MonoBehaviour {
 
         return resultSkills;
     }
+
+    //Player_Info에 저장될 내용에 따라 해당 알고리즘은 변할 수 있음.
+    public static void Write_Equipped_SkillBaseStat(List<SkillBaseStat> equippedSkills)
+    {
+        string[,] writer = { { "Skill_ID"}, { "" }, { "" }, { "" } };
+
+        //일단 최대 장착가능한 스킬만큼 저장한다.
+        for (int i = 0; i < 3; i++)
+        {
+            try
+            {
+                writer[(i + 1), 0] = equippedSkills[i].__Get_Skill_ID;
+            }
+            //2개 이하의 스킬만 장착되어 있는 경우
+            catch (System.ArgumentOutOfRangeException)
+            {
+                //비어있음을 알린다.
+                writer[(i + 1), 0] = "NULL_ID";
+            }
+        }
+
+        IO_CSV.Writer_CSV("/Sample__PlayerEquippedInfo.csv", writer);
+    }
 }

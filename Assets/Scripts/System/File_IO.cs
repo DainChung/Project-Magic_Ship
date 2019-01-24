@@ -23,7 +23,6 @@ namespace File_IO {
         public static List<string> Reader_CSV(string fileName)
         {
             //읽은 내용 중 쓸모없는 내용을 제거하기 위해 필요한 변수들
-            int index = 0;
             string dummyString = ",,,,,,,,,,,,,,,";
 
             //filePath뒤에 읽을 파일이름을 더한다.
@@ -32,25 +31,39 @@ namespace File_IO {
             //CSV파일 읽기
             var reader = new StreamReader(File.OpenRead(fileName), System.Text.Encoding.Default);
             List<string> readList = new List<string>();
+
             while (!reader.EndOfStream)
             {
                 var line = reader.ReadLine();
                 readList.Add(line);
             }
 
-            //CSV 파일 줄이 바뀌기 전에 있는 ','가 여러 개 찍혀있는 지점을 제거하는 코드
-            foreach (string purifying in readList)
+            //CSV 파일 줄이 바뀌기 전에 있는 ','가 여러 개 찍혀있는 지점을 제거하거나
+            //NULL_ID를 readList에서 완전히 제외하는 반복문
+
+            //foreach문에서는 List.Remove()가 InvalidOperationException을 발생시키므로 for문에서 작동해야함.
+            for (int index = readList.Count - 1; index > 0; index--)
             {
                 //각 searchList마다 dummyString과 같은 내용들을 모두 제거하고 덮어씌운다.
-                readList[index] = purifying.Remove(readList[index].IndexOf(dummyString), dummyString.Length);
+                try
+                {
+                    readList[index] = readList[index].Remove(readList[index].IndexOf(dummyString), dummyString.Length);
+                }
+                //ArgumentOutOfRangeException이 발생하면 dummyString과 같은 내용이 없다는 것이므로 아무것도 하지 않는다.
+                //File_IO에 의해 새로 쓰여진 CSV 파일의 경우 dummyString이 발견되지 않는다.
+                catch (ArgumentOutOfRangeException)
+                { }
 
-                //모든 index에 대해 실행한다.
-                index++;
+                //읽은 값이 NULL_ID인 경우 아예 readList에 반영하지 않는다.
+                if (readList[index] == "NULL_ID")
+                {
+                    readList.Remove(readList[index]);
+                }
             }
 
             //CSV 파일 맨 첫번째 줄 제거
             readList.Remove(readList[0]);
-            
+
             return readList;
         }
 
@@ -150,7 +163,7 @@ namespace File_IO {
             SkillBaseCode.SkillCode skillCode = Get_SkillCode_FROM_String(pieces_OF_BaseStatString[6], pieces_OF_BaseStatString[7], pieces_OF_BaseStatString[8]);
 
             //가공된 내용들을 resultStat에 넣어서 최종 정리한다.
-            resultStat.Initialize_Skill(pieces_OF_BaseStatString[1], rate, coolTime, ingTime, amount, skillCode);
+            resultStat.Initialize_Skill(pieces_OF_BaseStatString[1], rate, coolTime, ingTime, amount, skillCode, pieces_OF_BaseStatString[0]);
 
             return resultStat;
         }

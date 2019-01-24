@@ -24,6 +24,8 @@ public class SkillBaseStat {
     //스킬 이름
     private string _Skill_Name;
 
+    //스킬 ID
+    private string _Skill_ID;
 
     public float __GET_Skill_Rate
     {
@@ -61,6 +63,11 @@ public class SkillBaseStat {
         get { return _Skill_Name; }
     }
 
+    public string __Get_Skill_ID
+    {
+        get {return _Skill_ID; }
+    }
+
     //값을 초기화하기 위한 함수
     public void Init_Skill(float rate, float coolT, float ingT, int amount, SkillCode skill_Code)
     {
@@ -76,7 +83,7 @@ public class SkillBaseStat {
         _Skill_Code_T = skill_Code._Skill_Code_T;
     }
 
-    public void Initialize_Skill(string name, float rate, float coolT, float ingT, int amount, SkillCode skill_Code)
+    public void Initialize_Skill(string name, float rate, float coolT, float ingT, int amount, SkillCode skill_Code, string skillID)
     {
         _Skill_Name = name;
 
@@ -90,6 +97,8 @@ public class SkillBaseStat {
         _Skill_Code_M = skill_Code._Skill_Code_M;
         _Skill_Code_S = skill_Code._Skill_Code_S;
         _Skill_Code_T = skill_Code._Skill_Code_T;
+
+        _Skill_ID = skillID;
     }
 
     //Debug.Log로 확인하는 용도

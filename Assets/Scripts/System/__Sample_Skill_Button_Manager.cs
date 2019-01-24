@@ -12,6 +12,7 @@ using File_IO;
 public class __Sample_Skill_Button_Manager : MonoBehaviour {
 
     //임시로 만든 Exception
+    //프로토타입 완성단계에선 Exception을 하나로 모아서 따로 SystemException.cs(임시명칭)을 만들 예정
     public class Exception_FOR___Sample_Skill_Button_Manager {
         [Serializable]
         public class FullSkillInventoryException : Exception {
@@ -78,6 +79,8 @@ public class __Sample_Skill_Button_Manager : MonoBehaviour {
     }
 
     public Transform exitButton;
+    public Transform saveButton;
+
     public Transform[] sampleSkillInventory = new Transform[3];
     public Transform[] sampleButtons = new Transform[5];
 
@@ -95,10 +98,16 @@ public class __Sample_Skill_Button_Manager : MonoBehaviour {
 
     void Start()
     {
+        //exitButton을 누르면 ProtoType.unity로 scene을 넘기도록 한다.
+        exitButton.GetComponent<Button>().onClick.AddListener(() => Go_TO_ProtoTypeScene());
+
+        //saveButton을 누르면 Sample__PlayerEquippedInfo.csv에 장착한 스킬 정보를 저장하도록 한다.
+        saveButton.GetComponent<Button>().onClick.AddListener(() => Save_EquippedSkills());
+
         //스킬 버튼에 스킬 이름들이 나오도록 한다. (장착 스킬 제외)
         for (int i = 0; i < 5; i++)
         {
-            string logForSample = allSkills[i].__GET_Skill_Name + "를 장착합니다";
+            string logForSample = allSkills[i].__GET_Skill_Name;
 
             sampleButtons[i].GetChild(0).GetComponent<Text>().text = allSkills[i].__GET_Skill_Name;
             sampleButtons[i].GetComponent<Button>().onClick.AddListener( () => Equip_Skill(logForSample) );
@@ -107,22 +116,34 @@ public class __Sample_Skill_Button_Manager : MonoBehaviour {
         UpdateSkillInventory();
     }
 
-    void Update()
+    //게임화면으로 돌아가는 함수
+    void Go_TO_ProtoTypeScene()
     {
-        
+        Debug.Log("게임화면으로 넘어갑니다.");
+    }
+
+    //장착한 스킬 내용을 파일에 저장하는 함수
+    void Save_EquippedSkills()
+    {
+        Player_Info_Manager.Write_Equipped_SkillBaseStat(equippedSkills);
     }
 
     //스킬을 장착하는 함수
-    //스킬 중복 장착하는 경우가 없도록 Exception을 추가해야 됨.
-    void Equip_Skill(string log)
+    void Equip_Skill(string skillName)
     {
         try
         {
             //Exception 여부를 검사한다. (스킬을 추가로 장착할 수 있는지 확인한다.)
             Exception_FOR___Sample_Skill_Button_Manager.Validate_FullSkillInventoryException(sampleSkillInventory);
+            Exception_FOR___Sample_Skill_Button_Manager.Validate_SkillOverlapped_IN_InventoryException(skillName, equippedSkills);
 
             //스킬을 장착할 빈 자리가 있으면 스킬을 장착한다.
-            Debug.Log(log);
+            equippedSkills.Add(Search_SkillBaseStat_BY_Name_IN_List(skillName, allSkills));
+
+            Debug.Log(skillName + "을(를) 장착합니다.");
+
+            //정보를 업데이트한다.
+            UpdateSkillInventory();
         }
         //스킬을 장착할 빈 자리가 없는 경우
         catch (Exception_FOR___Sample_Skill_Button_Manager.FullSkillInventoryException)
@@ -130,10 +151,16 @@ public class __Sample_Skill_Button_Manager : MonoBehaviour {
             //안내 메세지만 띄운다.
             Debug.Log("더 장착할 수 없습니다.");
         }
+        //장착하려고 하는 스킬이 이미 장착된 경우
+        catch (Exception_FOR___Sample_Skill_Button_Manager.SkillOverlapped_IN_InventoryException)
+        {
+            //안내 메시지만 띄운다.
+            Debug.Log(skillName+"을(를) 이미 장착했습니다.");
+        }
+        
     }
 
     //스킬을 장착해제하는 함수
-    //아직 파일에 쓰는 기능이 없음 20190122
     void UnEquip_Skill(string buttonText)
     {
         try
