@@ -11,11 +11,11 @@ public class Player_Info_Manager : MonoBehaviour {
     {
         //플레이어가 장착한 스킬들 모두 정상적으로 출력됨.
         //20190118 다음엔 장착된 스킬들의 정보를 PlayerController에 직접 반영할 것
-        List<SkillBaseStat> hello = Read_SkillBaseStat();
+        //List<SkillBaseStat> hello = Read_SkillBaseStat();
 
-        hello[0].Sample__ReadAll();
-        hello[1].Sample__ReadAll();
-        hello[2].Sample__ReadAll();
+        //hello[0].Sample__ReadAll();
+        //hello[1].Sample__ReadAll();
+        //hello[2].Sample__ReadAll();
         //List<string> output = Read_EquippedSkills();
 
         //Debug.Log("What");
