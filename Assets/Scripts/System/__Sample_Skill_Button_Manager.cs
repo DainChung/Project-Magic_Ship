@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 using System;
 using System.Collections;
@@ -93,7 +94,7 @@ public class __Sample_Skill_Button_Manager : MonoBehaviour {
         allSkills = IO_CSV.__Get_All_SkillBaseStat();
 
         //Sample_Player_Info에 저장된 스킬 내용들 불러오기
-        equippedSkills = Player_Info_Manager.Read_SkillBaseStat();
+        equippedSkills = Player_Info_Manager.Read_Equipped_SkillBaseStat();
     }
 
     void Start()
@@ -117,14 +118,24 @@ public class __Sample_Skill_Button_Manager : MonoBehaviour {
     }
 
     //게임화면으로 돌아가는 함수
+    //나중엔 string input을 인자로 넣어서 원하는 Scene으로 자유롭게 넘어갈 수 있도록 만들것.
+    //주둔지 Scene을 본격적으로 개발하기 전까진 이 상태로 유지할 것.
     void Go_TO_ProtoTypeScene()
     {
         Debug.Log("게임화면으로 넘어갑니다.");
+
+        //Scene이름을 넣으면 작동됨.
+        //단, File > Build Setting에 추가된 Scene만 Load할 수 있음
+
+        //LoadSceneMode.Single은 다른 모든 Scene을 종료하고 "로딩하려는거"만 띄우는 것
+        //LoadSceneMode.Additive는 지금까지 켜진 Scene을 종료하지 않고 "로딩하려는거"를 띄우는 것
+        SceneManager.LoadScene("ProtoType", LoadSceneMode.Single);
     }
 
     //장착한 스킬 내용을 파일에 저장하는 함수
     void Save_EquippedSkills()
     {
+        Debug.Log("저장되었습니다.");
         Player_Info_Manager.Write_Equipped_SkillBaseStat(equippedSkills);
     }
 
