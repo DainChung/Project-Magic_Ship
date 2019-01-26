@@ -23,27 +23,77 @@ public class EnemyEngine : Unit__Base_Engine {
     public Unit__Base_Combat_Engine __ENE_C_Engine = new Unit__Base_Combat_Engine();
 
     //destinationDir 방향으로 회전하는 함수
-    public void Rotate_TO_Direction(float rotate_Speed, ref Transform rotated_OBJ, int dir, Transform destiTrn, int is_NOT_RunAway)
+    public void Rotate_TO_Direction(float rotate_Speed, ref Transform rotated_OBJ, int dir, Transform destiTrn, bool is_RunAway)
     {
-        //두 지점 사이의 각도 구하기 (도달해야 되는 각도)
-        //도망가는 경우 플레이어의 반대 방향으로 도망간다.
-        float destiAngle = Mathf.Atan2(destiTrn.position.x - rotated_OBJ.position.x * (float)(is_NOT_RunAway), destiTrn.position.z - rotated_OBJ.position.z * (float)(is_NOT_RunAway)) * Mathf.Rad2Deg;
+        //두 지점 사이의 각도 구하기 (도달해야 되는 각도 => 목표 각도)
+        //일단 플레이어를 향하는 각도를 구한다.
+        float destiAngle = Mathf.Atan2(destiTrn.position.x - rotated_OBJ.position.x, destiTrn.position.z - rotated_OBJ.position.z) * Mathf.Rad2Deg;
 
-        //rotated_OBJ.Rotate(0, destiAngle,0);
+        //어떤 방향으로 돌아야 목표 각도에 빠르게 도달할 수 있는지를 계산하기 위한 변수들 => dir값을 1 또는 -1로 결정
+        //현재 Enemy가 바라보고 있는 방향의 각도를 구한다.
+        float curAngle = rotated_OBJ.rotation.eulerAngles.y;
 
-        //각도가 다음과 같을 때는 시계 반대방향으로 도는 것이 더 빠르다.
-        //직접 실험해본 결과, 시간이 더 오래 걸리는 방향으로 도는 경우가 포착되었음
-        //방향이나 아래 알고리즘에 관하여 추가적인 연구가 필요할 것으로 보임.
-        if (destiAngle < 0f)
+        float destiAngle_FOR_dir = 0.0f;
+
+        //curAngle은 0 <= curAgnle < 360 (destiAngle은 -180 < destiAngle <= 180)이기 떄문에 curAngle > 180인 경우 curAngle 값을 보정하도록 한다.
+        if (curAngle > 180)
         {
-            dir = -1;
+            //curAngle도 -180 < curAngle <= 180으로 변경한다.
+            curAngle -= 360;
         }
 
+        //도망가야 하는 경우, 기존 코드대로는 잘못된 방향을 보는 경우가 많았다.
+        //지금으로선 각도를 아래와 같이 보정하는 방법이 최선이다. Atan2함수를 이용한 직접적인 계산도 알 수 없는 방향을 향하는 경우가 태반이었기 때문.
+        if (is_RunAway)
+        {
+            destiAngle = Get_Opposite_Direction_Angle(destiAngle);
+        }
+        //방향 계산을 위해 값을 그대로 가져온다.
+        destiAngle_FOR_dir = destiAngle;
+
+        //아래 Debug.Log를 통해 확인할 수 있다.
+        //Debug.Log(destiAngle);
+        //하지만 알 수 없는 오류나 의도하지 않은 상황이 발생할 수 있음에 유의.
+
+        //destiAngle_FOR_dir와 curAngle의 부호가 다른 경우
+        if ((destiAngle_FOR_dir < 0 && curAngle >= 0) || (destiAngle_FOR_dir >= 0 && curAngle < 0))
+        {
+            //destiAngle_FOR_dir의 반대방향으로 계산하도록 조정한다.
+            destiAngle_FOR_dir = Get_Opposite_Direction_Angle(destiAngle_FOR_dir);
+
+            //dir값을 결정한다.
+            //각도 차를 구하여 시계방향으로 돌지 반시계방향으로 돌지 결정한다. (1이 시계 방향)
+            if (curAngle - destiAngle_FOR_dir >= 0)
+            {
+                dir = 1;
+            }
+            else
+            {
+                dir = -1;
+            }
+        }
+        else
+        {
+            //dir값을 결정한다.
+            //각도 차를 구하여 시계방향으로 돌지 반시계방향으로 돌지 결정한다. (1이 시계 방향)
+            //위의 경우와는 반대이다.
+            if (curAngle - destiAngle_FOR_dir >= 0)
+            {
+                dir = -1;
+            }
+            else
+            {
+                dir = 1;
+            }
+        }
+        
+
+        //목표 각도를 Quaternion으로 바꿔준다.
         Quaternion destiQT = Quaternion.Euler(0, destiAngle, 0);
 
         //rotated_OBJ.rotation = destiQT;
 
-        //호출될 때마다 각도 구하기
+        //호출될 때마다 목표 각도와 현재 각도 차 구하기
         float angleComparison = Quaternion.Angle(rotated_OBJ.rotation, destiQT);
 
         //약간의 오차를 허용한다.
@@ -55,6 +105,20 @@ public class EnemyEngine : Unit__Base_Engine {
 
         //Debug.Log(angleComparison);
     }
+
+    //반대 방향을 찾아주는 함수.
+    //-180 < angle <= 180의 범위일 때만 유효하다.
+    private float Get_Opposite_Direction_Angle(float angle)
+    {
+        if (angle >= 0)
+            angle -= 180;
+        else
+            angle += 180;
+
+        return angle;
+    }
+
+    
 }
 
 public class EnemyController : MonoBehaviour {
@@ -78,9 +142,9 @@ public class EnemyController : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
         //도망가야할 때
-        __ENE_Engine.Rotate_TO_Direction(__ENE_Stat.__PUB_Rotation_Speed, ref enemyTransform, 1, playerTransform, -1);
+        __ENE_Engine.Rotate_TO_Direction(__ENE_Stat.__PUB_Rotation_Speed, ref enemyTransform, 1, playerTransform, true);
         //도망가지 않을 때
-        //__ENE_Engine.Rotate_TO_Direction(__ENE_Stat.__PUB_Rotation_Speed, ref enemyTransform, 1, playerTransform, 1);
+        //__ENE_Engine.Rotate_TO_Direction(__ENE_Stat.__PUB_Rotation_Speed, ref enemyTransform, 1, playerTransform, false);
     }
 
     public void _Enemy_Get_Hit(int damage)

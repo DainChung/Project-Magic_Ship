@@ -629,6 +629,10 @@ Prefab:
       propertyPath: m_Name
       value: SampleEnemy (2)
       objectReference: {fileID: 0}
+    - target: {fileID: 1000012045995914, guid: a3a2ee73ee657e4468d5cc66297d005b, type: 2}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: a3a2ee73ee657e4468d5cc66297d005b, type: 2}
   m_IsPrefabParent: 0
@@ -773,6 +777,10 @@ Prefab:
       propertyPath: playerTransform
       value: 
       objectReference: {fileID: 1653395943}
+    - target: {fileID: 1000012045995914, guid: a3a2ee73ee657e4468d5cc66297d005b, type: 2}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: a3a2ee73ee657e4468d5cc66297d005b, type: 2}
   m_IsPrefabParent: 0
