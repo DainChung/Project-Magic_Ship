@@ -23,7 +23,7 @@ public class EnemyEngine : Unit__Base_Engine {
     public Unit__Base_Combat_Engine __ENE_C_Engine = new Unit__Base_Combat_Engine();
 
     //destinationDir 방향으로 회전하는 함수
-    public void Rotate_TO_Direction(float rotate_Speed, ref Transform rotated_OBJ, int dir, Transform destiTrn, bool is_RunAway)
+    public void Rotate_TO_Direction(float rotate_Speed, ref Transform rotated_OBJ, Transform destiTrn, bool is_RunAway)
     {
         //두 지점 사이의 각도 구하기 (도달해야 되는 각도 => 목표 각도)
         //일단 플레이어를 향하는 각도를 구한다.
@@ -35,6 +35,9 @@ public class EnemyEngine : Unit__Base_Engine {
 
         float destiAngle_FOR_dir = 0.0f;
 
+        //시계방향 회전을 기본값으로 한다.
+        int dir = 1;
+
         //curAngle은 0 <= curAgnle < 360 (destiAngle은 -180 < destiAngle <= 180)이기 떄문에 curAngle > 180인 경우 curAngle 값을 보정하도록 한다.
         if (curAngle > 180)
         {
@@ -42,8 +45,6 @@ public class EnemyEngine : Unit__Base_Engine {
             curAngle -= 360;
         }
 
-        //도망가야 하는 경우, 기존 코드대로는 잘못된 방향을 보는 경우가 많았다.
-        //지금으로선 각도를 아래와 같이 보정하는 방법이 최선이다. Atan2함수를 이용한 직접적인 계산도 알 수 없는 방향을 향하는 경우가 태반이었기 때문.
         if (is_RunAway)
         {
             destiAngle = Get_Opposite_Direction_Angle(destiAngle);
@@ -53,7 +54,6 @@ public class EnemyEngine : Unit__Base_Engine {
 
         //아래 Debug.Log를 통해 확인할 수 있다.
         //Debug.Log(destiAngle);
-        //하지만 알 수 없는 오류나 의도하지 않은 상황이 발생할 수 있음에 유의.
 
         //destiAngle_FOR_dir와 curAngle의 부호가 다른 경우
         if ((destiAngle_FOR_dir < 0 && curAngle >= 0) || (destiAngle_FOR_dir >= 0 && curAngle < 0))
@@ -61,32 +61,16 @@ public class EnemyEngine : Unit__Base_Engine {
             //destiAngle_FOR_dir의 반대방향으로 계산하도록 조정한다.
             destiAngle_FOR_dir = Get_Opposite_Direction_Angle(destiAngle_FOR_dir);
 
-            //dir값을 결정한다.
-            //각도 차를 구하여 시계방향으로 돌지 반시계방향으로 돌지 결정한다. (1이 시계 방향)
-            if (curAngle - destiAngle_FOR_dir >= 0)
-            {
-                dir = 1;
-            }
-            else
-            {
-                dir = -1;
-            }
+            //dir값을 보정한다.
+            dir *= (-1);
         }
-        else
+
+        //dir값을 결정한다.
+        //각도 차를 구하여 시계방향으로 돌지 반시계방향으로 돌지 결정한다. (1이 시계 방향)
+        if (curAngle - destiAngle_FOR_dir >= 0)
         {
-            //dir값을 결정한다.
-            //각도 차를 구하여 시계방향으로 돌지 반시계방향으로 돌지 결정한다. (1이 시계 방향)
-            //위의 경우와는 반대이다.
-            if (curAngle - destiAngle_FOR_dir >= 0)
-            {
-                dir = -1;
-            }
-            else
-            {
-                dir = 1;
-            }
+            dir *= (-1);
         }
-        
 
         //목표 각도를 Quaternion으로 바꿔준다.
         Quaternion destiQT = Quaternion.Euler(0, destiAngle, 0);
@@ -142,9 +126,9 @@ public class EnemyController : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
         //도망가야할 때
-        __ENE_Engine.Rotate_TO_Direction(__ENE_Stat.__PUB_Rotation_Speed, ref enemyTransform, 1, playerTransform, true);
+        __ENE_Engine.Rotate_TO_Direction(__ENE_Stat.__PUB_Rotation_Speed, ref enemyTransform, playerTransform, true);
         //도망가지 않을 때
-        //__ENE_Engine.Rotate_TO_Direction(__ENE_Stat.__PUB_Rotation_Speed, ref enemyTransform, 1, playerTransform, false);
+        //__ENE_Engine.Rotate_TO_Direction(__ENE_Stat.__PUB_Rotation_Speed, ref enemyTransform, playerTransform, false);
     }
 
     public void _Enemy_Get_Hit(int damage)
