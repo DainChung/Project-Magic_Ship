@@ -11,6 +11,10 @@ public class PlayerStat : Unit__Base_Stat {
         base.__PUB_Move_Speed = mSp;
         base.__PUB_Rotation_Speed = rSp;
 
+        base.__MAX_Health_Point = hp;
+        base.__MAX_Mana_Point = mp;
+        base.__MAX_Power_Point = pp;
+
         base.__PUB__Health_Point = hp;
         base.__PUB__Mana_Point = mp;
         base.__PUB__Power_Point = pp;
@@ -131,6 +135,22 @@ public class PlayerController : MonoBehaviour {
         else
         { }
 
+        //20190130 아래 코드를 응용해서 아래의 주석 내용을 구현할 것
+        //공격 형식을 바꿔야 될 수 도 있음
+        //Q로 측면, 전면을 교체하고 마우스 좌클릭(GetMouseButtonDown OR GetMouseButton 모두 실험해볼 것) 상태동안 방향 조절하고
+        //마우스 좌클릭을 그만둘 때 (GetMouseButtonUp) 탄환 발사 형식으로 조절 고려 중
+
+        //이를 구현하기 전에[ 우선 카메라가 쿼터뷰가 되도록 해야할 것
+        if (Input.GetMouseButton(1))
+        {
+            Debug.Log("Click Right");
+        }
+
+        if (Input.GetMouseButtonUp(1))
+        {
+            Debug.Log("Mouse Up!");
+        }
+
         //기본 공격
         //마우스 좌클릭 -> 전면 공격
         if (Input.GetMouseButtonDown(0) && _Is_On_CoolTime__Default_ATK)
@@ -167,6 +187,8 @@ public class PlayerController : MonoBehaviour {
         }
         else
         { }
+
+        
 
         //쿨타임 안내용
         /*
