@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+
 using System.Collections;
 using System.Collections.Generic;
 
@@ -9,9 +10,13 @@ public class Unit__Base_Stat {
     protected float _Rotation_Speed;
 
     //전투에 관한 변수
+    protected int __MAX_Health_Point;   //배의 최대 체력
+    protected int __MAX_Mana_Point;     //배의 최대 마력
+    protected int __MAX_Power_Point;    //배의 최대 특수기술 게이지
+
     protected int __Health_Point;   //배의 체력
     protected int __Mana_Point;     //배의 마력
-    protected int __Power_Point;    //특수기술을 사용하기 위한 게이지
+    protected int __Power_Point;    //특수기술을 사용하기 위한 게이지 (특수기술 게이지)
 
     protected int _ATK__Val;        //배의 공격력
     protected float _Critical_Rate; //치명타율
@@ -70,6 +75,19 @@ public class Unit__Base_Stat {
         set { _Stat_Locker = value; }
     }
 
+    public int __GET_Max_HP
+    {
+        get { return __MAX_Health_Point; }
+    }
+    public int __GET_Max_MP
+    {
+        get { return __MAX_Mana_Point; }
+    }
+    public int __GET_Max_PP
+    {
+        get { return __MAX_Power_Point; }
+    }
+
     //스탯에 직접 영향을 주는 모든 함수는 여기에서 처리해야 될 것 같음.
 
     //__Health_Point에 일정 수치를 가감하기 위한 함수
@@ -90,6 +108,13 @@ public class Unit__Base_Stat {
             __Health_Point = 0;
             //사망시 처리에 대해서는 각 Controller.cs에서 처리해야 될 것으로 예상됨.
             Debug.Log("Dead");
+        }
+
+        //체력 회복 시 이미 최대 체력을 넘긴 상태라면
+        if (__Health_Point > __MAX_Health_Point)
+        {
+            //최대 체력으로 초기화해준다.
+            __Health_Point = __MAX_Health_Point;
         }
         
         //피격 및 계산 여부를 확실히 알기 위해 작성한 내용
@@ -114,6 +139,7 @@ public class Unit__Base_Stat {
         {
             //올리고자 하는 값을 올린다. (isHit_OR_Heal 값에 따라 딜 또는 힐로 연산된다.)
             __GET_HIT__About_Health(damage, isHit_OR_Heal);
+            Debug.Log("Get Heal");
             //위의 작업을 일정 시간 마다 반복한다.
             yield return new WaitForSeconds(freqTime);
         }

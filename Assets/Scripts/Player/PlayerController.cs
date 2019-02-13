@@ -11,6 +11,10 @@ public class PlayerStat : Unit__Base_Stat {
         base.__PUB_Move_Speed = mSp;
         base.__PUB_Rotation_Speed = rSp;
 
+        base.__MAX_Health_Point = hp;
+        base.__MAX_Mana_Point = mp;
+        base.__MAX_Power_Point = pp;
+
         base.__PUB__Health_Point = hp;
         base.__PUB__Mana_Point = mp;
         base.__PUB__Power_Point = pp;
@@ -62,6 +66,8 @@ public class PlayerController : MonoBehaviour {
     //DB에서 읽쓰하는 기능이 추가되면 옮기고 수정해야됨. 겁나 귀찮겠다 ㅎㅎ
     public GameObject defaultAmmo;
 
+    public float playerMoveSpeed;
+
     //쿨타임 떄문에 임시로 적용한 bool 변수, 개선된 알고리즘이 생각나면 바꿔야 될 것
     private bool _Is_On_CoolTime__Default_ATK;
 
@@ -75,6 +81,8 @@ public class PlayerController : MonoBehaviour {
         //이속, 회전속도, 체력, 마나, 파워 게이지, 공격력, 크리확률, 크리계수
         __PLY_Stat.SampleInit(10.0f, 30.0f, 10, 10, 10, 1, 10.0f, 1.5f);
 
+        playerMoveSpeed = __PLY_Stat.__PUB_Move_Speed;
+
         //Unit__Base_Combat_Engine이 Unit__Base_Movement_Engine에 접근 할 수 있도록 한다.
         __PLY_Engine.__PLY_C_Engine.__SET_unit_M_Engine = __PLY_Engine.__PLY_M_Engine;
 
@@ -82,76 +90,14 @@ public class PlayerController : MonoBehaviour {
         //----------------------------------------------------------------------------------------
         //20190117 이 지점에서 PlayerInfoManager를 통해 지정된 Skill들을 읽어온다. (Skill ID 값만 읽기)
         //읽은 Skill ID 값들을 이용하여 해당 Skill들의 정보를 __PLY_Selected_Skills에 추가한다.
-        for (int index = 0; index < 3; index++)
+        __PLY_Selected_Skills = Player_Info_Manager.Read_Equipped_SkillBaseStat();
+
+        //확인용. 정상적으로 작동함.
+        foreach (SkillBaseStat forDebug in __PLY_Selected_Skills)
         {
-            //내용이 설정되지 않은 Skill추가
-            __PLY_Selected_Skills.Add(new SkillBaseStat());
-
-            //InitSkill에 변수로 넣을 SkillCode 클래스
-            SkillCode skill_Code = new SkillCode();
-
-            //지정된 Skill ID를 읽고 해당 Skill의 정보를 저장
-            
-
-            //읽은 Skill정보를 SkillBaseStat으로 전송
+            Debug.Log("ID: " + forDebug.__Get_Skill_ID + ", Name: " + forDebug.__GET_Skill_Name + ", Rate:" + forDebug.__GET_Skill_Rate);
+            Debug.Log("CoolT: " + forDebug.__GET_Skill_Cool_Time + ", IngT: " + forDebug.__GET_Skill_ING_Time + ", UseAmount:" + forDebug.__GET_Skill_Use_Amount);
         }
-        /* 예상되는 코딩
-         * for(int  = 0; i < 3; i++)
-         * {
-         *      //내용이 없는 Skill칸 추가
-         *      __PLY_Selected_Skills.Add(new SkillBaseStat());
-         *      
-         *      //InitSkill에 변수로 넣을 SkillCode 클래스
-         *      SkillCode skill_Code = new SkillCode();
-         *      
-         *      //지정된 Skill ID를 읽고 해당 Skill의 정보를 저장
-         *      //이 부분에 대한 세부적인 계획이 필요함
-         *      PlayerInfoManager.ReadSkill(i);
-         *      
-         *      //읽은 Skill정보를 SkillBaseStat으로 전송
-         *      __PLY_Selected_Skills[i].Init_Skill(1.0f, 6.0f, 3.0f, 2, skill_Code);
-         * }
-         * 
-         * 
-         * 
-         */
-        //----------------------------------------------------------------------------------------
-
-
-        //임시로 지정된 임의의 3개 스킬을 사용하도록 지시한다.
-        //DB 적용 전에는 여기에서 초기화할 것
-        __PLY_Selected_Skills.Add(new SkillBaseStat());
-        __PLY_Selected_Skills.Add(new SkillBaseStat());
-        __PLY_Selected_Skills.Add(new SkillBaseStat());
-        //일단 노가다 식으로 초기화한다.
-        //타입, 배율 및 양, 쿨타임, 지속시간, 소비하는 마나(또는 __Power_Point)의 양
-        //------------------------------------------------------------------------------------
-        //스킬 분류에 관한 변수 초기화
-        //임시 과정이므로 나중에 수정 필요함.
-        SkillCode SkillCodeForIndex0 = new SkillCode();
-        SkillCode SkillCodeForIndex1 = new SkillCode();
-        SkillCode SkillCodeForIndex2 = new SkillCode();
-
-        SkillCodeForIndex0._Skill_Code_M = _SKILL_CODE_Main.BUF;
-        SkillCodeForIndex0._Skill_Code_S = _SKILL_CODE_Sub.HP;
-        SkillCodeForIndex0._Skill_Code_T = _SKILL_CODE_Time.FREQ;
-
-        SkillCodeForIndex1._Skill_Code_M = _SKILL_CODE_Main.ATK;
-        SkillCodeForIndex1._Skill_Code_S = _SKILL_CODE_Sub.HP;
-        SkillCodeForIndex1._Skill_Code_T = _SKILL_CODE_Time.FREQ;
-
-        SkillCodeForIndex2._Skill_Code_M = _SKILL_CODE_Main.BUF;
-        SkillCodeForIndex2._Skill_Code_S = _SKILL_CODE_Sub.SP;
-        SkillCodeForIndex2._Skill_Code_T = _SKILL_CODE_Time.NULL;
-
-        //------------------------------------------------------------------------------------
-        //1초마다 체력을 1만큼 3초동안 회복하는 쿨타임 6초, 마나 소모량 2짜리 버프 스킬
-        __PLY_Selected_Skills[0].Init_Skill(1.0f, 6.0f, 3.0f, 2, SkillCodeForIndex0);
-        //1초마다 (공격력 * 2)만큼 2초동안 데미지를 주는 쿨타임 4초, 마나 소모량 3짜리 공격 스킬 
-        __PLY_Selected_Skills[1].Init_Skill(2.0f, 2.0f, 4.0f, 3, SkillCodeForIndex1);
-        //4초동안 이동속도 및 회전속도를 20만큼 올려주는 쿨타임 7초, 마나 소모량 4짜리 버프 스킬
-        __PLY_Selected_Skills[2].Init_Skill(20.0f, 7.0f, 4.0f, 4, SkillCodeForIndex2);
-        //------------------------------------------------------------------------------------
 
         //나중에 수정 필요
         _Is_On_CoolTime__Default_ATK = true;
@@ -177,7 +123,7 @@ public class PlayerController : MonoBehaviour {
         }
         else if (Input.GetKey(KeyCode.S))
         {
-            __PLY_Engine.__PLY_M_Engine.Move_OBJ(__PLY_Stat.__PUB_Move_Speed, ref playerTransform, -0.1f);
+            __PLY_Engine.__PLY_M_Engine.Move_OBJ(__PLY_Stat.__PUB_Move_Speed, ref playerTransform, -1f);
         }
         else
         { }
@@ -192,6 +138,22 @@ public class PlayerController : MonoBehaviour {
         }
         else
         { }
+
+        //20190130 아래 코드를 응용해서 아래의 주석 내용을 구현할 것
+        //공격 형식을 바꿔야 될 수 도 있음
+        //Q로 측면, 전면을 교체하고 마우스 좌클릭(GetMouseButtonDown OR GetMouseButton 모두 실험해볼 것) 상태동안 방향 조절하고
+        //마우스 좌클릭을 그만둘 때 (GetMouseButtonUp) 탄환 발사 형식으로 조절 고려 중
+
+        //이를 구현하기 전에[ 우선 카메라가 쿼터뷰가 되도록 해야할 것
+        if (Input.GetMouseButton(1))
+        {
+            Debug.Log("Click Right");
+        }
+
+        if (Input.GetMouseButtonUp(1))
+        {
+            Debug.Log("Mouse Up!");
+        }
 
         //기본 공격
         //마우스 좌클릭 -> 전면 공격
@@ -229,6 +191,8 @@ public class PlayerController : MonoBehaviour {
         }
         else
         { }
+
+        
 
         //쿨타임 안내용
         /*
