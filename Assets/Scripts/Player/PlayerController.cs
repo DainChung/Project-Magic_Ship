@@ -66,6 +66,8 @@ public class PlayerController : MonoBehaviour {
     //DB에서 읽쓰하는 기능이 추가되면 옮기고 수정해야됨. 겁나 귀찮겠다 ㅎㅎ
     public GameObject defaultAmmo;
 
+    public float playerMoveSpeed;
+
     //쿨타임 떄문에 임시로 적용한 bool 변수, 개선된 알고리즘이 생각나면 바꿔야 될 것
     private bool _Is_On_CoolTime__Default_ATK;
 
@@ -78,6 +80,8 @@ public class PlayerController : MonoBehaviour {
     {
         //이속, 회전속도, 체력, 마나, 파워 게이지, 공격력, 크리확률, 크리계수
         __PLY_Stat.SampleInit(10.0f, 30.0f, 10, 10, 10, 1, 10.0f, 1.5f);
+
+        playerMoveSpeed = __PLY_Stat.__PUB_Move_Speed;
 
         //Unit__Base_Combat_Engine이 Unit__Base_Movement_Engine에 접근 할 수 있도록 한다.
         __PLY_Engine.__PLY_C_Engine.__SET_unit_M_Engine = __PLY_Engine.__PLY_M_Engine;

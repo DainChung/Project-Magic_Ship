@@ -199,11 +199,12 @@ public class EnemyController : MonoBehaviour {
             if (__ENE_Engine._PUB_enemy_Is_ON_CoolTime[0])
             {
                 __ENE_Engine.__ENE_M_Engine.Move_OBJ(__ENE_Stat.__PUB_Move_Speed, ref enemyTransform, 1);
+                //4초 동안 퇴각
                 StartCoroutine(enemyCoolTimer.Timer_Do_Once(4.0f, (input) => { __ENE_Engine._PUB_enemy_Is_ON_CoolTime[0] = input; }, true));
             }
-            //일정 시간 후에 다시 도망친다
             else
             {
+                //16초 동안 정지
                 StartCoroutine(enemyCoolTimer.Timer_Do_Once(16.0f, (input) => { __ENE_Engine._PUB_enemy_Is_ON_CoolTime[0] = input; }, false));
                 //회복 패턴은 정예 선박만 넣는것이 좋을 것 같다
                 //StartCoroutine(__ENE_Stat.__Get_HIT__About_Health_FREQ(2.0f, 1.0f, 1, -1));
