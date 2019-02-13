@@ -31,6 +31,11 @@ public class AmmoBase : MonoBehaviour {
 
     void OnTriggerEnter(Collider other)
     {
+        if(other.transform.tag == "SampleObstacle")
+        {
+            Destroy(gameObject);
+        }
+
         //쏜 애가 Player고 맞은 애가 Enemy면
         if (__Who_Shot == "Player" && other.transform.tag == "SampleEnemy")
         {
