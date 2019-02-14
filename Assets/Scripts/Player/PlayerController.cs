@@ -39,7 +39,7 @@ public class PlayerEngine : Unit__Base_Engine {
 public class PlayerController : MonoBehaviour {
 
     //플레이어의 스탯
-    private PlayerStat __PLY_Stat = new PlayerStat();
+    public PlayerStat __PLY_Stat = new PlayerStat();
     //플레이어의 동작을 위한 클래스
     private PlayerEngine __PLY_Engine = new PlayerEngine();
     //그냥 쿨타임
@@ -206,7 +206,11 @@ public class PlayerController : MonoBehaviour {
         //나중에 구현하자
         if (Input.GetMouseButtonDown(1))
         {
-            
+            // 임시코드(GUI - CH)
+            __PLY_Stat.__PUB__Health_Point -= 1;
+            __PLY_Stat.__PUB__Mana_Point -= 2;
+            __PLY_Stat.__PUB__Power_Point -= 3;
+            // 임시코드(GUI - CH)
         }
 
         //체력 버프 스킬

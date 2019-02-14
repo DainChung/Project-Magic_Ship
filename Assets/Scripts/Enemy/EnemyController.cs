@@ -25,7 +25,7 @@ public class EnemyEngine : Unit__Base_Engine {
 
 public class EnemyController : MonoBehaviour {
 
-    private EnemyStat __ENE_Stat = new EnemyStat();
+    public EnemyStat __ENE_Stat = new EnemyStat();
     private EnemyEngine __ENE_Engine = new EnemyEngine();
 
     void Awake() {
