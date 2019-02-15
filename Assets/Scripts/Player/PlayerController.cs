@@ -50,7 +50,7 @@ public class PlayerController : MonoBehaviour {
     public UnitCoolTimer __PLY_CoolTimer;
 
     //플레이어가 사용하기로 선택한 스킬들을 저장하는 변수
-    private List<SkillBaseStat> __PLY_Selected_Skills = new List<SkillBaseStat>();
+    public List<SkillBaseStat> __PLY_Selected_Skills = new List<SkillBaseStat>();
 
     public Transform playerTransform;
 
