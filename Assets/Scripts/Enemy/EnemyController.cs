@@ -41,6 +41,9 @@ public class EnemyEngine : Unit__Base_Engine {
         set { enemy_is_ON_CoolTime = value; }
     }
 
+    //Timer가 받는 인자가 늘어났기에 추가하는 dummyFloat
+    public float[] dummyFloatTime = new float[3];
+
     public UnitCoolTimer enemyCoolTimer;
 
     //destinationDir 방향으로 회전하는 함수
@@ -148,7 +151,7 @@ public class EnemyEngine : Unit__Base_Engine {
         __ENE_C_Engine.Default_ATK(ref threw_Ammo, ref attacker, damage);
 
         //딜레이
-        enemyCoolTimer.StartCoroutine(enemyCoolTimer.Timer(coolTime, (input) => { enemy_is_ON_CoolTime[boolIndex] = input; }, true));
+        enemyCoolTimer.StartCoroutine(enemyCoolTimer.Timer(coolTime, (input) => { enemy_is_ON_CoolTime[boolIndex] = input; }, true, (input) => { dummyFloatTime[0] = input; }));
     }
 }
 

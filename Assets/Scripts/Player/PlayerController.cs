@@ -71,9 +71,16 @@ public class PlayerController : MonoBehaviour {
     //쿨타임 떄문에 임시로 적용한 bool 변수, 개선된 알고리즘이 생각나면 바꿔야 될 것
     private bool _Is_On_CoolTime__Default_ATK;
 
-    private bool _Is_On_CoolTime__Skill_0;
-    private bool _Is_On_CoolTime__Skill_1;
-    private bool _Is_On_CoolTime__Skill_2;
+    private bool[] _Is_On_CoolTime_Skill = new bool[3];
+
+    //Defualt_ATK 자체를 SkillBaseStat 형태로 사용하기 전까진 임시로 사용할 것
+    private float default_ATK_Remained_Time;
+
+    //밖에서 값을 읽기 위한 용도
+    public bool[] _GET_Is_On_CoolTime_Skill
+    {
+        get { return _Is_On_CoolTime_Skill; }
+    }
 
     //나중엔 DB에서 긁어온 값을 여기서 초기화할 것.
     void Awake()
@@ -99,11 +106,12 @@ public class PlayerController : MonoBehaviour {
             Debug.Log("CoolT: " + forDebug.__GET_Skill_Cool_Time + ", IngT: " + forDebug.__GET_Skill_ING_Time + ", UseAmount:" + forDebug.__GET_Skill_Use_Amount);
         }
 
-        //나중에 수정 필요
         _Is_On_CoolTime__Default_ATK = true;
-        _Is_On_CoolTime__Skill_0 = true;
-        _Is_On_CoolTime__Skill_1 = true;
-        _Is_On_CoolTime__Skill_2 = true;
+
+        for (int i = 0; i < _Is_On_CoolTime_Skill.Length; i++)
+        {
+            _Is_On_CoolTime_Skill[i] = true;
+        }
     }
 
     // Use this for initialization
@@ -143,6 +151,7 @@ public class PlayerController : MonoBehaviour {
         //공격 형식을 바꿔야 될 수 도 있음
         //Q로 측면, 전면을 교체하고 마우스 좌클릭(GetMouseButtonDown OR GetMouseButton 모두 실험해볼 것) 상태동안 방향 조절하고
         //마우스 좌클릭을 그만둘 때 (GetMouseButtonUp) 탄환 발사 형식으로 조절 고려 중
+        //20190215 => 일단 고려만 해둘 것
 
         //이를 구현하기 전에[ 우선 카메라가 쿼터뷰가 되도록 해야할 것
         if (Input.GetMouseButton(1))
@@ -162,7 +171,7 @@ public class PlayerController : MonoBehaviour {
             __PLY_Engine.__PLY_C_Engine.Default_ATK(ref defaultAmmo, ref playerFront, __PLY_Stat.__PUB_ATK__Val);
             //쿨타임을 사용하기 위한 코루틴. 따로 외부 클래스 제작함. 상세 항목은 해당 클래스 참조
             //나중에 쿨타임 값 같은 것도 따로 관리할 것
-            __PLY_CoolTimer.StartCoroutine(__PLY_CoolTimer.Timer(1.0f, (input) => { _Is_On_CoolTime__Default_ATK = input; }, _Is_On_CoolTime__Default_ATK));
+            __PLY_CoolTimer.StartCoroutine(__PLY_CoolTimer.Timer(1.0f, (input) => { _Is_On_CoolTime__Default_ATK = input; }, _Is_On_CoolTime__Default_ATK, (input) => { default_ATK_Remained_Time = input; }));
         }
         //마우스 우클릭 -> 측면 공격
         //나중에 구현하자
@@ -171,34 +180,28 @@ public class PlayerController : MonoBehaviour {
             
         }
 
-        //체력 버프 스킬
-        if (Input.GetKey(KeyCode.Alpha1) && _Is_On_CoolTime__Skill_0)
+        Debug.Log(__PLY_Selected_Skills[0].time);
+
+        //1번 스킬
+        if (Input.GetKey(KeyCode.Alpha1) && _Is_On_CoolTime_Skill[0])
         {
             __PLY_Engine.__PLY_C_Engine.Using_Skill(ref defaultAmmo, ref playerFront, __PLY_Selected_Skills[0], __PLY_Stat, this);
-            __PLY_CoolTimer.StartCoroutine(__PLY_CoolTimer.Timer(__PLY_Selected_Skills[0].__GET_Skill_Cool_Time, (input) => { _Is_On_CoolTime__Skill_0 = input; }, _Is_On_CoolTime__Skill_0));
+            __PLY_CoolTimer.StartCoroutine(__PLY_CoolTimer.Timer(__PLY_Selected_Skills[0].__GET_Skill_Cool_Time, (input) => { _Is_On_CoolTime_Skill[0] = input; }, _Is_On_CoolTime_Skill[0], (input) => { __PLY_Selected_Skills[0].time = input; }));
         }
-        //디버프 공격 스킬
-        else if (Input.GetKey(KeyCode.Alpha2) && _Is_On_CoolTime__Skill_1)
+        //2번 스킬
+        else if (Input.GetKey(KeyCode.Alpha2) && _Is_On_CoolTime_Skill[1])
         {
             __PLY_Engine.__PLY_C_Engine.Using_Skill(ref defaultAmmo, ref playerFront, __PLY_Selected_Skills[1], __PLY_Stat, this);
-            __PLY_CoolTimer.StartCoroutine(__PLY_CoolTimer.Timer(__PLY_Selected_Skills[1].__GET_Skill_Cool_Time, (input) => { _Is_On_CoolTime__Skill_1 = input; }, _Is_On_CoolTime__Skill_1));
+            __PLY_CoolTimer.StartCoroutine(__PLY_CoolTimer.Timer(__PLY_Selected_Skills[1].__GET_Skill_Cool_Time, (input) => { _Is_On_CoolTime_Skill[1] = input; }, _Is_On_CoolTime_Skill[1], (input) => { __PLY_Selected_Skills[1].time = input; }));
         }
-        //스피드 버프 스킬
-        else if (Input.GetKey(KeyCode.Alpha3) && _Is_On_CoolTime__Skill_2)
+        //3번 스킬
+        else if (Input.GetKey(KeyCode.Alpha3) && _Is_On_CoolTime_Skill[2])
         {
             __PLY_Engine.__PLY_C_Engine.Using_Skill(ref defaultAmmo, ref playerFront, __PLY_Selected_Skills[2], __PLY_Stat, this);
-            __PLY_CoolTimer.StartCoroutine(__PLY_CoolTimer.Timer(__PLY_Selected_Skills[2].__GET_Skill_Cool_Time, (input) => { _Is_On_CoolTime__Skill_2 = input; }, _Is_On_CoolTime__Skill_2));
+            __PLY_CoolTimer.StartCoroutine(__PLY_CoolTimer.Timer(__PLY_Selected_Skills[2].__GET_Skill_Cool_Time, (input) => { _Is_On_CoolTime_Skill[2] = input; }, _Is_On_CoolTime_Skill[2], (input) => { __PLY_Selected_Skills[2].time = input; }));
         }
         else
         { }
-
-        
-
-        //쿨타임 안내용
-        /*
-        if (_Is_On_CoolTime__Skill_2)
-            Debug.Log("You Can Use Speed BUFF");
-        */
 
         //스피드 버프 OR 디버프 지속시간 종료 여부
         if (__PLY_Stat.__PUB_Stat_Locker[0])

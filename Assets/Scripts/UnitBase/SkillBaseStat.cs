@@ -68,6 +68,9 @@ public class SkillBaseStat {
         get {return _Skill_ID; }
     }
 
+    //20190215 남은 쿨타임에 따른 UI 효과를 보여주기 위해 추가된 변수
+    public float time;
+
     //값을 초기화하기 위한 함수
     public void Init_Skill(float rate, float coolT, float ingT, int amount, SkillCode skill_Code)
     {
@@ -81,6 +84,10 @@ public class SkillBaseStat {
         _Skill_Code_M = skill_Code._Skill_Code_M;
         _Skill_Code_S = skill_Code._Skill_Code_S;
         _Skill_Code_T = skill_Code._Skill_Code_T;
+
+        //20190215
+        //쿨타임과 같은 값에서 1초씩 값을 줄인다.
+        time = coolT;
     }
 
     public void Initialize_Skill(string name, float rate, float coolT, float ingT, int amount, SkillCode skill_Code, string skillID)

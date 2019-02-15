@@ -24,8 +24,6 @@ public class Unit__Base_Engine {
         {
             try
             {
-                
-
                 //스피드 버프 값을 더하여 이동속도를 늘리거나 줄인다.
                 movingVector.Set(0,0,(move_Speed + speed_BUF_Amount) * Time.deltaTime * dir);
                 //moved_OBJ.GetComponent<Rigidbody>().AddForce(movingVector);
