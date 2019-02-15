@@ -43,7 +43,7 @@ public class PlayerEngine : Unit__Base_Engine {
 public class PlayerController : MonoBehaviour {
 
     //플레이어의 스탯
-    private PlayerStat __PLY_Stat = new PlayerStat();
+    public PlayerStat __PLY_Stat = new PlayerStat();
     //플레이어의 동작을 위한 클래스
     private PlayerEngine __PLY_Engine = new PlayerEngine();
     //그냥 쿨타임
@@ -156,7 +156,12 @@ public class PlayerController : MonoBehaviour {
         //이를 구현하기 전에[ 우선 카메라가 쿼터뷰가 되도록 해야할 것
         if (Input.GetMouseButton(1))
         {
+            //임시코드(GUI - CH)
+            __PLY_Stat.__PUB__Health_Point -= 1;
+            __PLY_Stat.__PUB__Mana_Point -= 1;
+            __PLY_Stat.__PUB__Power_Point -= 1;
             Debug.Log("Click Right");
+            //임시코드(GUI - CH)
         }
 
         if (Input.GetMouseButtonUp(1))
@@ -180,7 +185,7 @@ public class PlayerController : MonoBehaviour {
             
         }
 
-        Debug.Log(__PLY_Selected_Skills[0].time);
+        //Debug.Log(__PLY_Selected_Skills[0].time);
 
         //1번 스킬
         if (Input.GetKey(KeyCode.Alpha1) && _Is_On_CoolTime_Skill[0])
