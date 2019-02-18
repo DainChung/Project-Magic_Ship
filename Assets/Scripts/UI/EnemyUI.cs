@@ -4,11 +4,16 @@ using System.Collections;
 
 public class EnemyUI : MonoBehaviour {
     private EnemyController sEnemyController; // Enemy Information
+    public  UnitCoolTimer sCoolTimer; // Cool Timer
 
     public Image iHealthBar; // Health Bar Image Sprite
+    public TextMesh t3dDamage; // What show Damage
 
-	// Use this for initialization
-	void Start () {
+    bool bCoolTime;
+    bool bTriggered;
+
+    // Use this for initialization
+    void Start () {
         // 적 정보 가져오기
         try
         {
@@ -19,19 +24,38 @@ public class EnemyUI : MonoBehaviour {
             Debug.Log("[EnemyUI] " + e.Message);
         }
 
+        // 전역 변수 초기화
+        bCoolTime = false;
+        bTriggered = false;
     }
 
     private void OnGUI()
     {
         iHealthBar.fillAmount = (float)sEnemyController.__ENE_Stat.__PUB__Health_Point / 10; // status image udpate
-        // 체력바가 잘 보이도록 체력바의 Rotation 업데이트
+        // 체력바와 데미지가 잘 보이도록 체력바의 Rotation 업데이트
         try
         {
-            iHealthBar.transform.rotation = GameObject.Find("Main Camera").GetComponent<Transform>().rotation;
+            GameObject oMainCamera = GameObject.Find("Main Camera");
+
+            iHealthBar.transform.rotation = oMainCamera.GetComponent<Transform>().rotation;
+            t3dDamage.transform.rotation = oMainCamera.GetComponent<Transform>().rotation;
         }
         catch(System.Exception e)
         {
             Debug.Log("[EnemyUI] +" + e.Message);
         }
+
+        if (bCoolTime || bTriggered)
+        {
+            t3dDamage.text = "";
+            bTriggered = false;
+        }
+    }
+
+    // 적이 포환에 맞았을 때 피해를 얼마나 입었는지 보여주는 함수
+    private void ShowDamage(int damage)
+    {
+        t3dDamage.text = damage.ToString();
+        StartCoroutine(sCoolTimer.Timer_Do_Once(1f, (input) => { bCoolTime = input; bTriggered = true; }, true));
     }
 }
