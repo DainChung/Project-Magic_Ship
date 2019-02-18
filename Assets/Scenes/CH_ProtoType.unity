@@ -1265,9 +1265,9 @@ MonoBehaviour:
   iBar_Health: {fileID: 377078776}
   iBar_Mana: {fileID: 1824204689}
   iBar_Power: {fileID: 1158121452}
-  iSkill1: {fileID: 0}
-  iSkill2: {fileID: 0}
-  iSkill3: {fileID: 0}
+  iSkill1: {fileID: 2003937583}
+  iSkill2: {fileID: 446291689}
+  iSkill3: {fileID: 502627922}
 --- !u!1001 &1262857767
 Prefab:
   m_ObjectHideFlags: 0

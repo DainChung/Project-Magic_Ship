@@ -34,6 +34,8 @@ public class PlayerUI : MonoBehaviour {
         iBar_Power.fillAmount = (float) sPlayerController.__PLY_Stat.__PUB__Power_Point / 10f;
 
         // 스킬 상태 업데이트
-        
+        iSkill1.fillAmount = 1 - sPlayerController.__PLY_Selected_Skills[0].time / sPlayerController.__PLY_Selected_Skills[0].__GET_Skill_Cool_Time;
+        iSkill2.fillAmount = 1 - sPlayerController.__PLY_Selected_Skills[1].time / sPlayerController.__PLY_Selected_Skills[1].__GET_Skill_Cool_Time;
+        iSkill3.fillAmount = 1 - sPlayerController.__PLY_Selected_Skills[2].time / sPlayerController.__PLY_Selected_Skills[2].__GET_Skill_Cool_Time;
     }
 }
