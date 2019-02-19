@@ -159,6 +159,7 @@ public class EnemyController : MonoBehaviour {
 
     public EnemyStat __ENE_Stat = new EnemyStat();
     private EnemyEngine __ENE_Engine = new EnemyEngine();
+    private EnemyUI sEnemyUI;
 
     public UnitCoolTimer enemyCoolTimer;
 
@@ -185,7 +186,7 @@ public class EnemyController : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
-	    
+        sEnemyUI = GetComponent<EnemyUI>();
 	}
 	
 	// Update is called once per frame
@@ -245,5 +246,6 @@ public class EnemyController : MonoBehaviour {
     {
         //isHit_OR_Heal 부분은 나중에 Enum과 같은 요소로 변경하여 넣을 것
         __ENE_Stat.__GET_HIT__About_Health(damage, 1);
+        sEnemyUI.SendMessage("ShowDamage", damage);
     }
 }
