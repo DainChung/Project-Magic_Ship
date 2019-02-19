@@ -2,7 +2,7 @@
 using System.Collections;
 
 public class AmmoBase : MonoBehaviour {
-    private PlayerController sPlayerController;
+
     private float __Ammo_Speed;
 
     //누가 쐈냐
@@ -23,7 +23,6 @@ public class AmmoBase : MonoBehaviour {
 
     void Start()
     {
-        sPlayerController = GameObject.Find("SamplePlayer").GetComponent<PlayerController>();
         addedForce = transform.forward * __Ammo_Speed;
 
         transform.GetComponent<Rigidbody>().AddForce(addedForce, ForceMode.Impulse);
@@ -60,7 +59,7 @@ public class AmmoBase : MonoBehaviour {
         if (__Who_Shot == "Player" && other.transform.tag == "SampleEnemy")
         {
             //피격 관련 연산을 하고
-            other.GetComponent<EnemyController>()._Enemy_Get_Hit(__Ammo_Damage);
+            other.GetComponent<EnemyController>()._Enemy_Get_Hit(__Ammo_Damage, isItCritical);
 
             //if (isItCritical)
             //{
@@ -69,7 +68,6 @@ public class AmmoBase : MonoBehaviour {
 
             //투사체를 제거한다.
             Destroy(gameObject);
-            sPlayerController.qAmmos.Dequeue();
         }
 
         //쏜 애가 Enemy고 맞은 애가 Player면
@@ -88,9 +86,6 @@ public class AmmoBase : MonoBehaviour {
         if (other.transform.tag == "SampleBottom")
         {
             Destroy(gameObject);
-
-            if(__Who_Shot == "Player")
-                sPlayerController.qAmmos.Dequeue();
         }
     }
 }

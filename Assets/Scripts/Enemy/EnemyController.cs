@@ -242,10 +242,13 @@ public class EnemyController : MonoBehaviour {
         }
     }
 
-    public void _Enemy_Get_Hit(int damage)
+    //Enemy가 피격받을 때의 함수
+    public void _Enemy_Get_Hit(int damage, bool isItCritical)
     {
         //isHit_OR_Heal 부분은 나중에 Enum과 같은 요소로 변경하여 넣을 것
         __ENE_Stat.__GET_HIT__About_Health(damage, 1);
+        //크리티컬 여부에 따라 UI 형식이 달라지기 때문에 관련 정보 송신
+        sEnemyUI._SET_isItCritical = isItCritical;
         sEnemyUI.SendMessage("ShowDamage", damage);
     }
 }

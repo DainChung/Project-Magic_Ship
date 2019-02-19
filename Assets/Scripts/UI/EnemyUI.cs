@@ -13,6 +13,12 @@ public class EnemyUI : MonoBehaviour {
     bool bCoolTime;
     bool bTriggered;
 
+    private bool isItCritical;
+    public bool _SET_isItCritical
+    {
+        set { isItCritical = value; }
+    }
+
     // Use this for initialization
     void Start () {
         // 적 정보 가져오기
@@ -57,12 +63,14 @@ public class EnemyUI : MonoBehaviour {
     // 적이 포환에 맞았을 때 피해를 얼마나 입었는지 보여주는 함수
     private void ShowDamage(int damage)
     {
-        //if (sPlayerController.defaultAmmo.GetComponent<AmmoBase>().isItCritical) // 크리티컬인 경우
-        if(sPlayerController.qAmmos.Peek().GetComponent<AmmoBase>().isItCritical)
+        //크리티컬인 경우
+        if (isItCritical)
         {
+            //데미지 표시 Text의 사이즈, 색깔, 내용을 정한다.
             t3dDamage.characterSize = 0.4f;
             t3dDamage.color = Color.red;
-            t3dDamage.text = ((float)damage * sPlayerController.__PLY_Stat.__PUB_Critical_P).ToString();
+            t3dDamage.text = damage.ToString();
+            //특정 시간동안만 표시되도록 Timer를 작동한다.
             StartCoroutine(sCoolTimer.Timer_Do_Once(1.5f, (input) => { bCoolTime = input; bTriggered = true; }, true));
         }
         else // 크리티컬이 아닌 경우
