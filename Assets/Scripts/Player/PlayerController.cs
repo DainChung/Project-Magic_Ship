@@ -65,6 +65,7 @@ public class PlayerController : MonoBehaviour {
     //나중엔 여기서 안 하고 SkillBaseStat에 저장했다가 사용할 수도 있음.
     //DB에서 읽쓰하는 기능이 추가되면 옮기고 수정해야됨. 겁나 귀찮겠다 ㅎㅎ
     public GameObject defaultAmmo;
+    public Queue<GameObject> qAmmos;
 
     public float playerMoveSpeed;
 
@@ -119,6 +120,7 @@ public class PlayerController : MonoBehaviour {
     {
         //해당 스크립트와 CombatEngine에서 모두 사용하기 위해 이렇게 초기화하여 전달한다.
         __PLY_CoolTimer = transform.GetComponent<UnitCoolTimer>();
+        qAmmos = new Queue<GameObject>();
     }
 	
 	// Update is called once per frame
@@ -177,6 +179,8 @@ public class PlayerController : MonoBehaviour {
             //쿨타임을 사용하기 위한 코루틴. 따로 외부 클래스 제작함. 상세 항목은 해당 클래스 참조
             //나중에 쿨타임 값 같은 것도 따로 관리할 것
             __PLY_CoolTimer.StartCoroutine(__PLY_CoolTimer.Timer(1.0f, (input) => { _Is_On_CoolTime__Default_ATK = input; }, _Is_On_CoolTime__Default_ATK, (input) => { default_ATK_Remained_Time = input; }));
+            
+            qAmmos.Enqueue(defaultAmmo);
         }
         //마우스 우클릭 -> 측면 공격
         //나중에 구현하자

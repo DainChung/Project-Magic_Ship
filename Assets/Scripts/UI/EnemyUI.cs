@@ -57,7 +57,8 @@ public class EnemyUI : MonoBehaviour {
     // 적이 포환에 맞았을 때 피해를 얼마나 입었는지 보여주는 함수
     private void ShowDamage(int damage)
     {
-        if (sPlayerController.defaultAmmo.GetComponent<AmmoBase>().isItCritical) // 크리티컬인 경우
+        //if (sPlayerController.defaultAmmo.GetComponent<AmmoBase>().isItCritical) // 크리티컬인 경우
+        if(sPlayerController.qAmmos.Peek().GetComponent<AmmoBase>().isItCritical)
         {
             t3dDamage.characterSize = 0.4f;
             t3dDamage.color = Color.red;
