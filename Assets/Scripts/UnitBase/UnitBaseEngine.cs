@@ -85,12 +85,12 @@ public class Unit__Base_Engine {
         }
 
         //하나의 투사체를 일직선 상으로 발사하는 기본 공격 (디버프 유무를 나중에 추가할 것)
-        public void Default_ATK(ref GameObject threw_Ammo, ref Transform attacker, int damage)
+        public void Default_ATK(ref GameObject threw_Ammo, ref Transform attacker, int damage, float criRate, float criPoint)
         {
             GameObject spawned_OBJ;
             spawned_OBJ = (GameObject)(MonoBehaviour.Instantiate(threw_Ammo, attacker.position, attacker.rotation));
             //투사체가 날아가는 속도를 특정 값으로 설정. 나중엔 DB에서 긁어올 것
-            spawned_OBJ.GetComponent<AmmoBase>().__Init_Ammo(55.0f, attacker.tag, damage);
+            spawned_OBJ.GetComponent<AmmoBase>().__Init_Ammo(55.0f, attacker.tag, damage, criRate, criPoint);
         }
 
 

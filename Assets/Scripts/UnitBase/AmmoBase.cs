@@ -9,8 +9,15 @@ public class AmmoBase : MonoBehaviour {
     private string __Who_Shot = "";
 
     private int __Ammo_Damage;
+    public int _GET__Ammo_Damage
+    {
+        get { return __Ammo_Damage; }
+    }
 
     private Vector3 addedForce;
+
+    //크리 여부를 확인하고 값이 결정됨 true면 크리, 아니면 일반
+    public bool isItCritical;
 
     //해당 투사체가 적에게 명중 시 어떤 디버프를 걸 수 있는 지에 대한 정보도 필요함.
 
@@ -22,11 +29,23 @@ public class AmmoBase : MonoBehaviour {
     }
 
     //투사체가 수행하는 연산을 위한 값 초기화
-    public void __Init_Ammo(float speed, string tag, int damage)
+    public void __Init_Ammo(float speed, string tag, int damage, float criRate, float criPoint)
     {
         __Ammo_Speed = speed;
         __Who_Shot = tag;
         __Ammo_Damage = damage;
+
+        //투사체가 생성되는 시점에서 크리티컬 여부를 판별한다.
+        if (Random.Range(0.0f, 1.0f) <= criRate)
+        {
+            __Ammo_Damage = (int)(__Ammo_Damage * criPoint);
+
+            isItCritical = true;
+        }
+        else
+        {
+            isItCritical = false;
+        }
     }
 
     void OnTriggerEnter(Collider other)
@@ -42,7 +61,10 @@ public class AmmoBase : MonoBehaviour {
             //피격 관련 연산을 하고
             other.GetComponent<EnemyController>()._Enemy_Get_Hit(__Ammo_Damage);
 
-            //if()
+            //if (isItCritical)
+            //{
+            //    Debug.Log("Is Critical");
+            //}
 
             //투사체를 제거한다.
             Destroy(gameObject);

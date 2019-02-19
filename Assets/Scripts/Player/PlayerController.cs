@@ -86,7 +86,7 @@ public class PlayerController : MonoBehaviour {
     void Awake()
     {
         //이속, 회전속도, 체력, 마나, 파워 게이지, 공격력, 크리확률, 크리계수
-        __PLY_Stat.SampleInit(10.0f, 30.0f, 10, 10, 10, 1, 10.0f, 1.5f);
+        __PLY_Stat.SampleInit(10.0f, 30.0f, 10, 10, 10, 1, 0.1f, 2.0f);
 
         playerMoveSpeed = __PLY_Stat.__PUB_Move_Speed;
 
@@ -173,7 +173,7 @@ public class PlayerController : MonoBehaviour {
         //마우스 좌클릭 -> 전면 공격
         if (Input.GetMouseButtonDown(0) && _Is_On_CoolTime__Default_ATK)
         {
-            __PLY_Engine.__PLY_C_Engine.Default_ATK(ref defaultAmmo, ref playerFront, __PLY_Stat.__PUB_ATK__Val);
+            __PLY_Engine.__PLY_C_Engine.Default_ATK(ref defaultAmmo, ref playerFront, __PLY_Stat.__PUB_ATK__Val, __PLY_Stat.__PUB_Critical_Rate, __PLY_Stat.__PUB_Critical_P);
             //쿨타임을 사용하기 위한 코루틴. 따로 외부 클래스 제작함. 상세 항목은 해당 클래스 참조
             //나중에 쿨타임 값 같은 것도 따로 관리할 것
             __PLY_CoolTimer.StartCoroutine(__PLY_CoolTimer.Timer(1.0f, (input) => { _Is_On_CoolTime__Default_ATK = input; }, _Is_On_CoolTime__Default_ATK, (input) => { default_ATK_Remained_Time = input; }));
