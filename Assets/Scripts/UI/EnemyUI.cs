@@ -4,7 +4,8 @@ using System.Collections;
 
 public class EnemyUI : MonoBehaviour {
     private EnemyController sEnemyController; // Enemy Information
-    public  UnitCoolTimer sCoolTimer; // Cool Timer
+    private PlayerController sPlayerController; // Player Informtaion
+    public UnitCoolTimer sCoolTimer; // Cool Timer
 
     public Image iHealthBar; // Health Bar Image Sprite
     public TextMesh t3dDamage; // What show Damage
@@ -18,6 +19,7 @@ public class EnemyUI : MonoBehaviour {
         try
         {
             sEnemyController = GetComponent<EnemyController>();
+            sPlayerController = GameObject.Find("SamplePlayer").GetComponent<PlayerController>();
         }
         catch(System.Exception e)
         {
@@ -55,7 +57,19 @@ public class EnemyUI : MonoBehaviour {
     // 적이 포환에 맞았을 때 피해를 얼마나 입었는지 보여주는 함수
     private void ShowDamage(int damage)
     {
-        t3dDamage.text = damage.ToString();
-        StartCoroutine(sCoolTimer.Timer_Do_Once(1f, (input) => { bCoolTime = input; bTriggered = true; }, true));
+        if (sPlayerController.defaultAmmo.GetComponent<AmmoBase>().isItCritical) // 크리티컬인 경우
+        {
+            t3dDamage.characterSize = 0.4f;
+            t3dDamage.color = Color.red;
+            t3dDamage.text = ((float)damage * sPlayerController.__PLY_Stat.__PUB_Critical_P).ToString();
+            StartCoroutine(sCoolTimer.Timer_Do_Once(1.5f, (input) => { bCoolTime = input; bTriggered = true; }, true));
+        }
+        else // 크리티컬이 아닌 경우
+        {
+            t3dDamage.characterSize = 0.25f;
+            t3dDamage.color = Color.blue;
+            t3dDamage.text = damage.ToString();
+            StartCoroutine(sCoolTimer.Timer_Do_Once(1f, (input) => { bCoolTime = input; bTriggered = true; }, true));
+        }
     }
 }
