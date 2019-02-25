@@ -31,6 +31,9 @@ public class PlayerStat : Unit__Base_Stat {
             //일단 다 false로 초기화.
             base.__PUB_Stat_Locker.Add(false);
         }
+
+        //기본 마나 회복 작동을 위해 이것만 true로 초기화 한다.
+        __PUB_Stat_Locker[2] = true;
     }
 }
 
@@ -67,8 +70,6 @@ public class PlayerController : MonoBehaviour {
     //DB에서 읽쓰하는 기능이 추가되면 옮기고 수정해야됨. 겁나 귀찮겠다 ㅎㅎ
     public GameObject defaultAmmo;
 
-    public float playerMoveSpeed;
-
     //쿨타임 떄문에 임시로 적용한 bool 변수, 개선된 알고리즘이 생각나면 바꿔야 될 것
     private bool _Is_On_CoolTime__Default_ATK;
 
@@ -88,8 +89,6 @@ public class PlayerController : MonoBehaviour {
     {
         //이속, 회전속도, 체력, 마나, 파워 게이지, 공격력, 크리확률, 크리계수
         __PLY_Stat.SampleInit(10.0f, 30.0f, 10, 10, 10, 1, 0.1f, 2.0f);
-
-        playerMoveSpeed = __PLY_Stat.__PUB_Move_Speed;
 
         //Unit__Base_Combat_Engine이 Unit__Base_Movement_Engine에 접근 할 수 있도록 한다.
         __PLY_Engine.__PLY_C_Engine.__SET_unit_M_Engine = __PLY_Engine.__PLY_M_Engine;
@@ -174,7 +173,7 @@ public class PlayerController : MonoBehaviour {
         //마우스 좌클릭 -> 전면 공격
         if (Input.GetMouseButtonDown(0) && _Is_On_CoolTime__Default_ATK)
         {
-            __PLY_Engine.__PLY_C_Engine.Default_ATK(ref defaultAmmo, ref playerFront, __PLY_Stat.__PUB_ATK__Val, __PLY_Stat.__PUB_Critical_Rate, __PLY_Stat.__PUB_Critical_P);
+            __PLY_Engine.__PLY_C_Engine.Default_ATK(ref defaultAmmo, ref playerFront, __PLY_Stat.__PUB_ATK__Val, __PLY_Stat.__PUB_Critical_Rate, __PLY_Stat.__PUB_Critical_P, null);
             //쿨타임을 사용하기 위한 코루틴. 따로 외부 클래스 제작함. 상세 항목은 해당 클래스 참조
             //나중에 쿨타임 값 같은 것도 따로 관리할 것
             __PLY_CoolTimer.StartCoroutine(__PLY_CoolTimer.Timer(1.0f, (input) => { _Is_On_CoolTime__Default_ATK = input; }, _Is_On_CoolTime__Default_ATK, (input) => { default_ATK_Remained_Time = input; }));
@@ -189,22 +188,19 @@ public class PlayerController : MonoBehaviour {
         //Debug.Log(__PLY_Selected_Skills[0].time);
 
         //1번 스킬
-        if (Input.GetKey(KeyCode.Alpha1) && _Is_On_CoolTime_Skill[0])
+        if (Input.GetKeyDown(KeyCode.Alpha1))
         {
-            __PLY_Engine.__PLY_C_Engine.Using_Skill(ref defaultAmmo, ref playerFront, __PLY_Selected_Skills[0], __PLY_Stat, this);
-            __PLY_CoolTimer.StartCoroutine(__PLY_CoolTimer.Timer(__PLY_Selected_Skills[0].__GET_Skill_Cool_Time, (input) => { _Is_On_CoolTime_Skill[0] = input; }, _Is_On_CoolTime_Skill[0], (input) => { __PLY_Selected_Skills[0].time = input; }));
+            PLY_Controller_Using_Skill(0);
         }
         //2번 스킬
-        else if (Input.GetKey(KeyCode.Alpha2) && _Is_On_CoolTime_Skill[1])
+        else if (Input.GetKeyDown(KeyCode.Alpha2))
         {
-            __PLY_Engine.__PLY_C_Engine.Using_Skill(ref defaultAmmo, ref playerFront, __PLY_Selected_Skills[1], __PLY_Stat, this);
-            __PLY_CoolTimer.StartCoroutine(__PLY_CoolTimer.Timer(__PLY_Selected_Skills[1].__GET_Skill_Cool_Time, (input) => { _Is_On_CoolTime_Skill[1] = input; }, _Is_On_CoolTime_Skill[1], (input) => { __PLY_Selected_Skills[1].time = input; }));
+            PLY_Controller_Using_Skill(1);
         }
         //3번 스킬
-        else if (Input.GetKey(KeyCode.Alpha3) && _Is_On_CoolTime_Skill[2])
+        else if (Input.GetKeyDown(KeyCode.Alpha3))
         {
-            __PLY_Engine.__PLY_C_Engine.Using_Skill(ref defaultAmmo, ref playerFront, __PLY_Selected_Skills[2], __PLY_Stat, this);
-            __PLY_CoolTimer.StartCoroutine(__PLY_CoolTimer.Timer(__PLY_Selected_Skills[2].__GET_Skill_Cool_Time, (input) => { _Is_On_CoolTime_Skill[2] = input; }, _Is_On_CoolTime_Skill[2], (input) => { __PLY_Selected_Skills[2].time = input; }));
+            PLY_Controller_Using_Skill(2);
         }
         else
         { }
@@ -212,32 +208,77 @@ public class PlayerController : MonoBehaviour {
         //스피드 버프 OR 디버프 지속시간 종료 여부
         if (__PLY_Stat.__PUB_Stat_Locker[0])
         {
-            //스피드 버프 해제
+            //스피드 버프 OR 디버프 해제
             //스킬 넣는 부분은 일단 저런식으로 하는 수 밖에 없음
             //나중에 스킬 위치를 마음대로 바꿀 수 있도록 변경할 때 고민이 필요함
             __PLY_Engine.__PLY_M_Engine.Init_Speed_BUF_Amount();
             //스피드 버프 해제로 일단 간주
             __PLY_Stat.__PUB_Stat_Locker[0] = false;
         }
+
         //체력 버프 OR 디버프 지속시간 종료 여부
         if (__PLY_Stat.__PUB_Stat_Locker[1])
         {
 
         }
-        //마나 버프 OR 디버프 지속시간 종료 여부
+
+        //기본 마나 회복 지속시간 종료 여부
         if (__PLY_Stat.__PUB_Stat_Locker[2])
         {
+            //일단 1씩 회복한다.
+            __PLY_Stat.__GET_HIT__About_Mana(10, -1);
+            //다음 기본 마나 회복 시간까지 대기 
+            __PLY_Stat.__PUB_Stat_Locker[2] = false;
 
+            //일단 10초마다 마나를 회복하도록 결정
+            __PLY_CoolTimer.StartCoroutine(__PLY_CoolTimer.Timer_Do_Once(10.0f, (input) => { __PLY_Stat.__PUB_Stat_Locker[2] = input; }, false));
         }
+
         //PP 버프 OR 디버프 지속시간 종료 여부
         if (__PLY_Stat.__PUB_Stat_Locker[3])
         {
 
         }
+
         //크리티컬 버프 OR 디버프 지속시간 종료 여부
         if (__PLY_Stat.__PUB_Stat_Locker[4])
         {
 
         }
+    }
+
+    private void PLY_Controller_Using_Skill(int index)
+    {
+        //쿨타임이 지났을 때
+        if (_Is_On_CoolTime_Skill[index])
+        {
+            //마나가 충분할 때
+            if (__PLY_Stat.__Is_Mana_Enough(__PLY_Selected_Skills[index].__GET_Skill_Use_Amount))
+            {
+                //필요한 마나 소모
+                __PLY_Stat.__GET_HIT__About_Mana(__PLY_Selected_Skills[index].__GET_Skill_Use_Amount, 1);
+
+                //UnitBaseEngine.Using_Skill에서 스킬 기능 처리
+                __PLY_Engine.__PLY_C_Engine.Using_Skill(ref defaultAmmo, ref playerFront, __PLY_Selected_Skills[index], __PLY_Stat, this, true);
+                //쿨타임 관련 처리
+                __PLY_CoolTimer.StartCoroutine(__PLY_CoolTimer.Timer(__PLY_Selected_Skills[index].__GET_Skill_Cool_Time, (input) => { _Is_On_CoolTime_Skill[index] = input; }, _Is_On_CoolTime_Skill[index], (input) => { __PLY_Selected_Skills[index].time = input; }));
+            }
+            //마나가 부족할 때
+            else
+            {
+                Debug.Log("Not Enough Mana");
+            }
+        }
+        //쿨타임이 아직 안 지났을 때
+        else
+        {
+            Debug.Log("CoolTime is not Over");
+        }
+    }
+
+    //플레이어가 디버프 스킬에 피격받았을 때의 함수
+    public void _Player_GET_DeBuff(SkillBaseStat whichDeBuffSkill_Hit_Player)
+    {
+        __PLY_Engine.__PLY_C_Engine.Using_Skill(ref defaultAmmo, ref playerFront, whichDeBuffSkill_Hit_Player, __PLY_Stat, this, false);
     }
 }

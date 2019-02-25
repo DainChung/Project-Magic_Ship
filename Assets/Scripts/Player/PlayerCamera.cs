@@ -18,7 +18,7 @@ public class PlayerCamera : MonoBehaviour {
         //나중에 변경할 것
         playerObject = GameObject.Find("SamplePlayer");
 
-        cameraSpeed = playerObject.GetComponent<PlayerController>().playerMoveSpeed;
+        cameraSpeed = playerObject.GetComponent<PlayerController>().__PLY_Stat.__PUB_Move_Speed;
 
         xDist = transform.position.x - playerObject.transform.position.x;
         yDist = transform.position.y - playerObject.transform.position.y;

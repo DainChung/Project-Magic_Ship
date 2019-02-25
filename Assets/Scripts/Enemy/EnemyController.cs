@@ -148,7 +148,7 @@ public class EnemyEngine : Unit__Base_Engine {
     public void Attack_Default(float coolTime, ref GameObject threw_Ammo, ref Transform attacker, int damage, int boolIndex, float criRate, float criPoint)
     {
         //공격
-        __ENE_C_Engine.Default_ATK(ref threw_Ammo, ref attacker, damage, criRate, criPoint);
+        __ENE_C_Engine.Default_ATK(ref threw_Ammo, ref attacker, damage, criRate, criPoint, null);
 
         //딜레이
         enemyCoolTimer.StartCoroutine(enemyCoolTimer.Timer(coolTime, (input) => { enemy_is_ON_CoolTime[boolIndex] = input; }, true, (input) => { dummyFloatTime[0] = input; }));
@@ -250,5 +250,11 @@ public class EnemyController : MonoBehaviour {
         //크리티컬 여부에 따라 UI 형식이 달라지기 때문에 관련 정보 송신
         sEnemyUI._SET_isItCritical = isItCritical;
         sEnemyUI.SendMessage("ShowDamage", damage);
+    }
+
+    //Enemy가 디버프 스킬에 피격받았을 때의 함수
+    public void _Enemy__GET_DeBuff(SkillBaseStat whichDeBuffSkill_Hit_Enemy)
+    {
+        __ENE_Engine.__ENE_C_Engine.Using_Skill_ENE(ref default_Ammo, ref enemy_Front, whichDeBuffSkill_Hit_Enemy, __ENE_Stat, this, false);
     }
 }

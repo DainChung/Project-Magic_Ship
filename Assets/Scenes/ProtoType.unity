@@ -747,7 +747,7 @@ Transform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 11
+  m_RootOrder: 10
 --- !u!114 &680192334
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -953,7 +953,7 @@ Prefab:
       objectReference: {fileID: 0}
     - target: {fileID: 4000012366300378, guid: 9bea4527962874a4ba28f68547495ba4, type: 2}
       propertyPath: m_RootOrder
-      value: 10
+      value: 11
       objectReference: {fileID: 0}
     - target: {fileID: 4000012366300378, guid: 9bea4527962874a4ba28f68547495ba4, type: 2}
       propertyPath: m_LocalScale.y
@@ -1364,7 +1364,6 @@ MonoBehaviour:
   playerLeft: {fileID: 1536080622}
   defaultAmmo: {fileID: 1000011187863916, guid: 0b9ad18486355b34b8e303a9b76595e2,
     type: 2}
-  playerMoveSpeed: 0
 --- !u!23 &1653395940
 MeshRenderer:
   m_ObjectHideFlags: 0

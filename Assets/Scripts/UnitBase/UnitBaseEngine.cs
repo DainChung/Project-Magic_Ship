@@ -85,75 +85,258 @@ public class Unit__Base_Engine {
         }
 
         //하나의 투사체를 일직선 상으로 발사하는 기본 공격 (디버프 유무를 나중에 추가할 것)
-        public void Default_ATK(ref GameObject threw_Ammo, ref Transform attacker, int damage, float criRate, float criPoint)
+        public void Default_ATK(ref GameObject threw_Ammo, ref Transform attacker, int damage, float criRate, float criPoint, SkillBaseStat whichSkill)
         {
             GameObject spawned_OBJ;
             spawned_OBJ = (GameObject)(MonoBehaviour.Instantiate(threw_Ammo, attacker.position, attacker.rotation));
             //투사체가 날아가는 속도를 특정 값으로 설정. 나중엔 DB에서 긁어올 것
-            spawned_OBJ.GetComponent<AmmoBase>().__Init_Ammo(55.0f, attacker.tag, damage, criRate, criPoint);
+            spawned_OBJ.GetComponent<AmmoBase>().__Init_Ammo(55.0f, attacker.tag, damage, criRate, criPoint, whichSkill);
         }
 
 
         //Ammo부분은 역시 SkillBaseStat으로 나중에 옮기는 편이 좋을 것으로 보임.
         //atttacker부분은 조금 애매함.
         //Player 전용
-        public void Using_Skill(ref GameObject threw_Ammo, ref Transform attacker, SkillBaseStat whichSkill, Unit__Base_Stat unitStat, PlayerController plyC)
+        public void Using_Skill(ref GameObject threw_Ammo, ref Transform attacker, SkillBaseStat whichSkill, Unit__Base_Stat unitStat, PlayerController plyC, bool isPlayerUsingThis)
         {
-            //버프 타입의 스킬
-            if (whichSkill.__GET_Skill_Code_M == _SKILL_CODE_Main.BUF)
-            {
-                //체력 버프 스킬 (일단 FREQ 버전으로 한정할 것)
-                if (whichSkill.__GET_Skill_Code_S == _SKILL_CODE_Sub.HP)
-                    _Skill_ADD_Health_Freq(whichSkill, unitStat, plyC);
-                else if (whichSkill.__GET_Skill_Code_S == _SKILL_CODE_Sub.SP)
-                    unit_M_Engine.__GET_BUFF__About_Speed(1, whichSkill, unitStat, plyC);
-                else { }
-            }
-            //공격 타입의 스킬 (일단 체력 깎는 디버프 공격 스킬로 한정할 것)
-            else if (whichSkill.__GET_Skill_Code_M == _SKILL_CODE_Main.ATK)
+            //필살기인 경우
+            if (whichSkill.__GET_Skill_Code_M == _SKILL_CODE_Main.FIN)
             {
 
             }
-            //디버프 타입의 스킬
+            //일반 스킬인 경우
+            else
+            {
+                //HP에 관여하는 스킬들
+                if (whichSkill.__GET_Skill_Code_S == _SKILL_CODE_Sub.HP)
+                {
+                    _Skill_HP(ref threw_Ammo, ref attacker, whichSkill, unitStat, plyC, isPlayerUsingThis);
+                }
+                //MP에 관여하는 스킬들 (회복하는 경우에 한정)
+                else if (whichSkill.__GET_Skill_Code_S == _SKILL_CODE_Sub.MP)
+                {
+
+                }
+                //특별한 기능 없음
+                else if (whichSkill.__GET_Skill_Code_S == _SKILL_CODE_Sub.NULL)
+                {
+
+                }
+                //PP에 관여하는 스킬들 (회복하는 경우에 한정)
+                else if (whichSkill.__GET_Skill_Code_S == _SKILL_CODE_Sub.PP)
+                {
+
+                }
+                //이동속도에 관여하는 스킬들
+                else if (whichSkill.__GET_Skill_Code_S == _SKILL_CODE_Sub.SP)
+                {
+                    _SKill_SP(ref threw_Ammo, whichSkill, unitStat, plyC, isPlayerUsingThis);
+                }
+                //잘못된 스킬
+                else
+                {
+
+                }
+            }
+        }
+
+        //HP에 관여하는 스킬들
+        //플레이어 전용
+        private void _Skill_HP(ref GameObject threw_Ammo, ref Transform attacker, SkillBaseStat whichSkill, Unit__Base_Stat unitStat, PlayerController plyC, bool isPlayerUsingThis)
+        {
+            int isHit_OR_Heal = 0;
+
+            //도트 힐 OR 도트 딜
+            if (whichSkill.__GET_Skill_Code_T == _SKILL_CODE_Time.FREQ)
+            {
+                //도트 힐 스킬을 사용할 때 OR 도트 딜 디버프를 받았을 때
+                if (whichSkill.__GET_Skill_Code_M == _SKILL_CODE_Main.BUF || !(isPlayerUsingThis))
+                {
+                    //플레이어가 사용한 HP 도트 힐 스킬이면
+                    if (isPlayerUsingThis)
+                    {
+                        //__Get_HIT__About_Health_FREQ가 HP 도트 힐을 수행하도록 한다.
+                        isHit_OR_Heal = -1;
+                    }
+                    //플레이어가 HP 도트 딜 스킬에 피격된 거면
+                    else if (!(isPlayerUsingThis))
+                    {
+                        //__Get_HIT__About_Health_FREQ가 HP 도트 딜을 수행하도록 한다.
+                        isHit_OR_Heal = 1;
+                    }
+                    //오류
+                    else
+                    {
+                    }
+
+
+                    //그놈의 StartCoroutine 때문에 PlayerController를 받아와서 이렇게 이상한 형태로 작업함. 후에 다른 방법 알아낸다면 수정 필요
+                    plyC.StartCoroutine(unitStat.__Get_HIT__About_Health_FREQ(whichSkill.__GET_Skill_ING_Time, 1.0f, (int)(whichSkill.__GET_Skill_Rate), isHit_OR_Heal));
+                }
+                //상대에게 도트 딜을 넣을 스킬
+                else if (whichSkill.__GET_Skill_Code_M == _SKILL_CODE_Main.DBF)
+                {
+                    //디버프가 담긴 하나의 투사체를 발사한다.
+                    //투사체의 외형 바꾸기는 일단 넘어갈 것.
+                    Default_ATK(ref threw_Ammo, ref attacker, unitStat.__PUB_ATK__Val, unitStat.__PUB_Critical_Rate, unitStat.__PUB_Critical_P, whichSkill);
+                }
+                //오류
+                else
+                {
+
+                }
+            }
+            //일반 힐
+            else if (whichSkill.__GET_Skill_Code_T == _SKILL_CODE_Time.NULL)
+            {
+
+            }
+            //오류
+            else
+            {
+
+            }
+        }
+
+        //SP(이동속도)에 관여하는 스킬들
+        private void _SKill_SP(ref GameObject threw_Ammo, SkillBaseStat whichSkill, Unit__Base_Stat unitStat, PlayerController plyC, bool isPlayerUsingThis)
+        {
+            int isBuFF_OR_DeBuff = 0;
+
+            //SP(이동속도) 버프 스킬 OR 플레이어가 SP(이동속도) 디버프를 받았을 때
+            if (whichSkill.__GET_Skill_Code_M == _SKILL_CODE_Main.BUF || !(isPlayerUsingThis))
+            {
+                //플레이어가 사용한 거면
+                if (isPlayerUsingThis)
+                {
+                    //__GET_BUFF__About_Speed가 SP(이동속도) 버프를 수행한다.
+                    isBuFF_OR_DeBuff = 1;
+                }
+                //플레이어가 SP(이동속도) 디버프 스킬에 피격된 거면
+                else if (!(isPlayerUsingThis))
+                {
+                    //__GET_BUFF__About_Speed가 SP(이동속도) 디버프를 수행한다.
+                    isBuFF_OR_DeBuff = -1;
+                }
+                //오류
+                else
+                {
+                }
+
+                //이동속도 버프 OR 디버프를 수행한다.
+                unit_M_Engine.__GET_BUFF__About_Speed(isBuFF_OR_DeBuff, whichSkill, unitStat, plyC);
+            }
+            //상대에게 SP(이동속도) 디버프를 걸 때 스킬
             else if (whichSkill.__GET_Skill_Code_M == _SKILL_CODE_Main.DBF)
             {
 
             }
-            //필살기 타입의 스킬
-            else if (whichSkill.__GET_Skill_Code_M == _SKILL_CODE_Main.FIN)
+            //오류
+            else
             {
+
             }
-            //오류(지정된 타입의 스킬이 아님)
-            else { }
         }
 
+        //=================================================================================================================================================================================
+        //Enemy 전용 스킬 함수
+        public void Using_Skill_ENE(ref GameObject threw_Ammo, ref Transform attacker, SkillBaseStat whichSkill, Unit__Base_Stat unitStat, EnemyController eneC, bool isEnemyUsingThis)
+        {
+            //필살기인 경우
+            if (whichSkill.__GET_Skill_Code_M == _SKILL_CODE_Main.FIN)
+            {
+
+            }
+            //일반 스킬인 경우
+            else
+            {
+                //HP에 관여하는 스킬들
+                if (whichSkill.__GET_Skill_Code_S == _SKILL_CODE_Sub.HP)
+                {
+                    _Skill_HP_ENE(ref threw_Ammo, whichSkill, unitStat, eneC, isEnemyUsingThis);
+                }
+                //MP에 관여하는 스킬들 (회복하는 경우에 한정)
+                else if (whichSkill.__GET_Skill_Code_S == _SKILL_CODE_Sub.MP)
+                {
+
+                }
+                //특별한 기능 없음
+                else if (whichSkill.__GET_Skill_Code_S == _SKILL_CODE_Sub.NULL)
+                {
+
+                }
+                //PP에 관여하는 스킬들 (회복하는 경우에 한정)
+                else if (whichSkill.__GET_Skill_Code_S == _SKILL_CODE_Sub.PP)
+                {
+
+                }
+                //이동속도에 관여하는 스킬들
+                else if (whichSkill.__GET_Skill_Code_S == _SKILL_CODE_Sub.SP)
+                {
+                    //_SKill_SP_ENE(ref threw_Ammo, whichSkill, unitStat, eneC, isEnemyUsingThis);
+                }
+                //잘못된 스킬
+                else
+                {
+
+                }
+            }
+        }
+
+        //HP에 관여하는 스킬들
         //Enemy 전용
-        //아직 미구현
-        public void Using_Skill()
+        private void _Skill_HP_ENE(ref GameObject threw_Ammo, SkillBaseStat whichSkill, Unit__Base_Stat unitStat, EnemyController eneC, bool isEnemyUsingThis)
         {
+            int isHit_OR_Heal = 0;
 
-        }
+            //도트 힐 OR 도트 딜
+            if (whichSkill.__GET_Skill_Code_T == _SKILL_CODE_Time.FREQ)
+            {
+                //도트 힐 스킬을 사용할 때 OR 도트 딜 디버프를 받았을 때
+                if (whichSkill.__GET_Skill_Code_M == _SKILL_CODE_Main.BUF || !(isEnemyUsingThis))
+                {
+                    //Enemy가 사용한 HP 도트 힐 스킬이면
+                    if (isEnemyUsingThis)
+                    {
+                        //__Get_HIT__About_Health_FREQ가 HP 도트 힐을 수행하도록 한다.
+                        isHit_OR_Heal = -1;
+                    }
+                    //Enemy가 HP 도트 딜 스킬에 피격된 거면
+                    else if (!(isEnemyUsingThis))
+                    {
+                        //__Get_HIT__About_Health_FREQ가 HP 도트 딜을 수행하도록 한다.
+                        isHit_OR_Heal = 1;
+                    }
+                    //오류
+                    else
+                    {
+                    }
 
-        //체력, 마나, 필살기 게이지 등등을 회복하는 스킬들
-        //체력을 몇 초당 얼만큼 회복하는 형태의 스킬
-        //플레이어 전용
-        private void _Skill_ADD_Health_Freq(SkillBaseStat whichSkill, Unit__Base_Stat unitStat, PlayerController plyC)
-        {
-            //힐 형태로 넣는다.(isHit_OR_Heal == -1)
-            //그놈의 StartCoroutine 때문에 PlayerController를 받아와서 이렇게 이상한 형태로 작업함. 후에 다른 방법 알아내서 수정 필요
-            plyC.StartCoroutine(  unitStat.__Get_HIT__About_Health_FREQ(whichSkill.__GET_Skill_ING_Time, 1.0f, (int)(whichSkill.__GET_Skill_Rate), -1)  );
-        }
 
-        //Enemy 전용
-        private void _Skill_ADD_Health_Freq()
-        {
-        }
+                    //그놈의 StartCoroutine 때문에 EnemyController를 받아와서 이렇게 이상한 형태로 작업함. 후에 다른 방법 알아낸다면 수정 필요
+                    eneC.StartCoroutine(unitStat.__Get_HIT__About_Health_FREQ(whichSkill.__GET_Skill_ING_Time, 1.0f, (int)(whichSkill.__GET_Skill_Rate), isHit_OR_Heal));
+                }
+                //상대에게 도트 딜을 넣을 스킬
+                else if (whichSkill.__GET_Skill_Code_M == _SKILL_CODE_Main.DBF)
+                {
 
-        //공격 스킬
-        //상대방 체력을 몇 초당 얼만큼 깎아내는 디버프 투사체 발사 스킬(1개만 발사)
-        private void _Skill_ATK_Health_DEBUFF_Freq()
-        {
+                }
+                //오류
+                else
+                {
 
+                }
+            }
+            //일반 힐
+            else if (whichSkill.__GET_Skill_Code_T == _SKILL_CODE_Time.NULL)
+            {
+
+            }
+            //오류
+            else
+            {
+
+            }
         }
     }
 }
