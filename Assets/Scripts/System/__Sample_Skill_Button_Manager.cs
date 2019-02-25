@@ -83,7 +83,7 @@ public class __Sample_Skill_Button_Manager : MonoBehaviour {
     public Transform saveButton;
 
     public Transform[] sampleSkillInventory = new Transform[3];
-    public Transform[] sampleButtons = new Transform[5];
+    public Transform[] sampleButtons = new Transform[10];
 
     private List<SkillBaseStat> allSkills = new List<SkillBaseStat>();
     private List<SkillBaseStat> equippedSkills = new List<SkillBaseStat>();
@@ -106,7 +106,7 @@ public class __Sample_Skill_Button_Manager : MonoBehaviour {
         saveButton.GetComponent<Button>().onClick.AddListener(() => Save_EquippedSkills());
 
         //스킬 버튼에 스킬 이름들이 나오도록 한다. (장착 스킬 제외)
-        for (int i = 0; i < 5; i++)
+        for (int i = 0; i < sampleButtons.Length; i++)
         {
             string logForSample = allSkills[i].__GET_Skill_Name;
 

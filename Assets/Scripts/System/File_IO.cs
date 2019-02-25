@@ -109,12 +109,22 @@ namespace File_IO {
             //파일의 모든 내용을 읽은 다음 찾고자 하는 단어가 있는 string을 반환한다.
             foreach (string line in readList)
             {
+                //Debug.Log("?????: " + line + ", HelloWhatThe: " + wannaSearch);
                 if (line.Contains(wannaSearch))
                 {
+                    //Debug.Log("Hello: " + wannaSearch + ", WhatThe: " + line);
                     foundString = line;
                     //하나만 찾고 바로 탈출한다.
                     break;
                 }
+            }
+
+            //원하는 내용을 찾지 못했을 때
+            if (foundString == "")
+            {
+                //오류 문구로 변환한다.
+                //나중에 namespace PMS_Exception을 만들 때 상수 str로 넣어두고 try catch를 활용할 것
+                foundString = "CANNOT_FIND";
             }
 
             return foundString;
@@ -123,6 +133,8 @@ namespace File_IO {
         //찾은 내용을 게임 내에서 사용할 수 있도록 가공하는 함수(SkillBaseStat한정)
         public static SkillBaseStat __Get_Searched_SkillBaseStat(string wannaSearch)
         {
+
+            //Debug.Log("WannaSearch: "+wannaSearch);
             //가공이 되지 않은 SkillBaseStat자료를 가공함수에 투입하고 그걸 그대로 반환
             //아래에 작성된 __Get_All_SkillBaseStat 함수로 인해 이 함수를 이 형태로 유지할 것
             //다른 좋은 생각 있으면 추후 수정 요구
@@ -144,9 +156,10 @@ namespace File_IO {
             //1차 가공
             while (baseStatString != "")
             {
+                //Debug.Log("baseString: " + baseStatString);
                 //문자열 맨 처음에서부터 가장 가까운 ','까지 piece로 복사한다.
                 piece = baseStatString.Substring(0, baseStatString.IndexOf(','));
-
+                //Debug.Log("piece:" + piece);
                 //복사한 문자열을 pieces_OF_BaseStatString에 넣는다.
                 pieces_OF_BaseStatString.Add(piece);
 

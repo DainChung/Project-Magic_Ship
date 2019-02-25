@@ -114,6 +114,15 @@ public class Unit__Base_Engine {
             {
 
             }
+            //디버프 타입의 스킬
+            else if (whichSkill.__GET_Skill_Code_M == _SKILL_CODE_Main.DBF)
+            {
+
+            }
+            //필살기 타입의 스킬
+            else if (whichSkill.__GET_Skill_Code_M == _SKILL_CODE_Main.FIN)
+            {
+            }
             //오류(지정된 타입의 스킬이 아님)
             else { }
         }
