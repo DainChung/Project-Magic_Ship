@@ -3,4 +3,4 @@ DI &amp; CH
 
 This is just for graduation
 
-Do not Use it For Commercial Purpose
+Do not Use it For Commercial Purpose without our Permission
