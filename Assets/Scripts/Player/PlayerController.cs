@@ -283,7 +283,7 @@ public class PlayerController : MonoBehaviour {
         //쿨타임이 아직 안 지났을 때
         else
         {
-            Debug.Log("CoolTime is not Over");
+            //Debug.Log("CoolTime is not Over");
         }
     }
 

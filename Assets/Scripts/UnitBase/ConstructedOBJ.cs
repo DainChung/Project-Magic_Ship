@@ -30,7 +30,16 @@ public class ConstructedOBJ : MonoBehaviour {
         timer = transform.GetComponent<UnitCoolTimer>();
 
         //일단 SphereCollider로 한다.
-        transform.GetComponent<BoxCollider>().isTrigger = true;
+        try
+        {
+            transform.GetComponent<BoxCollider>().isTrigger = true;
+        }
+        catch (UnityEngine.MissingComponentException)
+        {
+            Debug.Log("NullError");
+            gameObject.AddComponent<BoxCollider>();
+            transform.GetComponent<BoxCollider>().isTrigger = true;
+        }
 	}
 	
 	// Update is called once per frame
@@ -70,8 +79,17 @@ public class ConstructedOBJ : MonoBehaviour {
                 player._Set_SPW_MOS_Skill_Activated = false;
                 //설치를 완료하고 timer를 작동시킨다.
                 isConstructed = true;
-                
-                transform.GetComponent<BoxCollider>().isTrigger = false;
+
+                try
+                {
+                    transform.GetComponent<BoxCollider>().isTrigger = false;
+                }
+                catch (UnityEngine.MissingComponentException)
+                {
+                    Debug.Log("NullError");
+                    gameObject.AddComponent<BoxCollider>();
+                    transform.GetComponent<BoxCollider>().isTrigger = false;
+                }
             }
         }
         //마우스로 설치가 완료되고 나서 작동(수정 가능성 있음)
