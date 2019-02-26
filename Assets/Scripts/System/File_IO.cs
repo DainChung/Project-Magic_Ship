@@ -195,6 +195,8 @@ namespace File_IO {
                 result._Skill_Code_M = SkillBaseCode._SKILL_CODE_Main.ATK;
             else if (str_FOR_Main == "FIN")
                 result._Skill_Code_M = SkillBaseCode._SKILL_CODE_Main.FIN;
+            else if (str_FOR_Main == "SPW")
+                result._Skill_Code_M = SkillBaseCode._SKILL_CODE_Main.SPW;
             //오류
             else
             {}
@@ -210,6 +212,8 @@ namespace File_IO {
                 result._Skill_Code_S = SkillBaseCode._SKILL_CODE_Sub.PP;
             else if (str_FOR_Sub == "SP")
                 result._Skill_Code_S = SkillBaseCode._SKILL_CODE_Sub.SP;
+            else if (str_FOR_Sub == "MOS")
+                result._Skill_Code_S = SkillBaseCode._SKILL_CODE_Sub.MOS;
             //오류
             else
             { }

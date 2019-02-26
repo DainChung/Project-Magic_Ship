@@ -65,15 +65,18 @@ public class PlayerController : MonoBehaviour {
     //좌측
     public Transform playerLeft;
 
-    //기본덕인 투사체
-    //나중엔 여기서 안 하고 SkillBaseStat에 저장했다가 사용할 수도 있음.
-    //DB에서 읽쓰하는 기능이 추가되면 옮기고 수정해야됨. 겁나 귀찮겠다 ㅎㅎ
-    public GameObject defaultAmmo;
-
-    //쿨타임 떄문에 임시로 적용한 bool 변수, 개선된 알고리즘이 생각나면 바꿔야 될 것
+    //쿨타임 때문에 임시로 적용한 bool 변수, 개선된 알고리즘이 생각나면 바꿔야 될 것
     private bool _Is_On_CoolTime__Default_ATK;
 
     private bool[] _Is_On_CoolTime_Skill = new bool[3];
+
+    //_SKILL_CODE_Main.SPW 스킬 중 _SKILL_CODE_Sub.MOS값을 갖는 스킬 사용 시 마우스 사용을 위해 투입된 bool 값
+    private bool _SPW_MOS_Skill_Activated = false;
+    //_SPW_MOS_Skill_Activated 변수의 값을 외부에서 설정하기 위한 변수
+    public bool _Set_SPW_MOS_Skill_Activated
+    {
+        set { _SPW_MOS_Skill_Activated = value; }
+    }
 
     //Defualt_ATK 자체를 SkillBaseStat 형태로 사용하기 전까진 임시로 사용할 것
     private float default_ATK_Remained_Time;
@@ -104,6 +107,7 @@ public class PlayerController : MonoBehaviour {
         {
             Debug.Log("ID: " + forDebug.__Get_Skill_ID + ", Name: " + forDebug.__GET_Skill_Name + ", Rate:" + forDebug.__GET_Skill_Rate);
             Debug.Log("CoolT: " + forDebug.__GET_Skill_Cool_Time + ", IngT: " + forDebug.__GET_Skill_ING_Time + ", UseAmount:" + forDebug.__GET_Skill_Use_Amount);
+            Debug.Log("Code_Main: " + forDebug.__GET_Skill_Code_M + ", Code_Sub: " + forDebug.__GET_Skill_Code_S + ", Code_Time:" + forDebug.__GET_Skill_Code_T);
         }
 
         _Is_On_CoolTime__Default_ATK = true;
@@ -124,6 +128,11 @@ public class PlayerController : MonoBehaviour {
 	// Update is called once per frame
 	void Update ()
     {
+        if (transform.position.y >= 5.0f)
+        {
+            transform.position.Set(transform.position.x, 5.0f, transform.position.z);
+        }
+
         //기본 이동
         if (Input.GetKey(KeyCode.W))
         {
@@ -171,9 +180,10 @@ public class PlayerController : MonoBehaviour {
 
         //기본 공격
         //마우스 좌클릭 -> 전면 공격
-        if (Input.GetMouseButtonDown(0) && _Is_On_CoolTime__Default_ATK)
+        //마우스 좌클릭 && 기본 공격 쿨타임 끝남 && 마우스로 구조물 설치하는 스킬을 사용하고 있지 않을 때
+        if (Input.GetMouseButtonDown(0) && _Is_On_CoolTime__Default_ATK && !(_SPW_MOS_Skill_Activated))
         {
-            __PLY_Engine.__PLY_C_Engine.Default_ATK(ref defaultAmmo, ref playerFront, __PLY_Stat.__PUB_ATK__Val, __PLY_Stat.__PUB_Critical_Rate, __PLY_Stat.__PUB_Critical_P, null);
+            __PLY_Engine.__PLY_C_Engine.Default_ATK(ref playerFront, __PLY_Stat.__PUB_ATK__Val, __PLY_Stat.__PUB_Critical_Rate, __PLY_Stat.__PUB_Critical_P, null);
             //쿨타임을 사용하기 위한 코루틴. 따로 외부 클래스 제작함. 상세 항목은 해당 클래스 참조
             //나중에 쿨타임 값 같은 것도 따로 관리할 것
             __PLY_CoolTimer.StartCoroutine(__PLY_CoolTimer.Timer(1.0f, (input) => { _Is_On_CoolTime__Default_ATK = input; }, _Is_On_CoolTime__Default_ATK, (input) => { default_ATK_Remained_Time = input; }));
@@ -187,18 +197,19 @@ public class PlayerController : MonoBehaviour {
 
         //Debug.Log(__PLY_Selected_Skills[0].time);
 
+        //마우스로 무언가를 설치해야 되는 스킬을 사용했고 아직 설치가 안 됬다면 모든 스킬을 사용할 수 없음
         //1번 스킬
-        if (Input.GetKeyDown(KeyCode.Alpha1))
+        if (Input.GetKeyDown(KeyCode.Alpha1) && !(_SPW_MOS_Skill_Activated))
         {
             PLY_Controller_Using_Skill(0);
         }
         //2번 스킬
-        else if (Input.GetKeyDown(KeyCode.Alpha2))
+        else if (Input.GetKeyDown(KeyCode.Alpha2) && !(_SPW_MOS_Skill_Activated))
         {
             PLY_Controller_Using_Skill(1);
         }
         //3번 스킬
-        else if (Input.GetKeyDown(KeyCode.Alpha3))
+        else if (Input.GetKeyDown(KeyCode.Alpha3) && !(_SPW_MOS_Skill_Activated))
         {
             PLY_Controller_Using_Skill(2);
         }
@@ -259,7 +270,7 @@ public class PlayerController : MonoBehaviour {
                 __PLY_Stat.__GET_HIT__About_Mana(__PLY_Selected_Skills[index].__GET_Skill_Use_Amount, 1);
 
                 //UnitBaseEngine.Using_Skill에서 스킬 기능 처리
-                __PLY_Engine.__PLY_C_Engine.Using_Skill(ref defaultAmmo, ref playerFront, __PLY_Selected_Skills[index], __PLY_Stat, this, true);
+                __PLY_Engine.__PLY_C_Engine.Using_Skill(ref playerFront, __PLY_Selected_Skills[index], __PLY_Stat, this, true);
                 //쿨타임 관련 처리
                 __PLY_CoolTimer.StartCoroutine(__PLY_CoolTimer.Timer(__PLY_Selected_Skills[index].__GET_Skill_Cool_Time, (input) => { _Is_On_CoolTime_Skill[index] = input; }, _Is_On_CoolTime_Skill[index], (input) => { __PLY_Selected_Skills[index].time = input; }));
             }
@@ -279,6 +290,6 @@ public class PlayerController : MonoBehaviour {
     //플레이어가 디버프 스킬에 피격받았을 때의 함수
     public void _Player_GET_DeBuff(SkillBaseStat whichDeBuffSkill_Hit_Player)
     {
-        __PLY_Engine.__PLY_C_Engine.Using_Skill(ref defaultAmmo, ref playerFront, whichDeBuffSkill_Hit_Player, __PLY_Stat, this, false);
+        __PLY_Engine.__PLY_C_Engine.Using_Skill(ref playerFront, whichDeBuffSkill_Hit_Player, __PLY_Stat, this, false);
     }
 }

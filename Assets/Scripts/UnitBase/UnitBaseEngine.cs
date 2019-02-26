@@ -84,25 +84,47 @@ public class Unit__Base_Engine {
             set { unit_M_Engine = value; }
         }
 
+        //소환할 각종 투사체 및 오브젝트들이 있는 경로
+        //Resources.Load 함수에 대한 설명은 하단의 Default_ATK 함수 주석 부분 참조
+        private string prefabBulletPath = "Prefabs/Bullet/";
+
         //하나의 투사체를 일직선 상으로 발사하는 기본 공격 (디버프 유무를 나중에 추가할 것)
-        public void Default_ATK(ref GameObject threw_Ammo, ref Transform attacker, int damage, float criRate, float criPoint, SkillBaseStat whichSkill)
+        public void Default_ATK(ref Transform attacker, int damage, float criRate, float criPoint, SkillBaseStat whichSkill)
         {
+            //"Assets/Resources/Prefabs/Bullets" 경로에서 직접 Prefab을 뽑아쓰는 쪽으로 변경
+
+            //Resources.Load를 쓸 때는 "Assets/Resources" 경로 내부의 파일에만 접근할 수 있으며
+            //Resources.Load("Assets/Resources/<임의폴더0>/<임의폴더1>/<읽으려는거>") 이렇게 쓰면 안 되고
+            //Resources.Load("<임의폴더0>/<임의폴더1>/<읽으려는거>") as <자료형> 이런 식으로 써야 된다.
+
+            //읽으려는게 "Assets/Resources" 안에 있지만 그 하위 폴더에 없는 거면
+            //Resources.Load("<읽으려는거>") as <자료형> 이렇게 쓰면 된다.
+            GameObject threw_Ammo = Resources.Load(prefabBulletPath + "SampleBullet") as GameObject;
+            //나중에는 SkillBaseStat에 private string bulletName 변수를 만들고 그것을 읽어오도록 할 것
+            //예시)  GameObject threw_Ammo = Resources.Load(prefabBulletPath + whichSkill.bulletName) as GameObject;
+
+            //private string bulletName 변수는 Sample__SkillDataBase.csv에서 읽어오도록 만들것
+
             GameObject spawned_OBJ;
             spawned_OBJ = (GameObject)(MonoBehaviour.Instantiate(threw_Ammo, attacker.position, attacker.rotation));
             //투사체가 날아가는 속도를 특정 값으로 설정. 나중엔 DB에서 긁어올 것
             spawned_OBJ.GetComponent<AmmoBase>().__Init_Ammo(55.0f, attacker.tag, damage, criRate, criPoint, whichSkill);
         }
 
-
         //Ammo부분은 역시 SkillBaseStat으로 나중에 옮기는 편이 좋을 것으로 보임.
         //atttacker부분은 조금 애매함.
         //Player 전용
-        public void Using_Skill(ref GameObject threw_Ammo, ref Transform attacker, SkillBaseStat whichSkill, Unit__Base_Stat unitStat, PlayerController plyC, bool isPlayerUsingThis)
+        public void Using_Skill(ref Transform attacker, SkillBaseStat whichSkill, Unit__Base_Stat unitStat, PlayerController plyC, bool isPlayerUsingThis)
         {
             //필살기인 경우
             if (whichSkill.__GET_Skill_Code_M == _SKILL_CODE_Main.FIN)
             {
-
+                
+            }
+            //일반 스킬 중 투사체 외에 무언가를 소환하는 스킬인 경우
+            else if (whichSkill.__GET_Skill_Code_M == _SKILL_CODE_Main.SPW)
+            {
+                _Skill_Spawn(whichSkill, plyC);
             }
             //일반 스킬인 경우
             else
@@ -110,7 +132,7 @@ public class Unit__Base_Engine {
                 //HP에 관여하는 스킬들
                 if (whichSkill.__GET_Skill_Code_S == _SKILL_CODE_Sub.HP)
                 {
-                    _Skill_HP(ref threw_Ammo, ref attacker, whichSkill, unitStat, plyC, isPlayerUsingThis);
+                    _Skill_HP(ref attacker, whichSkill, unitStat, plyC, isPlayerUsingThis);
                 }
                 //MP에 관여하는 스킬들 (회복하는 경우에 한정)
                 else if (whichSkill.__GET_Skill_Code_S == _SKILL_CODE_Sub.MP)
@@ -130,7 +152,7 @@ public class Unit__Base_Engine {
                 //이동속도에 관여하는 스킬들
                 else if (whichSkill.__GET_Skill_Code_S == _SKILL_CODE_Sub.SP)
                 {
-                    _SKill_SP(ref threw_Ammo, whichSkill, unitStat, plyC, isPlayerUsingThis);
+                    _SKill_SP(whichSkill, unitStat, plyC, isPlayerUsingThis);
                 }
                 //잘못된 스킬
                 else
@@ -140,9 +162,39 @@ public class Unit__Base_Engine {
             }
         }
 
+        //투사체 외에 무언가를 소환하는 스킬들
+        //일단 플레이어 전용으로만 작성
+        private void _Skill_Spawn(SkillBaseStat whichSkill, PlayerController plyC)
+        {
+
+            //7번 스킬 지형소환처럼 마우스로 투사체가 아닌 물체를 소환하는 스킬
+            if (whichSkill.__GET_Skill_Code_S == _SKILL_CODE_Sub.MOS)
+            {
+                //따로 만들어둔 SampleConstructedOBJ를 소환하도록 한다.
+                GameObject constructedOBJ = Resources.Load(prefabBulletPath + "SampleConstructedOBJ") as GameObject;
+
+                //소환할 오브젝트 소환하고 값 설정
+                GameObject spawned_OBJ;
+                spawned_OBJ = (GameObject)(MonoBehaviour.Instantiate(constructedOBJ, plyC.transform.position, plyC.transform.rotation));
+
+                spawned_OBJ.GetComponent<ConstructedOBJ>().__Init_ConstructedOBJ(whichSkill, plyC);
+            }
+
+            //8번 스킬 우박처럼 마우스로 투사체가 아닌 것을 소환하는 스킬
+            else if (whichSkill.__GET_Skill_Code_S == _SKILL_CODE_Sub.NULL)
+            {
+
+            }
+            //잘못된 스킬
+            else
+            {
+
+            }
+        }
+
         //HP에 관여하는 스킬들
         //플레이어 전용
-        private void _Skill_HP(ref GameObject threw_Ammo, ref Transform attacker, SkillBaseStat whichSkill, Unit__Base_Stat unitStat, PlayerController plyC, bool isPlayerUsingThis)
+        private void _Skill_HP(ref Transform attacker, SkillBaseStat whichSkill, Unit__Base_Stat unitStat, PlayerController plyC, bool isPlayerUsingThis)
         {
             int isHit_OR_Heal = 0;
 
@@ -178,7 +230,7 @@ public class Unit__Base_Engine {
                 {
                     //디버프가 담긴 하나의 투사체를 발사한다.
                     //투사체의 외형 바꾸기는 일단 넘어갈 것.
-                    Default_ATK(ref threw_Ammo, ref attacker, unitStat.__PUB_ATK__Val, unitStat.__PUB_Critical_Rate, unitStat.__PUB_Critical_P, whichSkill);
+                    Default_ATK(ref attacker, unitStat.__PUB_ATK__Val, unitStat.__PUB_Critical_Rate, unitStat.__PUB_Critical_P, whichSkill);
                 }
                 //오류
                 else
@@ -199,7 +251,7 @@ public class Unit__Base_Engine {
         }
 
         //SP(이동속도)에 관여하는 스킬들
-        private void _SKill_SP(ref GameObject threw_Ammo, SkillBaseStat whichSkill, Unit__Base_Stat unitStat, PlayerController plyC, bool isPlayerUsingThis)
+        private void _SKill_SP(SkillBaseStat whichSkill, Unit__Base_Stat unitStat, PlayerController plyC, bool isPlayerUsingThis)
         {
             int isBuFF_OR_DeBuff = 0;
 
@@ -240,7 +292,7 @@ public class Unit__Base_Engine {
 
         //=================================================================================================================================================================================
         //Enemy 전용 스킬 함수
-        public void Using_Skill_ENE(ref GameObject threw_Ammo, ref Transform attacker, SkillBaseStat whichSkill, Unit__Base_Stat unitStat, EnemyController eneC, bool isEnemyUsingThis)
+        public void Using_Skill_ENE(ref Transform attacker, SkillBaseStat whichSkill, Unit__Base_Stat unitStat, EnemyController eneC, bool isEnemyUsingThis)
         {
             //필살기인 경우
             if (whichSkill.__GET_Skill_Code_M == _SKILL_CODE_Main.FIN)
@@ -253,7 +305,7 @@ public class Unit__Base_Engine {
                 //HP에 관여하는 스킬들
                 if (whichSkill.__GET_Skill_Code_S == _SKILL_CODE_Sub.HP)
                 {
-                    _Skill_HP_ENE(ref threw_Ammo, whichSkill, unitStat, eneC, isEnemyUsingThis);
+                    _Skill_HP_ENE(whichSkill, unitStat, eneC, isEnemyUsingThis);
                 }
                 //MP에 관여하는 스킬들 (회복하는 경우에 한정)
                 else if (whichSkill.__GET_Skill_Code_S == _SKILL_CODE_Sub.MP)
@@ -285,7 +337,7 @@ public class Unit__Base_Engine {
 
         //HP에 관여하는 스킬들
         //Enemy 전용
-        private void _Skill_HP_ENE(ref GameObject threw_Ammo, SkillBaseStat whichSkill, Unit__Base_Stat unitStat, EnemyController eneC, bool isEnemyUsingThis)
+        private void _Skill_HP_ENE(SkillBaseStat whichSkill, Unit__Base_Stat unitStat, EnemyController eneC, bool isEnemyUsingThis)
         {
             int isHit_OR_Heal = 0;
 
