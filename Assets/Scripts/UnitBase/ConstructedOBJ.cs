@@ -49,15 +49,15 @@ public class ConstructedOBJ : MonoBehaviour {
         if (!(isConstructed))
         {
             //좌클릭 중이 아닐 때 설치 가능
-            if (!(Input.GetMouseButton(0)))
+            if (!(Input.GetMouseButtonDown(0)))
             {
                 RaycastHit hit;
                 var ray = Camera.main.ScreenPointToRay(Input.mousePosition);
 
-                //지형이나 적, 플레이어 위치에는 설치 불가
+                //플레이어가 볼 수 없는 곳에 설치할 수 없음
                 if (Physics.Raycast(ray, out hit, Mathf.Infinity, 1 << LayerMask.NameToLayer("Water")) && isMouseOnGameScreen(hit))
                 {
-                    canItConstruct = true;
+                    //canItConstruct = true;
 
                     nowVector.Set(hit.point.x, 1.5f, hit.point.z);
                 }
@@ -73,7 +73,7 @@ public class ConstructedOBJ : MonoBehaviour {
             }
 
             //설치가능한 상태에서 좌클릭하면 바로 설치
-            if (canItConstruct && Input.GetMouseButton(0))
+            else if (canItConstruct && Input.GetMouseButtonDown(0))
             {
                 //설치가 완료되었다고 player에게 정보 전달
                 player._Set_SPW_MOS_Skill_Activated = false;
@@ -91,10 +91,14 @@ public class ConstructedOBJ : MonoBehaviour {
                     transform.GetComponent<BoxCollider>().isTrigger = false;
                 }
             }
+            else
+            {}
         }
         //마우스로 설치가 완료되고 나서 작동(수정 가능성 있음)
         else
         {
+            transform.tag = "SampleObstacle";
+
             if (isTimeOut)
             {
 
@@ -124,5 +128,31 @@ public class ConstructedOBJ : MonoBehaviour {
     {
         whichSkill = _whichSkill;
         player = _player;
+    }
+
+    //플레이어, 적, 지형, 부수기가 가능한 구조물에 접촉하면 설치 불가능
+    void OnTriggerEnter(Collider other)
+    {
+        if (other.transform.tag == "Player" || other.transform.tag == "SampleEnemy" || other.transform.tag == "SampleObstacle" || other.transform.tag == "Land")
+        {
+            canItConstruct = false;
+        }
+    }
+
+    void OnTriggerStay(Collider other)
+    {
+        if (other.transform.tag == "Player" || other.transform.tag == "SampleEnemy" || other.transform.tag == "SampleObstacle" || other.transform.tag == "Land")
+        {
+            canItConstruct = false;
+        }
+    }
+
+    //플레이어, 적, 지형, 부수기가 가능한 구조물에 접촉하지 않으면 설치 가능
+    void OnTriggerExit(Collider other)
+    {
+        if (other.transform.tag == "Player" || other.transform.tag == "SampleEnemy" || other.transform.tag == "SampleObstacle" || other.transform.tag == "Land")
+        {
+            canItConstruct = true;
+        }
     }
 }

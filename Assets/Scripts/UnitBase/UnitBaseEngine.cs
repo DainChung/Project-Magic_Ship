@@ -166,6 +166,7 @@ public class Unit__Base_Engine {
         //일단 플레이어 전용으로만 작성
         private void _Skill_Spawn(SkillBaseStat whichSkill, PlayerController plyC)
         {
+            plyC._Set_SPW_MOS_Skill_Activated = true;
 
             //7번 스킬 지형소환처럼 마우스로 투사체가 아닌 물체를 소환하는 스킬
             if (whichSkill.__GET_Skill_Code_S == _SKILL_CODE_Sub.MOS)

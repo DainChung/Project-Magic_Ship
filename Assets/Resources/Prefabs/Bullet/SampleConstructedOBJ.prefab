@@ -26,7 +26,7 @@ GameObject:
   - 65: {fileID: 65000013564512042}
   m_Layer: 0
   m_Name: SampleConstructedOBJ
-  m_TagString: SampleBullet
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
