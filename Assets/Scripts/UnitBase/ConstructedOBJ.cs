@@ -10,9 +10,6 @@ public class ConstructedOBJ : MonoBehaviour {
     //마우스로 설치까지 완료된 후 == true; -> timer 작동 시작
     private bool isConstructed = false;
 
-    //자동 소멸 시간을 채웠는지 아닌지 판별하기 위한 부울 변수
-    private bool isTimeOut = false;
-
     //마우스 위치를 ScreenToViewportPoint함수로 변환했을 때의 위치
     private Vector3 mouseViewPortVector;
     //설치될 위치
@@ -99,10 +96,9 @@ public class ConstructedOBJ : MonoBehaviour {
         {
             transform.tag = "SampleObstacle";
 
-            if (isTimeOut)
-            {
-
-            }
+            //지속시간은 3초로 임시 지정한다. 후에는 SkillBaseStat에서 읽어올 것(ING_Time)
+            //3초 후 자동 삭제 Destroy(삭제할 거, 몇 초 후에);
+            Destroy(gameObject, 3.0f);
         }
 	}
 
@@ -130,7 +126,7 @@ public class ConstructedOBJ : MonoBehaviour {
         player = _player;
     }
 
-    //플레이어, 적, 지형, 부수기가 가능한 구조물에 접촉하면 설치 불가능
+    //플레이어, 적, 지형, 부수기가 가능한 구조물에 접촉하거나 접촉하는 중이면 설치 불가능
     void OnTriggerEnter(Collider other)
     {
         if (other.transform.tag == "Player" || other.transform.tag == "SampleEnemy" || other.transform.tag == "SampleObstacle" || other.transform.tag == "Land")

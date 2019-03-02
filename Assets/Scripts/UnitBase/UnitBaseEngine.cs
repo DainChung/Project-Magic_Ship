@@ -1,6 +1,8 @@
 ﻿using UnityEngine;
 using System.Collections;
 
+using System.Reflection;
+
 using SkillBaseCode;
 
 public class Unit__Base_Engine {
@@ -140,9 +142,17 @@ public class Unit__Base_Engine {
 
                 }
                 //특별한 기능 없음
+                //C#의 Reflection 기능을 이용해서 함수 이름 따라 스킬 함수를 호출한다.
+                //아래 분류에 해당하는 스킬들이 많을 것으로 예상되어 함수 이름으로 호출한다.
+                //이렇게 하기 위해 해당 스킬 함수들은 public으로 해야된다. -> 보안 문제
                 else if (whichSkill.__GET_Skill_Code_S == _SKILL_CODE_Sub.NULL)
                 {
+                    //호출할 함수 이름 설정, 스킬 ID를 이용하여 호출한다.
+                    string funcName = "_Skill_" + whichSkill.__Get_Skill_ID;
 
+                    System.Type type = this.GetType();
+                    MethodInfo method = type.GetMethod(funcName);
+                    method.Invoke(this, new object[] { attacker, whichSkill, unitStat, plyC, isPlayerUsingThis });
                 }
                 //PP에 관여하는 스킬들 (회복하는 경우에 한정)
                 else if (whichSkill.__GET_Skill_Code_S == _SKILL_CODE_Sub.PP)
@@ -289,6 +299,28 @@ public class Unit__Base_Engine {
             {
 
             }
+        }
+
+        //일반 스킬 중 whichSkill.__GET_Skill_Code_S == _SKILL_CODE_Sub.NULL인 경우는 다양할 것이므로 스킬 이름에 따라 호출하기 위해 public으로 함수를 만든다.
+        //이후 SkillDB에 저장된 함수 이름을 불러서 아래 함수들을 호출할 것
+
+        //알고리즘을 Reflection으로 호출하는 것에 대해 논의해볼 것
+
+        //임시로 설정한 스킬 ID이기 때문에 후에 함수 이름을 바꿔줘야할 수도 있다.
+        //산탄 스킬
+        public void _Skill_00000005(Transform attacker, SkillBaseStat whichSkill, Unit__Base_Stat unitStat, PlayerController plyC, bool isPlayerUsingThis)
+        {
+            //일단 지정된 attacker(캐릭터의 전면부)에서 3개의 기본 탄환을 서로 각 사선에 평행하도록 발사할 것.
+            //탄환을 몇 개 발사할 것인지는 나중에 SkillBaseStat에서 읽어올 것
+            //위의 두 기능이 완성되면 attacker가 SkillBaseStat 또는 사용자 입력에 따라 player_Front, player_Left, player_Right로 값이 달라지도록 만들 것
+            //attacker 관련 예상 알고리즘 => PlayerController.cs에서 Transform _ply_attacker를 만들고 SkillBaseStat 또는 사용자 입력에 따라 player_Front, player_Left, player_Right 이 셋 중 하나가 되도록 변경할 것
+        }
+
+        //임시로 설정한 스킬 ID이기 때문에 후에 함수 이름을 바꿔줘야할 수도 있다.
+        //속사 스킬
+        public void _Skill_00000006(Transform attacker, SkillBaseStat whichSkill, Unit__Base_Stat unitStat, PlayerController plyC, bool isPlayerUsingThis)
+        {
+            //
         }
 
         //=================================================================================================================================================================================
