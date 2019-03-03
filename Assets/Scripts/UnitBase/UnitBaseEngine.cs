@@ -103,7 +103,7 @@ public class Unit__Base_Engine {
 
         //HP에 관여하는 스킬들
         //플레이어 전용
-        private void _Skill_00000000(Transform attacker, SkillBaseStat whichSkill, PlayerController plyC, bool isPlayerUsingThis)
+        private void _Skill_00000000(Transform attacker, SkillBaseStat whichSkill, PlayerController plyC, bool isUnitUsingThis)
         {
             int isHit_OR_Heal = 0;
 
@@ -111,16 +111,16 @@ public class Unit__Base_Engine {
             if (whichSkill.__GET_Skill_Code_T == _SKILL_CODE_Time.FREQ)
             {
                 //도트 힐 스킬을 사용할 때 OR 도트 딜 디버프를 받았을 때
-                if (whichSkill.__GET_Skill_Code_M == _SKILL_CODE_Main.BUF || !(isPlayerUsingThis))
+                if (whichSkill.__GET_Skill_Code_M == _SKILL_CODE_Main.BUF || !(isUnitUsingThis))
                 {
                     //플레이어가 사용한 HP 도트 힐 스킬이면
-                    if (isPlayerUsingThis)
+                    if (isUnitUsingThis)
                     {
                         //__Get_HIT__About_Health_FREQ가 HP 도트 힐을 수행하도록 한다.
                         isHit_OR_Heal = -1;
                     }
                     //플레이어가 HP 도트 딜 스킬에 피격된 거면
-                    else if (!(isPlayerUsingThis))
+                    else if (!(isUnitUsingThis))
                     {
                         //__Get_HIT__About_Health_FREQ가 HP 도트 딜을 수행하도록 한다.
                         isHit_OR_Heal = 1;
@@ -148,23 +148,69 @@ public class Unit__Base_Engine {
                 }
             }
         }
+        //Enemy 전용
+        private void _Skill_00000000__(Transform attacker, SkillBaseStat whichSkill, EnemyController eneC, bool isUnitUsingThis)
+        {
+            int isHit_OR_Heal = 0;
+
+            //도트 힐 OR 도트 딜
+            if (whichSkill.__GET_Skill_Code_T == _SKILL_CODE_Time.FREQ)
+            {
+                //도트 힐 스킬을 사용할 때 OR 도트 딜 디버프를 받았을 때
+                if (whichSkill.__GET_Skill_Code_M == _SKILL_CODE_Main.BUF || !(isUnitUsingThis))
+                {
+                    //플레이어가 사용한 HP 도트 힐 스킬이면
+                    if (isUnitUsingThis)
+                    {
+                        //__Get_HIT__About_Health_FREQ가 HP 도트 힐을 수행하도록 한다.
+                        isHit_OR_Heal = -1;
+                    }
+                    //플레이어가 HP 도트 딜 스킬에 피격된 거면
+                    else if (!(isUnitUsingThis))
+                    {
+                        //__Get_HIT__About_Health_FREQ가 HP 도트 딜을 수행하도록 한다.
+                        isHit_OR_Heal = 1;
+                    }
+                    //오류
+                    else
+                    {
+                    }
+
+
+                    //그놈의 StartCoroutine 때문에 PlayerController를 받아와서 이렇게 이상한 형태로 작업함. 후에 다른 방법 알아낸다면 수정 필요
+                    eneC.StartCoroutine(eneC.__ENE_Stat.__Get_HIT__About_Health_FREQ(whichSkill.__GET_Skill_ING_Time, 1.0f, (int)(whichSkill.__GET_Skill_Rate), isHit_OR_Heal));
+                }
+                //상대에게 도트 딜을 넣을 스킬
+                else if (whichSkill.__GET_Skill_Code_M == _SKILL_CODE_Main.DBF)
+                {
+                    //디버프가 담긴 하나의 투사체를 발사한다.
+                    //투사체의 외형 바꾸기는 일단 넘어갈 것.
+                    unit_Combat_Engine.Default_ATK(ref attacker, eneC.__ENE_Stat, whichSkill);
+                }
+                //오류
+                else
+                {
+
+                }
+            }
+        }
 
         //SP(이동속도)에 관여하는 스킬들
-        private void _Skill_00000002(Transform attacker, SkillBaseStat whichSkill, PlayerController plyC, bool isPlayerUsingThis)
+        private void _Skill_00000002(Transform attacker, SkillBaseStat whichSkill, PlayerController plyC, bool isUnitUsingThis)
         {
             int isBuFF_OR_DeBuff = 0;
 
             //SP(이동속도) 버프 스킬 OR 플레이어가 SP(이동속도) 디버프를 받았을 때
-            if (whichSkill.__GET_Skill_Code_M == _SKILL_CODE_Main.BUF || !(isPlayerUsingThis))
+            if (whichSkill.__GET_Skill_Code_M == _SKILL_CODE_Main.BUF || !(isUnitUsingThis))
             {
                 //플레이어가 사용한 거면
-                if (isPlayerUsingThis)
+                if (isUnitUsingThis)
                 {
                     //__GET_BUFF__About_Speed가 SP(이동속도) 버프를 수행한다.
                     isBuFF_OR_DeBuff = 1;
                 }
                 //플레이어가 SP(이동속도) 디버프 스킬에 피격된 거면
-                else if (!(isPlayerUsingThis))
+                else if (!(isUnitUsingThis))
                 {
                     //__GET_BUFF__About_Speed가 SP(이동속도) 디버프를 수행한다.
                     isBuFF_OR_DeBuff = -1;

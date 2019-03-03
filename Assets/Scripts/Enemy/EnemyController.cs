@@ -258,6 +258,7 @@ public class EnemyController : MonoBehaviour {
     //Enemy가 디버프 스킬에 피격받았을 때의 함수
     public void _Enemy__GET_DeBuff(SkillBaseStat whichDeBuffSkill_Hit_Enemy)
     {
-        __ENE_Engine.__ENE_C_Engine.Using_Skill_ENE(ref enemy_Front, whichDeBuffSkill_Hit_Enemy, __ENE_Stat, this, false);
+        __ENE_Engine.__ENE_C_Engine.Using_Skill<EnemyController>(ref enemy_Front, whichDeBuffSkill_Hit_Enemy, this, false);
+        //__ENE_Engine.__ENE_C_Engine.Using_Skill_ENE(ref enemy_Front, whichDeBuffSkill_Hit_Enemy, __ENE_Stat, this, false);
     }
 }
