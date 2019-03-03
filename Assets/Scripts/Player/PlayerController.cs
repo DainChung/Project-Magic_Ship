@@ -209,10 +209,16 @@ public class PlayerController : MonoBehaviour {
         //마우스 좌클릭 && 기본 공격 쿨타임 끝남 && 마우스로 구조물 설치하는 스킬을 사용하고 있지 않을 때
         if (Input.GetMouseButtonDown(0) && _Is_On_CoolTime__Default_ATK && !(_SPW_MOS_Skill_Activated))
         {
-            __PLY_Engine.__PLY_C_Engine.Default_ATK(ref playerAttacker, playerAttacker.position, playerAttacker.rotation, __PLY_Stat.__PUB_ATK__Val, __PLY_Stat.__PUB_Critical_Rate, __PLY_Stat.__PUB_Critical_P, null);
+
+            __PLY_Engine.__PLY_C_Engine.Default_ATK(ref playerAttacker, __PLY_Stat, null);
+
             //쿨타임을 사용하기 위한 코루틴. 따로 외부 클래스 제작함. 상세 항목은 해당 클래스 참조
             //나중에 쿨타임 값 같은 것도 따로 관리할 것
-            __PLY_CoolTimer.StartCoroutine(__PLY_CoolTimer.Timer(1.0f, (input) => { _Is_On_CoolTime__Default_ATK = input; }, _Is_On_CoolTime__Default_ATK, (input) => { default_ATK_Remained_Time = input; }));
+            __PLY_CoolTimer.StartCoroutine(
+                __PLY_CoolTimer.Timer(1.0f, (input) => { _Is_On_CoolTime__Default_ATK = input; },
+                _Is_On_CoolTime__Default_ATK,
+                (input) => { default_ATK_Remained_Time = input; }  )
+                );
         }
         //마우스 우클릭 -> 측면 공격
         //나중에 구현하자
@@ -268,7 +274,11 @@ public class PlayerController : MonoBehaviour {
             __PLY_Stat.__PUB_Stat_Locker[2] = false;
 
             //일단 10초마다 마나를 회복하도록 결정
-            __PLY_CoolTimer.StartCoroutine(__PLY_CoolTimer.Timer_Do_Once(10.0f, (input) => { __PLY_Stat.__PUB_Stat_Locker[2] = input; }, false));
+            __PLY_CoolTimer.StartCoroutine(
+                __PLY_CoolTimer.Timer_Do_Once(  10.0f,
+                (input) => { __PLY_Stat.__PUB_Stat_Locker[2] = input; },
+                false  )
+                );
         }
 
         //PP 버프 OR 디버프 지속시간 종료 여부
@@ -298,7 +308,11 @@ public class PlayerController : MonoBehaviour {
                 //UnitBaseEngine.Using_Skill에서 스킬 기능 처리
                 __PLY_Engine.__PLY_C_Engine.Using_Skill(ref playerAttacker, __PLY_Selected_Skills[index], __PLY_Stat, this, true);
                 //쿨타임 관련 처리
-                __PLY_CoolTimer.StartCoroutine(__PLY_CoolTimer.Timer(__PLY_Selected_Skills[index].__GET_Skill_Cool_Time, (input) => { _Is_On_CoolTime_Skill[index] = input; }, _Is_On_CoolTime_Skill[index], (input) => { __PLY_Selected_Skills[index].time = input; }));
+                __PLY_CoolTimer.StartCoroutine(
+                    __PLY_CoolTimer.Timer(  __PLY_Selected_Skills[index].__GET_Skill_Cool_Time,
+                    (input) => { _Is_On_CoolTime_Skill[index] = input; }, _Is_On_CoolTime_Skill[index],
+                    (input) => { __PLY_Selected_Skills[index].time = input; }  )
+                    );
             }
             //마나가 부족할 때
             else

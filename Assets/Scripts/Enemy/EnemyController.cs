@@ -144,10 +144,10 @@ public class EnemyEngine : Unit__Base_Engine {
         }
     }
 
-    public void Attack_Default(float coolTime, ref Transform attacker, int damage, int boolIndex, float criRate, float criPoint)
+    public void Attack_Default(float coolTime, ref Transform attacker, Unit__Base_Stat unitStat, int boolIndex)
     {
         //공격
-        __ENE_C_Engine.Default_ATK(ref attacker, attacker.position, attacker.rotation, damage, criRate, criPoint, null);
+        __ENE_C_Engine.Default_ATK(ref attacker, attacker.position, attacker.rotation, unitStat, null);
 
         //딜레이
         enemyCoolTimer.StartCoroutine(enemyCoolTimer.Timer(coolTime, (input) => { enemy_is_ON_CoolTime[boolIndex] = input; }, true, (input) => { dummyFloatTime[0] = input; }));
@@ -225,7 +225,7 @@ public class EnemyController : MonoBehaviour {
             if (__ENE_Engine._PUB_enemy_Is_ON_CoolTime[1])
             {
                 //쿨타임에 랜덤변수를 더해서 난이도를 조금 올린다.
-                __ENE_Engine.Attack_Default(2.0f + Random.Range(0.0f, 1.0f), ref enemy_Front, __ENE_Stat.__PUB_ATK__Val, 1, __ENE_Stat.__PUB_Critical_Rate, __ENE_Stat.__PUB_Critical_P);
+                __ENE_Engine.Attack_Default(2.0f + Random.Range(0.0f, 1.0f), ref enemy_Front, __ENE_Stat, 1);
             }
             //측면 공격
             //if (__ENE_Engine._PUB_enemy_Is_ON_CoolTime[2])

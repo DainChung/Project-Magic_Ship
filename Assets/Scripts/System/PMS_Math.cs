@@ -18,7 +18,7 @@ namespace PMS_Math {
             float angle = (rotation.eulerAngles.y + angle_FOR_Correction) * Mathf.Deg2Rad;
 
             Vector2 result = new Vector2(Mathf.Cos(angle) * dist, Mathf.Sin(angle) * dist);
-            Debug.Log("result: "+ result);
+            //Debug.Log("result: "+ result);
 
             return result;
         }

@@ -78,6 +78,14 @@ public class Unit__Base_Engine {
         }
     }
 
+    //스킬들의 기능을 담고 있는 클래스
+    public class Unit__Skill_Engine {
+        protected void Hello ()
+        {
+            Debug.Log("Hello Hello");
+        }
+    }
+
     //유닛들의 기본적인 공격에 대한 클래스
     //이 외에도 스킬에 대한 내용도 넣어야 될 것으로 보임.
     public class Unit__Base_Combat_Engine {
@@ -93,7 +101,8 @@ public class Unit__Base_Engine {
         private string prefabBulletPath = "Prefabs/Bullet/";
 
         //하나의 투사체를 일직선 상으로 발사하는 기본 공격 (디버프 유무를 나중에 추가할 것)
-        public void Default_ATK(ref Transform attacker, Vector3 spawnPosition, Quaternion spawnRotation, int damage, float criRate, float criPoint, SkillBaseStat whichSkill)
+        //투사체를 발사할 때 발사 위치와 발사 방향을 따로 지정해줘야 되는 경우
+        public void Default_ATK(ref Transform attacker, Vector3 spawnPosition, Quaternion spawnRotation, Unit__Base_Stat unitStat, SkillBaseStat whichSkill)
         {
             //"Assets/Resources/Prefabs/Bullets" 경로에서 직접 Prefab을 뽑아쓰는 쪽으로 변경
 
@@ -112,7 +121,30 @@ public class Unit__Base_Engine {
             GameObject spawned_OBJ;
             spawned_OBJ = (GameObject)(MonoBehaviour.Instantiate(threw_Ammo, spawnPosition, spawnRotation));
             //투사체가 날아가는 속도를 특정 값으로 설정. 나중엔 DB에서 긁어올 것
-            spawned_OBJ.GetComponent<AmmoBase>().__Init_Ammo(55.0f, attacker.tag, damage, criRate, criPoint, whichSkill);
+            spawned_OBJ.GetComponent<AmmoBase>().__Init_Ammo(55.0f, attacker.tag, unitStat.__PUB_ATK__Val, unitStat.__PUB_Critical_Rate, unitStat.__PUB_Critical_P, whichSkill);
+        }
+
+        //투사체를 발사할 때 발사 위치와 발사 방향을 따로 지정할 필요가 없는 경우
+        public void Default_ATK(ref Transform attacker, Unit__Base_Stat unitStat, SkillBaseStat whichSkill)
+        {
+            //"Assets/Resources/Prefabs/Bullets" 경로에서 직접 Prefab을 뽑아쓰는 쪽으로 변경
+
+            //Resources.Load를 쓸 때는 "Assets/Resources" 경로 내부의 파일에만 접근할 수 있으며
+            //Resources.Load("Assets/Resources/<임의폴더0>/<임의폴더1>/<읽으려는거>") 이렇게 쓰면 안 되고
+            //Resources.Load("<임의폴더0>/<임의폴더1>/<읽으려는거>") as <자료형> 이런 식으로 써야 된다.
+
+            //읽으려는게 "Assets/Resources" 안에 있지만 그 하위 폴더에 없는 거면
+            //Resources.Load("<읽으려는거>") as <자료형> 이렇게 쓰면 된다.
+            GameObject threw_Ammo = Resources.Load(prefabBulletPath + "SampleBullet") as GameObject;
+            //나중에는 SkillBaseStat에 private string bulletName 변수를 만들고 그것을 읽어오도록 할 것
+            //예시)  GameObject threw_Ammo = Resources.Load(prefabBulletPath + whichSkill.bulletName) as GameObject;
+
+            //private string bulletName 변수는 Sample__SkillDataBase.csv에서 읽어오도록 만들것
+
+            GameObject spawned_OBJ;
+            spawned_OBJ = (GameObject)(MonoBehaviour.Instantiate(threw_Ammo, attacker.position, attacker.rotation));
+            //투사체가 날아가는 속도를 특정 값으로 설정. 나중엔 DB에서 긁어올 것
+            spawned_OBJ.GetComponent<AmmoBase>().__Init_Ammo(55.0f, attacker.tag, unitStat.__PUB_ATK__Val, unitStat.__PUB_Critical_Rate, unitStat.__PUB_Critical_P, whichSkill);
         }
 
         //Ammo부분은 역시 SkillBaseStat으로 나중에 옮기는 편이 좋을 것으로 보임.
@@ -155,6 +187,15 @@ public class Unit__Base_Engine {
                     System.Type type = this.GetType();
                     MethodInfo method = type.GetMethod(funcName);
                     method.Invoke(this, new object[] { attacker, whichSkill, unitStat, plyC, isPlayerUsingThis });
+
+                    //Debug 전용
+                    //protected Reflection 성공
+                    funcName = "Hello";
+
+                    BindingFlags eFlags = BindingFlags.Instance | BindingFlags.NonPublic;
+                    Unit__Skill_Engine skills = new Unit__Skill_Engine();
+                    method = typeof(Unit__Skill_Engine).GetMethod("Hello", eFlags);
+                    method.Invoke(skills, null);
                 }
                 //PP에 관여하는 스킬들 (회복하는 경우에 한정)
                 else if (whichSkill.__GET_Skill_Code_S == _SKILL_CODE_Sub.PP)
@@ -243,7 +284,7 @@ public class Unit__Base_Engine {
                 {
                     //디버프가 담긴 하나의 투사체를 발사한다.
                     //투사체의 외형 바꾸기는 일단 넘어갈 것.
-                    Default_ATK(ref attacker, attacker.position, attacker.rotation, unitStat.__PUB_ATK__Val, unitStat.__PUB_Critical_Rate, unitStat.__PUB_Critical_P, whichSkill);
+                    Default_ATK(ref attacker, unitStat, whichSkill);
                 }
                 //오류
                 else
@@ -327,18 +368,18 @@ public class Unit__Base_Engine {
             //앞에서 발사하는 거면
             if (attacker.name == "Front")
             {
-                Default_ATK(ref attacker, attacker.position, attacker.rotation, unitStat.__PUB_ATK__Val, unitStat.__PUB_Critical_Rate, unitStat.__PUB_Critical_P, whichSkill);
-                Default_ATK(ref attacker, new Vector3(posX + valueVec2.x, posY, posZ - valueVec2.y), attacker.rotation, unitStat.__PUB_ATK__Val, unitStat.__PUB_Critical_Rate, unitStat.__PUB_Critical_P, whichSkill);
-                Default_ATK(ref attacker, new Vector3(posX - valueVec2.x, posY, posZ + valueVec2.y), attacker.rotation, unitStat.__PUB_ATK__Val, unitStat.__PUB_Critical_Rate, unitStat.__PUB_Critical_P, whichSkill);
+                Default_ATK(ref attacker, attacker.position, attacker.rotation, unitStat, whichSkill);
+                Default_ATK(ref attacker, new Vector3(posX + valueVec2.x, posY, posZ - valueVec2.y), attacker.rotation, unitStat, whichSkill);
+                Default_ATK(ref attacker, new Vector3(posX - valueVec2.x, posY, posZ + valueVec2.y), attacker.rotation, unitStat, whichSkill);
                 //Default_ATK(ref attacker, new Vector3(newX + 0.58f, newY, newZ), attacker.rotation, unitStat.__PUB_ATK__Val, unitStat.__PUB_Critical_Rate, unitStat.__PUB_Critical_P, whichSkill);
                 //Default_ATK(ref attacker, new Vector3(newX - 0.58f, newY, newZ), attacker.rotation, unitStat.__PUB_ATK__Val, unitStat.__PUB_Critical_Rate, unitStat.__PUB_Critical_P, whichSkill);
             }
             //좌측 또는 우측에서 발사하는 거면
             else
             {
-                Default_ATK(ref attacker, attacker.position, attacker.rotation, unitStat.__PUB_ATK__Val, unitStat.__PUB_Critical_Rate, unitStat.__PUB_Critical_P, whichSkill);
-                Default_ATK(ref attacker, new Vector3(posX - valueVec2.x, posY, posZ + valueVec2.y), attacker.rotation, unitStat.__PUB_ATK__Val, unitStat.__PUB_Critical_Rate, unitStat.__PUB_Critical_P, whichSkill);
-                Default_ATK(ref attacker, new Vector3(posX + valueVec2.x, posY, posZ - valueVec2.y), attacker.rotation, unitStat.__PUB_ATK__Val, unitStat.__PUB_Critical_Rate, unitStat.__PUB_Critical_P, whichSkill);
+                Default_ATK(ref attacker, attacker.position, attacker.rotation, unitStat, whichSkill);
+                Default_ATK(ref attacker, new Vector3(posX - valueVec2.x, posY, posZ + valueVec2.y), attacker.rotation, unitStat, whichSkill);
+                Default_ATK(ref attacker, new Vector3(posX + valueVec2.x, posY, posZ - valueVec2.y), attacker.rotation, unitStat, whichSkill);
             }
         }
 
@@ -355,16 +396,16 @@ public class Unit__Base_Engine {
             //좌측 또는 우측에서 발사하는 거면
             if (attacker.name != "Front")
             {
-                Default_ATK(ref attacker, attacker.position, attacker.rotation, unitStat.__PUB_ATK__Val, unitStat.__PUB_Critical_Rate, unitStat.__PUB_Critical_P, whichSkill);
-                Default_ATK(ref attacker, new Vector3(newX + 1.16f, newY, newZ), attacker.rotation, unitStat.__PUB_ATK__Val, unitStat.__PUB_Critical_Rate, unitStat.__PUB_Critical_P, whichSkill);
-                Default_ATK(ref attacker, new Vector3(newX - 1.16f, newY, newZ), attacker.rotation, unitStat.__PUB_ATK__Val, unitStat.__PUB_Critical_Rate, unitStat.__PUB_Critical_P, whichSkill);
+                Default_ATK(ref attacker, attacker.position, attacker.rotation, unitStat, whichSkill);
+                Default_ATK(ref attacker, new Vector3(newX + 1.16f, newY, newZ), attacker.rotation, unitStat, whichSkill);
+                Default_ATK(ref attacker, new Vector3(newX - 1.16f, newY, newZ), attacker.rotation, unitStat, whichSkill);
             }
             //앞에서 말사하는 거면
             else
             {
-                Default_ATK(ref attacker, attacker.position, attacker.rotation, unitStat.__PUB_ATK__Val, unitStat.__PUB_Critical_Rate, unitStat.__PUB_Critical_P, whichSkill);
-                Default_ATK(ref attacker, new Vector3(newX, newY, newZ + 1.16f), attacker.rotation, unitStat.__PUB_ATK__Val, unitStat.__PUB_Critical_Rate, unitStat.__PUB_Critical_P, whichSkill);
-                Default_ATK(ref attacker, new Vector3(newX, newY, newZ - 1.16f), attacker.rotation, unitStat.__PUB_ATK__Val, unitStat.__PUB_Critical_Rate, unitStat.__PUB_Critical_P, whichSkill);
+                Default_ATK(ref attacker, attacker.position, attacker.rotation, unitStat, whichSkill);
+                Default_ATK(ref attacker, new Vector3(newX, newY, newZ + 1.16f), attacker.rotation, unitStat, whichSkill);
+                Default_ATK(ref attacker, new Vector3(newX, newY, newZ - 1.16f), attacker.rotation, unitStat, whichSkill);
             }
         }
 
