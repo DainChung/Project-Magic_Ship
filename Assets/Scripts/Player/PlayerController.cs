@@ -334,6 +334,6 @@ public class PlayerController : MonoBehaviour {
     //플레이어가 디버프 스킬에 피격받았을 때의 함수
     public void _Player_GET_DeBuff(SkillBaseStat whichDeBuffSkill_Hit_Player)
     {
-        __PLY_Engine.__PLY_C_Engine.Using_Skill(ref playerAttacker, whichDeBuffSkill_Hit_Player, __PLY_Stat, this, false);
+        __PLY_Engine.__PLY_C_Engine.Using_Skill(ref playerAttacker, whichDeBuffSkill_Hit_Player, this, false);
     }
 }

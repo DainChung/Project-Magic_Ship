@@ -379,7 +379,9 @@ public class Unit__Base_Engine {
 
             //funcName = "_Skill_" + whichSkill.__Get_Skill_ID;
 
-            //
+            //Reflection 기법에 대해선 아래 주소들 참고
+            //0. Reflection 기본 사용법 : http://www.vcskicks.com/call-function.php
+            //1. private나 protected 함수에 대한 Reflection 사용법 : https://stackoverflow.com/questions/8413524/how-to-get-an-overloaded-private-protected-method-using-reflection
             System.Type type = unit_Skill_Engine.GetType();
 
             MethodInfo method = type.GetMethod(funcName);
