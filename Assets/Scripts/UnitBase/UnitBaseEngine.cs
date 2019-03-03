@@ -129,7 +129,7 @@ public class Unit__Base_Engine {
                     else
                     {
                     }
-
+                    
 
                     //그놈의 StartCoroutine 때문에 PlayerController를 받아와서 이렇게 이상한 형태로 작업함. 후에 다른 방법 알아낸다면 수정 필요
                     plyC.StartCoroutine(plyC.__PLY_Stat.__Get_HIT__About_Health_FREQ(whichSkill.__GET_Skill_ING_Time, 1.0f, (int)(whichSkill.__GET_Skill_Rate), isHit_OR_Heal));
@@ -149,7 +149,7 @@ public class Unit__Base_Engine {
             }
         }
         //Enemy 전용
-        private void _Skill_00000000__(Transform attacker, SkillBaseStat whichSkill, EnemyController eneC, bool isUnitUsingThis)
+        private void _Skill_ENE_00000000(Transform attacker, SkillBaseStat whichSkill, EnemyController eneC, bool isUnitUsingThis)
         {
             int isHit_OR_Heal = 0;
 
@@ -406,11 +406,63 @@ public class Unit__Base_Engine {
 
 
 
-        //Ammo부분은 역시 SkillBaseStat으로 나중에 옮기는 편이 좋을 것으로 보임.
-        //Player 전용
-        public void Using_Skill(ref Transform attacker, SkillBaseStat whichSkill, PlayerController plyC, bool isPlayerUsingThis)
+        ////Ammo부분은 역시 SkillBaseStat으로 나중에 옮기는 편이 좋을 것으로 보임.
+        ////Player 전용
+        //public void Using_Skill(ref Transform attacker, SkillBaseStat whichSkill, PlayerController plyC, bool isPlayerUsingThis)
+        //{
+        //    string funcName = "_Skill_";
+
+        //    //임시 조치. 코드 정리 도중 ID 체계화 과정에서 수정 필수
+        //    if (whichSkill.__Get_Skill_ID == "00000001")
+        //    {
+        //        funcName += "00000000";
+        //        Debug.Log("This is HP DeBuff Skill");
+        //    }
+        //    else
+        //    {
+        //        funcName += whichSkill.__Get_Skill_ID;
+        //    }
+
+        //    //funcName = "_Skill_" + whichSkill.__Get_Skill_ID;
+
+
+        //    System.Type type = unit_Skill_Engine.GetType();
+
+        //    MethodInfo method = type.GetMethod(funcName);
+        //    //protected나 private 함수에 접근할 수 있도록 하는 조치
+        //    BindingFlags eFlags = BindingFlags.Instance | BindingFlags.NonPublic;
+
+        //    //접근을 위한 조치를 반영한다.
+        //    method = typeof(Unit__Skill_Engine).GetMethod(funcName, eFlags);
+        //    //funcName과 동일한 이름을 가진 함수를 unit_Skill_Engine에서 호출한다.
+        //    method.Invoke(unit_Skill_Engine, new object[] { attacker, whichSkill, plyC, isPlayerUsingThis });
+        //}
+
+        //Using_Skill 통합본 작업 중
+        //Using_Skill 플레이어 전용 함수 내용 이식
+        public void Using_Skill<T>(ref Transform attacker, SkillBaseStat whichSkill, T controller, bool isUnitUsingThis)
         {
+
             string funcName = "_Skill_";
+
+            //----------------------------------------------------------------
+            //실험을 위한 임시 코딩
+            //매우 위험한 방법
+
+            //이렇게 하면 Using_Skill은 통합할 수 있지만 각 스킬 함수들은 통합할 수 없음.
+            PlayerController nogada_P = new PlayerController();
+            EnemyController nogada_E = new EnemyController();
+
+            if (controller.GetType() == nogada_P.GetType())
+            {
+                Debug.Log("Nogada_P");
+            }
+            else if (controller.GetType() == nogada_E.GetType())
+            {
+                Debug.Log("Enemy");
+                funcName += "ENE_";
+            }
+            //----------------------------------------------------------------
 
             //임시 조치. 코드 정리 도중 ID 체계화 과정에서 수정 필수
             if (whichSkill.__Get_Skill_ID == "00000001")
@@ -428,38 +480,6 @@ public class Unit__Base_Engine {
             //Reflection 기법에 대해선 아래 주소들 참고
             //0. Reflection 기본 사용법 : http://www.vcskicks.com/call-function.php
             //1. private나 protected 함수에 대한 Reflection 사용법 : https://stackoverflow.com/questions/8413524/how-to-get-an-overloaded-private-protected-method-using-reflection
-            System.Type type = unit_Skill_Engine.GetType();
-
-            MethodInfo method = type.GetMethod(funcName);
-            //protected나 private 함수에 접근할 수 있도록 하는 조치
-            BindingFlags eFlags = BindingFlags.Instance | BindingFlags.NonPublic;
-
-            //접근을 위한 조치를 반영한다.
-            method = typeof(Unit__Skill_Engine).GetMethod(funcName, eFlags);
-            //funcName과 동일한 이름을 가진 함수를 unit_Skill_Engine에서 호출한다.
-            method.Invoke(unit_Skill_Engine, new object[] { attacker, whichSkill, plyC, isPlayerUsingThis });
-        }
-
-        //Using_Skill 통합본 작업 중
-        //Using_Skill 플레이어 전용 함수 내용 이식
-        public void Using_Skill<T>(ref Transform attacker, SkillBaseStat whichSkill, T controller, bool isUnitUsingThis)
-        {
-            string funcName = "_Skill_";
-
-            //임시 조치. 코드 정리 도중 ID 체계화 과정에서 수정 필수
-            if (whichSkill.__Get_Skill_ID == "00000001")
-            {
-                funcName += "00000000";
-                Debug.Log("This is HP DeBuff Skill");
-            }
-            else
-            {
-                funcName += whichSkill.__Get_Skill_ID;
-            }
-
-            //funcName = "_Skill_" + whichSkill.__Get_Skill_ID;
-
-            //
             System.Type type = unit_Skill_Engine.GetType();
 
             MethodInfo method = type.GetMethod(funcName);
