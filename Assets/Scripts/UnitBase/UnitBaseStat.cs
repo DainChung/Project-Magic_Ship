@@ -88,32 +88,32 @@ public class Unit__Base_Stat {
         get { return __MAX_Power_Point; }
     }
 
-    //스탯에 직접 영향을 주는 모든 함수는 여기에서 처리해야 될 것 같음.
-    //이동속도를 제외한 모든 Stat에 대한 일반 디버프(OR 딜), 일반 버프(OR 힐) 함수
-    public void __GET_HIT__About_Stat(string stat_Name, int damage, int isHit_OR_Heal)
-    {
-        
-    }
+    ////스탯에 직접 영향을 주는 모든 함수는 여기에서 처리해야 될 것 같음.
+    ////이동속도를 제외한 모든 Stat에 대한 일반 디버프(OR 딜), 일반 버프(OR 힐) 함수
+    //public void __GET_HIT__About_Stat(string stat_Name, int damage, int isHit_OR_Heal)
+    //{
 
-    //이동속도를 제외한 모든 Stat에 대한 도트 디버프(OR 딜), 도트 버프(OR 힐) 함수
-    public IEnumerator __GET_Hit__About_Stat_FREQ(string stat_Name, float duringTime, int damage, float freqTime ,int isHit_OR_Heal)
-    {
+    //}
 
-        //체력을 올리고 내리고를 얼마나 반복할 것인지 계산
-        int howMany = (int)(duringTime / freqTime);
+    ////이동속도를 제외한 모든 Stat에 대한 도트 디버프(OR 딜), 도트 버프(OR 힐) 함수
+    //public IEnumerator __GET_Hit__About_Stat_FREQ(string stat_Name, float duringTime, int damage, float freqTime ,int isHit_OR_Heal)
+    //{
 
-        for (int i = 0; i < howMany; i++)
-        {
-            //올리고자 하는 값을 올린다. (isHit_OR_Heal 값에 따라 딜 또는 힐로 연산된다.)
-            __GET_HIT__About_Stat(stat_Name, damage, isHit_OR_Heal);
+    //    //체력을 올리고 내리고를 얼마나 반복할 것인지 계산
+    //    int howMany = (int)(duringTime / freqTime);
 
-            //위의 작업을 일정 시간 마다 반복한다.
-            yield return new WaitForSeconds(freqTime);
-        }
+    //    for (int i = 0; i < howMany; i++)
+    //    {
+    //        //올리고자 하는 값을 올린다. (isHit_OR_Heal 값에 따라 딜 또는 힐로 연산된다.)
+    //        __GET_HIT__About_Stat(stat_Name, damage, isHit_OR_Heal);
 
-        //해당 코루틴 자동 종료
-        yield break;
-    }
+    //        //위의 작업을 일정 시간 마다 반복한다.
+    //        yield return new WaitForSeconds(freqTime);
+    //    }
+
+    //    //해당 코루틴 자동 종료
+    //    yield break;
+    //}
 
     //__Health_Point에 일정 수치를 가감하기 위한 함수
     //일반 딜, 일반 힐 등 체력에 관한 연산을 한 번만 수행할 때 사용한다.

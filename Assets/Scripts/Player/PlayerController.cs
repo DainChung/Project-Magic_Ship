@@ -310,7 +310,7 @@ public class PlayerController : MonoBehaviour {
                 __PLY_Stat.__GET_HIT__About_Mana(__PLY_Selected_Skills[index].__GET_Skill_Use_Amount, 1);
 
                 //UnitBaseEngine.Using_Skill에서 스킬 기능 처리
-                __PLY_Engine.__PLY_C_Engine.Using_Skill(ref playerAttacker, __PLY_Selected_Skills[index], __PLY_Stat, this, true);
+                __PLY_Engine.__PLY_C_Engine.Using_Skill(ref playerAttacker, __PLY_Selected_Skills[index], this, true);
                 //쿨타임 관련 처리
                 __PLY_CoolTimer.StartCoroutine(
                     __PLY_CoolTimer.Timer(  __PLY_Selected_Skills[index].__GET_Skill_Cool_Time,
