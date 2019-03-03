@@ -1,6 +1,8 @@
 ﻿using UnityEngine;
 using System.Collections;
 
+using PMS_Math;
+
 public class EnemyStat : Unit__Base_Stat {
 
     public int half_HP;
@@ -63,15 +65,12 @@ public class EnemyEngine : Unit__Base_Engine {
         int dir = 1;
 
         //curAngle은 0 <= curAgnle < 360 (destiAngle은 -180 < destiAngle <= 180)이기 떄문에 curAngle > 180인 경우 curAngle 값을 보정하도록 한다.
-        if (curAngle > 180)
-        {
-            //curAngle도 -180 < curAngle <= 180으로 변경한다.
-            curAngle -= 360;
-        }
+        //curAngle도 -180 < curAngle <= 180으로 변경한다.
+        curAngle = Rotation_Math.Angle360_TO_Angle180(curAngle);
 
         if (is_RunAway)
         {
-            destiAngle = Get_Opposite_Direction_Angle(destiAngle);
+            destiAngle = Rotation_Math.Get_Opposite_Direction_Angle(destiAngle);
         }
         //방향 계산을 위해 값을 그대로 가져온다.
         destiAngle_FOR_dir = destiAngle;
@@ -83,7 +82,7 @@ public class EnemyEngine : Unit__Base_Engine {
         if ((destiAngle_FOR_dir < 0 && curAngle >= 0) || (destiAngle_FOR_dir >= 0 && curAngle < 0))
         {
             //destiAngle_FOR_dir의 반대방향으로 계산하도록 조정한다.
-            destiAngle_FOR_dir = Get_Opposite_Direction_Angle(destiAngle_FOR_dir);
+            destiAngle_FOR_dir = Rotation_Math.Get_Opposite_Direction_Angle(destiAngle_FOR_dir);
 
             //dir값을 보정한다.
             dir *= (-1);
@@ -116,15 +115,15 @@ public class EnemyEngine : Unit__Base_Engine {
 
     //반대 방향을 찾아주는 함수.
     //-180 < angle <= 180의 범위일 때만 유효하다.
-    private float Get_Opposite_Direction_Angle(float angle)
-    {
-        if (angle >= 0)
-            angle -= 180;
-        else
-            angle += 180;
+    //private float Get_Opposite_Direction_Angle(float angle)
+    //{
+    //    if (angle >= 0)
+    //        angle -= 180;
+    //    else
+    //        angle += 180;
 
-        return angle;
-    }
+    //    return angle;
+    //}
 
     //충분히 가까울 때까지 앞으로 이동하는 함수
     public void Go_TO_Foward_UNTIL_RayHit(float speed, ref Transform mover, Transform target)
@@ -148,7 +147,7 @@ public class EnemyEngine : Unit__Base_Engine {
     public void Attack_Default(float coolTime, ref Transform attacker, int damage, int boolIndex, float criRate, float criPoint)
     {
         //공격
-        __ENE_C_Engine.Default_ATK(ref attacker, damage, criRate, criPoint, null);
+        __ENE_C_Engine.Default_ATK(ref attacker, attacker.position, attacker.rotation, damage, criRate, criPoint, null);
 
         //딜레이
         enemyCoolTimer.StartCoroutine(enemyCoolTimer.Timer(coolTime, (input) => { enemy_is_ON_CoolTime[boolIndex] = input; }, true, (input) => { dummyFloatTime[0] = input; }));

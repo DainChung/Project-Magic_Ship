@@ -77,7 +77,7 @@ public class AmmoBase : MonoBehaviour {
             other.GetComponent<EnemyController>()._Enemy_Get_Hit(__Ammo_Damage, isItCritical);
 
             //디버프가 딸린 투사체의 경우
-            if (whichSkill != null)
+            if (whichSkill != null && whichSkill.__GET_Skill_Code_S != SkillBaseCode._SKILL_CODE_Sub.NULL)
             {
                 Debug.Log("Enemy Get DeBuff");
                 //디버프를 준다.

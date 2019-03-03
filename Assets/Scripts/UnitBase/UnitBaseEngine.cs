@@ -5,6 +5,8 @@ using System.Reflection;
 
 using SkillBaseCode;
 
+using PMS_Math;
+
 public class Unit__Base_Engine {
 
     //유닛들의 기본적인 움직임에 관한 클래스
@@ -91,7 +93,7 @@ public class Unit__Base_Engine {
         private string prefabBulletPath = "Prefabs/Bullet/";
 
         //하나의 투사체를 일직선 상으로 발사하는 기본 공격 (디버프 유무를 나중에 추가할 것)
-        public void Default_ATK(ref Transform attacker, int damage, float criRate, float criPoint, SkillBaseStat whichSkill)
+        public void Default_ATK(ref Transform attacker, Vector3 spawnPosition, Quaternion spawnRotation, int damage, float criRate, float criPoint, SkillBaseStat whichSkill)
         {
             //"Assets/Resources/Prefabs/Bullets" 경로에서 직접 Prefab을 뽑아쓰는 쪽으로 변경
 
@@ -108,7 +110,7 @@ public class Unit__Base_Engine {
             //private string bulletName 변수는 Sample__SkillDataBase.csv에서 읽어오도록 만들것
 
             GameObject spawned_OBJ;
-            spawned_OBJ = (GameObject)(MonoBehaviour.Instantiate(threw_Ammo, attacker.position, attacker.rotation));
+            spawned_OBJ = (GameObject)(MonoBehaviour.Instantiate(threw_Ammo, spawnPosition, spawnRotation));
             //투사체가 날아가는 속도를 특정 값으로 설정. 나중엔 DB에서 긁어올 것
             spawned_OBJ.GetComponent<AmmoBase>().__Init_Ammo(55.0f, attacker.tag, damage, criRate, criPoint, whichSkill);
         }
@@ -241,7 +243,7 @@ public class Unit__Base_Engine {
                 {
                     //디버프가 담긴 하나의 투사체를 발사한다.
                     //투사체의 외형 바꾸기는 일단 넘어갈 것.
-                    Default_ATK(ref attacker, unitStat.__PUB_ATK__Val, unitStat.__PUB_Critical_Rate, unitStat.__PUB_Critical_P, whichSkill);
+                    Default_ATK(ref attacker, attacker.position, attacker.rotation, unitStat.__PUB_ATK__Val, unitStat.__PUB_Critical_Rate, unitStat.__PUB_Critical_P, whichSkill);
                 }
                 //오류
                 else
@@ -310,17 +312,60 @@ public class Unit__Base_Engine {
         //산탄 스킬
         public void _Skill_00000005(Transform attacker, SkillBaseStat whichSkill, Unit__Base_Stat unitStat, PlayerController plyC, bool isPlayerUsingThis)
         {
+            Vector2 valueVec2 = Rotation_Math.Rotation_AND_Position(attacker.rotation, 0.58f, 0.0f);
+
+            float posX = attacker.position.x;
+            float posY = attacker.position.y;
+            float posZ = attacker.position.z;
+
             //일단 지정된 attacker(캐릭터의 전면부)에서 3개의 기본 탄환을 서로 각 사선에 평행하도록 발사할 것.
             //탄환을 몇 개 발사할 것인지는 나중에 SkillBaseStat에서 읽어올 것
-            //위의 두 기능이 완성되면 attacker가 SkillBaseStat 또는 사용자 입력에 따라 player_Front, player_Left, player_Right로 값이 달라지도록 만들 것
-            //attacker 관련 예상 알고리즘 => PlayerController.cs에서 Transform _ply_attacker를 만들고 SkillBaseStat 또는 사용자 입력에 따라 player_Front, player_Left, player_Right 이 셋 중 하나가 되도록 변경할 것
+            //일단 3개니까 이렇게 작성할 것
+
+            //본 함수의 0.58f와 1.16f, 이 두 수치에 대해서는 나중에 namespace ConstValueCollection에서 const float spawnDist 변수를 만들어서 관리할 것
+
+            //앞에서 발사하는 거면
+            if (attacker.name == "Front")
+            {
+                Default_ATK(ref attacker, attacker.position, attacker.rotation, unitStat.__PUB_ATK__Val, unitStat.__PUB_Critical_Rate, unitStat.__PUB_Critical_P, whichSkill);
+                Default_ATK(ref attacker, new Vector3(posX + valueVec2.x, posY, posZ - valueVec2.y), attacker.rotation, unitStat.__PUB_ATK__Val, unitStat.__PUB_Critical_Rate, unitStat.__PUB_Critical_P, whichSkill);
+                Default_ATK(ref attacker, new Vector3(posX - valueVec2.x, posY, posZ + valueVec2.y), attacker.rotation, unitStat.__PUB_ATK__Val, unitStat.__PUB_Critical_Rate, unitStat.__PUB_Critical_P, whichSkill);
+                //Default_ATK(ref attacker, new Vector3(newX + 0.58f, newY, newZ), attacker.rotation, unitStat.__PUB_ATK__Val, unitStat.__PUB_Critical_Rate, unitStat.__PUB_Critical_P, whichSkill);
+                //Default_ATK(ref attacker, new Vector3(newX - 0.58f, newY, newZ), attacker.rotation, unitStat.__PUB_ATK__Val, unitStat.__PUB_Critical_Rate, unitStat.__PUB_Critical_P, whichSkill);
+            }
+            //좌측 또는 우측에서 발사하는 거면
+            else
+            {
+                Default_ATK(ref attacker, attacker.position, attacker.rotation, unitStat.__PUB_ATK__Val, unitStat.__PUB_Critical_Rate, unitStat.__PUB_Critical_P, whichSkill);
+                Default_ATK(ref attacker, new Vector3(posX - valueVec2.x, posY, posZ + valueVec2.y), attacker.rotation, unitStat.__PUB_ATK__Val, unitStat.__PUB_Critical_Rate, unitStat.__PUB_Critical_P, whichSkill);
+                Default_ATK(ref attacker, new Vector3(posX + valueVec2.x, posY, posZ - valueVec2.y), attacker.rotation, unitStat.__PUB_ATK__Val, unitStat.__PUB_Critical_Rate, unitStat.__PUB_Critical_P, whichSkill);
+            }
         }
 
         //임시로 설정한 스킬 ID이기 때문에 후에 함수 이름을 바꿔줘야할 수도 있다.
         //속사 스킬
         public void _Skill_00000006(Transform attacker, SkillBaseStat whichSkill, Unit__Base_Stat unitStat, PlayerController plyC, bool isPlayerUsingThis)
         {
-            //
+            float newX = attacker.position.x;
+            float newY = attacker.position.y;
+            float newZ = attacker.position.z;
+
+            //산탄 스킬과 코드가 매우 유사하므로 최적화에 대한 고찰이 필요
+
+            //좌측 또는 우측에서 발사하는 거면
+            if (attacker.name != "Front")
+            {
+                Default_ATK(ref attacker, attacker.position, attacker.rotation, unitStat.__PUB_ATK__Val, unitStat.__PUB_Critical_Rate, unitStat.__PUB_Critical_P, whichSkill);
+                Default_ATK(ref attacker, new Vector3(newX + 1.16f, newY, newZ), attacker.rotation, unitStat.__PUB_ATK__Val, unitStat.__PUB_Critical_Rate, unitStat.__PUB_Critical_P, whichSkill);
+                Default_ATK(ref attacker, new Vector3(newX - 1.16f, newY, newZ), attacker.rotation, unitStat.__PUB_ATK__Val, unitStat.__PUB_Critical_Rate, unitStat.__PUB_Critical_P, whichSkill);
+            }
+            //앞에서 말사하는 거면
+            else
+            {
+                Default_ATK(ref attacker, attacker.position, attacker.rotation, unitStat.__PUB_ATK__Val, unitStat.__PUB_Critical_Rate, unitStat.__PUB_Critical_P, whichSkill);
+                Default_ATK(ref attacker, new Vector3(newX, newY, newZ + 1.16f), attacker.rotation, unitStat.__PUB_ATK__Val, unitStat.__PUB_Critical_Rate, unitStat.__PUB_Critical_P, whichSkill);
+                Default_ATK(ref attacker, new Vector3(newX, newY, newZ - 1.16f), attacker.rotation, unitStat.__PUB_ATK__Val, unitStat.__PUB_Critical_Rate, unitStat.__PUB_Critical_P, whichSkill);
+            }
         }
 
         //=================================================================================================================================================================================

@@ -58,12 +58,13 @@ public class PlayerController : MonoBehaviour {
 
     public Transform playerTransform;
 
-    //앞
-    public Transform playerFront;
-    //우측
-    public Transform playerRight;
-    //좌측
-    public Transform playerLeft;
+    //플레이어의 앞, 우측, 좌측을 담당할 변수
+    //0: 앞, 1: 우측, 2: 좌측
+    public Transform[] playerAttackerTransforms;
+    private int index_OF_playerAttackerTransforms;
+
+    //투사체를 발사할 위치 => 키 입력에 따라 앞, 우측, 좌측 값을 저장한다.
+    private Transform playerAttacker;
 
     //쿨타임 때문에 임시로 적용한 bool 변수, 개선된 알고리즘이 생각나면 바꿔야 될 것
     private bool _Is_On_CoolTime__Default_ATK;
@@ -121,6 +122,10 @@ public class PlayerController : MonoBehaviour {
     // Use this for initialization
     void Start ()
     {
+        //플레이어가 투사체를 발사할 위치를 앞부분으로 우선 설정한다.
+        index_OF_playerAttackerTransforms = 0;
+        playerAttacker = playerAttackerTransforms[index_OF_playerAttackerTransforms];
+
         //해당 스크립트와 CombatEngine에서 모두 사용하기 위해 이렇게 초기화하여 전달한다.
         __PLY_CoolTimer = transform.GetComponent<UnitCoolTimer>();
     }
@@ -128,6 +133,27 @@ public class PlayerController : MonoBehaviour {
 	// Update is called once per frame
 	void Update ()
     {
+        //투사체를 발사하는 위치 변경, Q키를 눌러 전환한다.
+        //4~5차 단계에서 UI를 추가할 것
+        if (Input.GetKeyDown(KeyCode.Q))
+        {
+            //플레이어가 투사체를 발사할 위치가 앞 또는 우측인 경우
+            if (index_OF_playerAttackerTransforms < 2 && index_OF_playerAttackerTransforms >= 0)
+            {
+                //인덱스 값을 더해서 다음 위치로 바꾼다.
+                index_OF_playerAttackerTransforms++;
+            }
+            //플레이어가 투사체를 발사할 위치가 좌측인 경우
+            else
+            {
+                //다시 앞쪽으로 돌아간다.
+                index_OF_playerAttackerTransforms = 0;
+            }
+
+            //설정된 투사체 발사 위치를 적용한다.
+            playerAttacker = playerAttackerTransforms[index_OF_playerAttackerTransforms];
+        }
+
         if (transform.position.y >= 5.0f)
         {
             transform.position.Set(transform.position.x, 5.0f, transform.position.z);
@@ -183,7 +209,7 @@ public class PlayerController : MonoBehaviour {
         //마우스 좌클릭 && 기본 공격 쿨타임 끝남 && 마우스로 구조물 설치하는 스킬을 사용하고 있지 않을 때
         if (Input.GetMouseButtonDown(0) && _Is_On_CoolTime__Default_ATK && !(_SPW_MOS_Skill_Activated))
         {
-            __PLY_Engine.__PLY_C_Engine.Default_ATK(ref playerFront, __PLY_Stat.__PUB_ATK__Val, __PLY_Stat.__PUB_Critical_Rate, __PLY_Stat.__PUB_Critical_P, null);
+            __PLY_Engine.__PLY_C_Engine.Default_ATK(ref playerAttacker, playerAttacker.position, playerAttacker.rotation, __PLY_Stat.__PUB_ATK__Val, __PLY_Stat.__PUB_Critical_Rate, __PLY_Stat.__PUB_Critical_P, null);
             //쿨타임을 사용하기 위한 코루틴. 따로 외부 클래스 제작함. 상세 항목은 해당 클래스 참조
             //나중에 쿨타임 값 같은 것도 따로 관리할 것
             __PLY_CoolTimer.StartCoroutine(__PLY_CoolTimer.Timer(1.0f, (input) => { _Is_On_CoolTime__Default_ATK = input; }, _Is_On_CoolTime__Default_ATK, (input) => { default_ATK_Remained_Time = input; }));
@@ -270,7 +296,7 @@ public class PlayerController : MonoBehaviour {
                 __PLY_Stat.__GET_HIT__About_Mana(__PLY_Selected_Skills[index].__GET_Skill_Use_Amount, 1);
 
                 //UnitBaseEngine.Using_Skill에서 스킬 기능 처리
-                __PLY_Engine.__PLY_C_Engine.Using_Skill(ref playerFront, __PLY_Selected_Skills[index], __PLY_Stat, this, true);
+                __PLY_Engine.__PLY_C_Engine.Using_Skill(ref playerAttacker, __PLY_Selected_Skills[index], __PLY_Stat, this, true);
                 //쿨타임 관련 처리
                 __PLY_CoolTimer.StartCoroutine(__PLY_CoolTimer.Timer(__PLY_Selected_Skills[index].__GET_Skill_Cool_Time, (input) => { _Is_On_CoolTime_Skill[index] = input; }, _Is_On_CoolTime_Skill[index], (input) => { __PLY_Selected_Skills[index].time = input; }));
             }
@@ -290,6 +316,6 @@ public class PlayerController : MonoBehaviour {
     //플레이어가 디버프 스킬에 피격받았을 때의 함수
     public void _Player_GET_DeBuff(SkillBaseStat whichDeBuffSkill_Hit_Player)
     {
-        __PLY_Engine.__PLY_C_Engine.Using_Skill(ref playerFront, whichDeBuffSkill_Hit_Player, __PLY_Stat, this, false);
+        __PLY_Engine.__PLY_C_Engine.Using_Skill(ref playerAttacker, whichDeBuffSkill_Hit_Player, __PLY_Stat, this, false);
     }
 }
