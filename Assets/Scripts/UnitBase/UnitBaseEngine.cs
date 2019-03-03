@@ -9,6 +9,8 @@ using PMS_Math;
 
 public class Unit__Base_Engine {
 
+    //==================================================================================================================================================
+
     //유닛들의 기본적인 움직임에 관한 클래스
     public class Unit__Base_Movement_Engine {
 
@@ -78,13 +80,221 @@ public class Unit__Base_Engine {
         }
     }
 
+    //==================================================================================================================================================
+    //==================================================================================================================================================
+
     //스킬들의 기능을 담고 있는 클래스
-    public class Unit__Skill_Engine {
-        protected void Hello ()
+    public class Unit__Skill_Engine
+    {
+        private Unit__Base_Combat_Engine unit_Combat_Engine;
+        public Unit__Base_Combat_Engine __SET_unit_Combat_Engine
         {
-            Debug.Log("Hello Hello");
+            set { unit_Combat_Engine = value; }
         }
+
+        private Unit__Base_Movement_Engine unit_Move_Engine;
+        public Unit__Base_Movement_Engine __SET_unit_Move_Engine
+        {
+            set { unit_Move_Engine = value; }
+        }
+
+        //Unit__Combat_Engine에 있는 스킬 함수들 이식, 스킬 함수 호출 방법을 Reflection으로 통일
+        //HP쪽 스킬들처럼 한 함수가 두 가지 이상의 일을 하는 경우에는 일단 "00000000" || "00000001" 인 경우 모두 "00000000"으로 해석하도록 임시 조치를 취할 것
+
+        //HP에 관여하는 스킬들
+        //플레이어 전용
+        private void _Skill_00000000(Transform attacker, SkillBaseStat whichSkill, PlayerController plyC, bool isPlayerUsingThis)
+        {
+            int isHit_OR_Heal = 0;
+
+            //도트 힐 OR 도트 딜
+            if (whichSkill.__GET_Skill_Code_T == _SKILL_CODE_Time.FREQ)
+            {
+                //도트 힐 스킬을 사용할 때 OR 도트 딜 디버프를 받았을 때
+                if (whichSkill.__GET_Skill_Code_M == _SKILL_CODE_Main.BUF || !(isPlayerUsingThis))
+                {
+                    //플레이어가 사용한 HP 도트 힐 스킬이면
+                    if (isPlayerUsingThis)
+                    {
+                        //__Get_HIT__About_Health_FREQ가 HP 도트 힐을 수행하도록 한다.
+                        isHit_OR_Heal = -1;
+                    }
+                    //플레이어가 HP 도트 딜 스킬에 피격된 거면
+                    else if (!(isPlayerUsingThis))
+                    {
+                        //__Get_HIT__About_Health_FREQ가 HP 도트 딜을 수행하도록 한다.
+                        isHit_OR_Heal = 1;
+                    }
+                    //오류
+                    else
+                    {
+                    }
+
+
+                    //그놈의 StartCoroutine 때문에 PlayerController를 받아와서 이렇게 이상한 형태로 작업함. 후에 다른 방법 알아낸다면 수정 필요
+                    plyC.StartCoroutine(plyC.__PLY_Stat.__Get_HIT__About_Health_FREQ(whichSkill.__GET_Skill_ING_Time, 1.0f, (int)(whichSkill.__GET_Skill_Rate), isHit_OR_Heal));
+                }
+                //상대에게 도트 딜을 넣을 스킬
+                else if (whichSkill.__GET_Skill_Code_M == _SKILL_CODE_Main.DBF)
+                {
+                    //디버프가 담긴 하나의 투사체를 발사한다.
+                    //투사체의 외형 바꾸기는 일단 넘어갈 것.
+                    unit_Combat_Engine.Default_ATK(ref attacker, plyC.__PLY_Stat, whichSkill);
+                }
+                //오류
+                else
+                {
+
+                }
+            }
+        }
+
+        //SP(이동속도)에 관여하는 스킬들
+        private void _Skill_00000002(Transform attacker, SkillBaseStat whichSkill, PlayerController plyC, bool isPlayerUsingThis)
+        {
+            int isBuFF_OR_DeBuff = 0;
+
+            //SP(이동속도) 버프 스킬 OR 플레이어가 SP(이동속도) 디버프를 받았을 때
+            if (whichSkill.__GET_Skill_Code_M == _SKILL_CODE_Main.BUF || !(isPlayerUsingThis))
+            {
+                //플레이어가 사용한 거면
+                if (isPlayerUsingThis)
+                {
+                    //__GET_BUFF__About_Speed가 SP(이동속도) 버프를 수행한다.
+                    isBuFF_OR_DeBuff = 1;
+                }
+                //플레이어가 SP(이동속도) 디버프 스킬에 피격된 거면
+                else if (!(isPlayerUsingThis))
+                {
+                    //__GET_BUFF__About_Speed가 SP(이동속도) 디버프를 수행한다.
+                    isBuFF_OR_DeBuff = -1;
+                }
+                //오류
+                else
+                {
+                }
+
+                //이동속도 버프 OR 디버프를 수행한다.
+                unit_Move_Engine.__GET_BUFF__About_Speed(isBuFF_OR_DeBuff, whichSkill, plyC.__PLY_Stat, plyC);
+            }
+            //상대에게 SP(이동속도) 디버프를 걸 때 스킬
+            else if (whichSkill.__GET_Skill_Code_M == _SKILL_CODE_Main.DBF)
+            {
+
+            }
+            //오류
+            else
+            {
+
+            }
+        }
+
+        //후에 5번 스킬과 6번 스킬을 통합할 것
+        //산탄 스킬
+        private void _Skill_00000005(Transform attacker, SkillBaseStat whichSkill, PlayerController plyC, bool isPlayerUsingThis)
+        {
+            Vector2 valueVec2 = Rotation_Math.Rotation_AND_Position(attacker.rotation, 0.58f, 0.0f);
+
+            float posX = attacker.position.x;
+            float posY = attacker.position.y;
+            float posZ = attacker.position.z;
+
+            //일단 지정된 attacker(캐릭터의 전면부)에서 3개의 기본 탄환을 서로 각 사선에 평행하도록 발사할 것.
+            //탄환을 몇 개 발사할 것인지는 나중에 SkillBaseStat에서 읽어올 것
+            //일단 3개니까 이렇게 작성할 것
+
+            //본 함수의 0.58f와 1.16f, 이 두 수치에 대해서는 나중에 namespace ConstValueCollection에서 const float spawnDist 변수를 만들어서 관리할 것
+
+            //앞에서 발사하는 거면
+            if (attacker.name == "Front")
+            {
+                unit_Combat_Engine.Default_ATK(ref attacker, attacker.position, attacker.rotation, plyC.__PLY_Stat, whichSkill);
+                unit_Combat_Engine.Default_ATK(ref attacker, new Vector3(posX + valueVec2.x, posY, posZ - valueVec2.y), attacker.rotation, plyC.__PLY_Stat, whichSkill);
+                unit_Combat_Engine.Default_ATK(ref attacker, new Vector3(posX - valueVec2.x, posY, posZ + valueVec2.y), attacker.rotation, plyC.__PLY_Stat, whichSkill);
+                //Default_ATK(ref attacker, new Vector3(newX + 0.58f, newY, newZ), attacker.rotation, unitStat.__PUB_ATK__Val, unitStat.__PUB_Critical_Rate, unitStat.__PUB_Critical_P, whichSkill);
+                //Default_ATK(ref attacker, new Vector3(newX - 0.58f, newY, newZ), attacker.rotation, unitStat.__PUB_ATK__Val, unitStat.__PUB_Critical_Rate, unitStat.__PUB_Critical_P, whichSkill);
+            }
+            //좌측 또는 우측에서 발사하는 거면
+            else
+            {
+                unit_Combat_Engine.Default_ATK(ref attacker, attacker.position, attacker.rotation, plyC.__PLY_Stat, whichSkill);
+                unit_Combat_Engine.Default_ATK(ref attacker, new Vector3(posX - valueVec2.x, posY, posZ + valueVec2.y), attacker.rotation, plyC.__PLY_Stat, whichSkill);
+                unit_Combat_Engine.Default_ATK(ref attacker, new Vector3(posX + valueVec2.x, posY, posZ - valueVec2.y), attacker.rotation, plyC.__PLY_Stat, whichSkill);
+            }
+        }
+
+        //속사 스킬
+        private void _Skill_00000006(Transform attacker, SkillBaseStat whichSkill, PlayerController plyC, bool isPlayerUsingThis)
+        {
+            float newX = attacker.position.x;
+            float newY = attacker.position.y;
+            float newZ = attacker.position.z;
+
+            //산탄 스킬과 코드가 매우 유사하므로 최적화에 대한 고찰이 필요
+
+            //좌측 또는 우측에서 발사하는 거면
+            if (attacker.name != "Front")
+            {
+                unit_Combat_Engine.Default_ATK(ref attacker, attacker.position, attacker.rotation, plyC.__PLY_Stat, whichSkill);
+                unit_Combat_Engine.Default_ATK(ref attacker, new Vector3(newX + 1.16f, newY, newZ), attacker.rotation, plyC.__PLY_Stat, whichSkill);
+                unit_Combat_Engine.Default_ATK(ref attacker, new Vector3(newX - 1.16f, newY, newZ), attacker.rotation, plyC.__PLY_Stat, whichSkill);
+            }
+            //앞에서 발사하는 거면
+            else
+            {
+                unit_Combat_Engine.Default_ATK(ref attacker, attacker.position, attacker.rotation, plyC.__PLY_Stat, whichSkill);
+                unit_Combat_Engine.Default_ATK(ref attacker, new Vector3(newX, newY, newZ + 1.16f), attacker.rotation, plyC.__PLY_Stat, whichSkill);
+                unit_Combat_Engine.Default_ATK(ref attacker, new Vector3(newX, newY, newZ - 1.16f), attacker.rotation, plyC.__PLY_Stat, whichSkill);
+            }
+        }
+
+        //지형 소환
+        private void _Skill_00000007(Transform attacker, SkillBaseStat whichSkill, PlayerController plyC, bool isPlayerUsingThis)
+        {
+            plyC._Set_SPW_MOS_Skill_Activated = true;
+
+            //7번 스킬 지형소환처럼 마우스로 투사체가 아닌 물체를 소환하는 스킬
+            if (whichSkill.__GET_Skill_Code_S == _SKILL_CODE_Sub.MOS)
+            {
+                //따로 만들어둔 SampleConstructedOBJ를 소환하도록 한다.
+                GameObject constructedOBJ = Resources.Load(unit_Combat_Engine.__GET_prefabBulletPath + "SampleConstructedOBJ") as GameObject;
+
+                //소환할 오브젝트 소환하고 값 설정
+                GameObject spawned_OBJ;
+                spawned_OBJ = (GameObject)(MonoBehaviour.Instantiate(constructedOBJ, plyC.transform.position, plyC.transform.rotation));
+
+                spawned_OBJ.GetComponent<ConstructedOBJ>().__Init_ConstructedOBJ(whichSkill, plyC);
+            }
+
+            //8번 스킬 우박처럼 마우스로 투사체가 아닌 것을 소환하는 스킬
+            else if (whichSkill.__GET_Skill_Code_S == _SKILL_CODE_Sub.NULL)
+            {
+
+            }
+            //잘못된 스킬
+            else
+            {
+
+            }
+        }
+
+        //커밋 후 도트 회복, 도트 딜 함수 제작 (모든 변수에 대해 작동하도록 일원화 할 것)
+        //일반 회복(또는 버프), 일반 추가 딜(또는 디버프) 함수 제작 (모든 변수에 대해 작동하도록 일원화 할 것)
+
+        //위 내용 완성 후 커밋
+
+        //커밋 후 ID 체계화 작업 및 함수 이름에 적용
+
+        //위 내용 완료 후 커밋
+
+        //제너릭 메소드(T) 이용하여 Using_Skill(...) 계열과 Using_Skill_ENE(...)계열 통합할 것.
+        //그 외 제너릭 메소드를 이용해서 통합할 수 있는 것드 통합할 것
+
+        //위 내용 완료 후 커밋
     }
+
+    //==================================================================================================================================================
+    //==================================================================================================================================================
 
     //유닛들의 기본적인 공격에 대한 클래스
     //이 외에도 스킬에 대한 내용도 넣어야 될 것으로 보임.
@@ -96,9 +306,21 @@ public class Unit__Base_Engine {
             set { unit_M_Engine = value; }
         }
 
+        private Unit__Skill_Engine unit_Skill_Engine;
+        public Unit__Skill_Engine __SET_unit_Skill_Engine
+        {
+            set { unit_Skill_Engine = value; }
+        }
+
+        //===============================================================================================================================================
+
         //소환할 각종 투사체 및 오브젝트들이 있는 경로
         //Resources.Load 함수에 대한 설명은 하단의 Default_ATK 함수 주석 부분 참조
         private string prefabBulletPath = "Prefabs/Bullet/";
+        public string __GET_prefabBulletPath
+        {
+            get { return prefabBulletPath; }
+        }
 
         //하나의 투사체를 일직선 상으로 발사하는 기본 공격 (디버프 유무를 나중에 추가할 것)
         //투사체를 발사할 때 발사 위치와 발사 방향을 따로 지정해줘야 되는 경우
@@ -127,14 +349,6 @@ public class Unit__Base_Engine {
         //투사체를 발사할 때 발사 위치와 발사 방향을 따로 지정할 필요가 없는 경우
         public void Default_ATK(ref Transform attacker, Unit__Base_Stat unitStat, SkillBaseStat whichSkill)
         {
-            //"Assets/Resources/Prefabs/Bullets" 경로에서 직접 Prefab을 뽑아쓰는 쪽으로 변경
-
-            //Resources.Load를 쓸 때는 "Assets/Resources" 경로 내부의 파일에만 접근할 수 있으며
-            //Resources.Load("Assets/Resources/<임의폴더0>/<임의폴더1>/<읽으려는거>") 이렇게 쓰면 안 되고
-            //Resources.Load("<임의폴더0>/<임의폴더1>/<읽으려는거>") as <자료형> 이런 식으로 써야 된다.
-
-            //읽으려는게 "Assets/Resources" 안에 있지만 그 하위 폴더에 없는 거면
-            //Resources.Load("<읽으려는거>") as <자료형> 이렇게 쓰면 된다.
             GameObject threw_Ammo = Resources.Load(prefabBulletPath + "SampleBullet") as GameObject;
             //나중에는 SkillBaseStat에 private string bulletName 변수를 만들고 그것을 읽어오도록 할 것
             //예시)  GameObject threw_Ammo = Resources.Load(prefabBulletPath + whichSkill.bulletName) as GameObject;
@@ -148,71 +362,35 @@ public class Unit__Base_Engine {
         }
 
         //Ammo부분은 역시 SkillBaseStat으로 나중에 옮기는 편이 좋을 것으로 보임.
-        //atttacker부분은 조금 애매함.
         //Player 전용
         public void Using_Skill(ref Transform attacker, SkillBaseStat whichSkill, Unit__Base_Stat unitStat, PlayerController plyC, bool isPlayerUsingThis)
         {
-            //필살기인 경우
-            if (whichSkill.__GET_Skill_Code_M == _SKILL_CODE_Main.FIN)
+            string funcName = "_Skill_";
+
+            //임시 조치. 코드 정리 도중 ID 체계화 과정에서 수정 필수
+            if (whichSkill.__Get_Skill_ID == "00000001")
             {
-                
+                funcName += "00000000";
+                Debug.Log("This is HP DeBuff Skill");
             }
-            //일반 스킬 중 투사체 외에 무언가를 소환하는 스킬인 경우
-            else if (whichSkill.__GET_Skill_Code_M == _SKILL_CODE_Main.SPW)
-            {
-                _Skill_Spawn(whichSkill, plyC);
-            }
-            //일반 스킬인 경우
             else
             {
-                //HP에 관여하는 스킬들
-                if (whichSkill.__GET_Skill_Code_S == _SKILL_CODE_Sub.HP)
-                {
-                    _Skill_HP(ref attacker, whichSkill, unitStat, plyC, isPlayerUsingThis);
-                }
-                //MP에 관여하는 스킬들 (회복하는 경우에 한정)
-                else if (whichSkill.__GET_Skill_Code_S == _SKILL_CODE_Sub.MP)
-                {
-
-                }
-                //특별한 기능 없음
-                //C#의 Reflection 기능을 이용해서 함수 이름 따라 스킬 함수를 호출한다.
-                //아래 분류에 해당하는 스킬들이 많을 것으로 예상되어 함수 이름으로 호출한다.
-                //이렇게 하기 위해 해당 스킬 함수들은 public으로 해야된다. -> 보안 문제
-                else if (whichSkill.__GET_Skill_Code_S == _SKILL_CODE_Sub.NULL)
-                {
-                    //호출할 함수 이름 설정, 스킬 ID를 이용하여 호출한다.
-                    string funcName = "_Skill_" + whichSkill.__Get_Skill_ID;
-
-                    System.Type type = this.GetType();
-                    MethodInfo method = type.GetMethod(funcName);
-                    method.Invoke(this, new object[] { attacker, whichSkill, unitStat, plyC, isPlayerUsingThis });
-
-                    //Debug 전용
-                    //protected Reflection 성공
-                    funcName = "Hello";
-
-                    BindingFlags eFlags = BindingFlags.Instance | BindingFlags.NonPublic;
-                    Unit__Skill_Engine skills = new Unit__Skill_Engine();
-                    method = typeof(Unit__Skill_Engine).GetMethod("Hello", eFlags);
-                    method.Invoke(skills, null);
-                }
-                //PP에 관여하는 스킬들 (회복하는 경우에 한정)
-                else if (whichSkill.__GET_Skill_Code_S == _SKILL_CODE_Sub.PP)
-                {
-
-                }
-                //이동속도에 관여하는 스킬들
-                else if (whichSkill.__GET_Skill_Code_S == _SKILL_CODE_Sub.SP)
-                {
-                    _SKill_SP(whichSkill, unitStat, plyC, isPlayerUsingThis);
-                }
-                //잘못된 스킬
-                else
-                {
-
-                }
+                funcName += whichSkill.__Get_Skill_ID;
             }
+
+            //funcName = "_Skill_" + whichSkill.__Get_Skill_ID;
+
+            //
+            System.Type type = unit_Skill_Engine.GetType();
+
+            MethodInfo method = type.GetMethod(funcName);
+            //protected나 private 함수에 접근할 수 있도록 하는 조치
+            BindingFlags eFlags = BindingFlags.Instance | BindingFlags.NonPublic;
+
+            //접근을 위한 조치를 반영한다.
+            method = typeof(Unit__Skill_Engine).GetMethod(funcName, eFlags);
+            //funcName과 동일한 이름을 가진 함수를 unit_Skill_Engine에서 호출한다.
+            method.Invoke(unit_Skill_Engine, new object[] { attacker, whichSkill, plyC, isPlayerUsingThis });
         }
 
         //투사체 외에 무언가를 소환하는 스킬들
@@ -243,169 +421,6 @@ public class Unit__Base_Engine {
             else
             {
 
-            }
-        }
-
-        //HP에 관여하는 스킬들
-        //플레이어 전용
-        private void _Skill_HP(ref Transform attacker, SkillBaseStat whichSkill, Unit__Base_Stat unitStat, PlayerController plyC, bool isPlayerUsingThis)
-        {
-            int isHit_OR_Heal = 0;
-
-            //도트 힐 OR 도트 딜
-            if (whichSkill.__GET_Skill_Code_T == _SKILL_CODE_Time.FREQ)
-            {
-                //도트 힐 스킬을 사용할 때 OR 도트 딜 디버프를 받았을 때
-                if (whichSkill.__GET_Skill_Code_M == _SKILL_CODE_Main.BUF || !(isPlayerUsingThis))
-                {
-                    //플레이어가 사용한 HP 도트 힐 스킬이면
-                    if (isPlayerUsingThis)
-                    {
-                        //__Get_HIT__About_Health_FREQ가 HP 도트 힐을 수행하도록 한다.
-                        isHit_OR_Heal = -1;
-                    }
-                    //플레이어가 HP 도트 딜 스킬에 피격된 거면
-                    else if (!(isPlayerUsingThis))
-                    {
-                        //__Get_HIT__About_Health_FREQ가 HP 도트 딜을 수행하도록 한다.
-                        isHit_OR_Heal = 1;
-                    }
-                    //오류
-                    else
-                    {
-                    }
-
-
-                    //그놈의 StartCoroutine 때문에 PlayerController를 받아와서 이렇게 이상한 형태로 작업함. 후에 다른 방법 알아낸다면 수정 필요
-                    plyC.StartCoroutine(unitStat.__Get_HIT__About_Health_FREQ(whichSkill.__GET_Skill_ING_Time, 1.0f, (int)(whichSkill.__GET_Skill_Rate), isHit_OR_Heal));
-                }
-                //상대에게 도트 딜을 넣을 스킬
-                else if (whichSkill.__GET_Skill_Code_M == _SKILL_CODE_Main.DBF)
-                {
-                    //디버프가 담긴 하나의 투사체를 발사한다.
-                    //투사체의 외형 바꾸기는 일단 넘어갈 것.
-                    Default_ATK(ref attacker, unitStat, whichSkill);
-                }
-                //오류
-                else
-                {
-
-                }
-            }
-            //일반 힐
-            else if (whichSkill.__GET_Skill_Code_T == _SKILL_CODE_Time.NULL)
-            {
-
-            }
-            //오류
-            else
-            {
-
-            }
-        }
-
-        //SP(이동속도)에 관여하는 스킬들
-        private void _SKill_SP(SkillBaseStat whichSkill, Unit__Base_Stat unitStat, PlayerController plyC, bool isPlayerUsingThis)
-        {
-            int isBuFF_OR_DeBuff = 0;
-
-            //SP(이동속도) 버프 스킬 OR 플레이어가 SP(이동속도) 디버프를 받았을 때
-            if (whichSkill.__GET_Skill_Code_M == _SKILL_CODE_Main.BUF || !(isPlayerUsingThis))
-            {
-                //플레이어가 사용한 거면
-                if (isPlayerUsingThis)
-                {
-                    //__GET_BUFF__About_Speed가 SP(이동속도) 버프를 수행한다.
-                    isBuFF_OR_DeBuff = 1;
-                }
-                //플레이어가 SP(이동속도) 디버프 스킬에 피격된 거면
-                else if (!(isPlayerUsingThis))
-                {
-                    //__GET_BUFF__About_Speed가 SP(이동속도) 디버프를 수행한다.
-                    isBuFF_OR_DeBuff = -1;
-                }
-                //오류
-                else
-                {
-                }
-
-                //이동속도 버프 OR 디버프를 수행한다.
-                unit_M_Engine.__GET_BUFF__About_Speed(isBuFF_OR_DeBuff, whichSkill, unitStat, plyC);
-            }
-            //상대에게 SP(이동속도) 디버프를 걸 때 스킬
-            else if (whichSkill.__GET_Skill_Code_M == _SKILL_CODE_Main.DBF)
-            {
-
-            }
-            //오류
-            else
-            {
-
-            }
-        }
-
-        //일반 스킬 중 whichSkill.__GET_Skill_Code_S == _SKILL_CODE_Sub.NULL인 경우는 다양할 것이므로 스킬 이름에 따라 호출하기 위해 public으로 함수를 만든다.
-        //이후 SkillDB에 저장된 함수 이름을 불러서 아래 함수들을 호출할 것
-
-        //알고리즘을 Reflection으로 호출하는 것에 대해 논의해볼 것
-
-        //임시로 설정한 스킬 ID이기 때문에 후에 함수 이름을 바꿔줘야할 수도 있다.
-        //산탄 스킬
-        public void _Skill_00000005(Transform attacker, SkillBaseStat whichSkill, Unit__Base_Stat unitStat, PlayerController plyC, bool isPlayerUsingThis)
-        {
-            Vector2 valueVec2 = Rotation_Math.Rotation_AND_Position(attacker.rotation, 0.58f, 0.0f);
-
-            float posX = attacker.position.x;
-            float posY = attacker.position.y;
-            float posZ = attacker.position.z;
-
-            //일단 지정된 attacker(캐릭터의 전면부)에서 3개의 기본 탄환을 서로 각 사선에 평행하도록 발사할 것.
-            //탄환을 몇 개 발사할 것인지는 나중에 SkillBaseStat에서 읽어올 것
-            //일단 3개니까 이렇게 작성할 것
-
-            //본 함수의 0.58f와 1.16f, 이 두 수치에 대해서는 나중에 namespace ConstValueCollection에서 const float spawnDist 변수를 만들어서 관리할 것
-
-            //앞에서 발사하는 거면
-            if (attacker.name == "Front")
-            {
-                Default_ATK(ref attacker, attacker.position, attacker.rotation, unitStat, whichSkill);
-                Default_ATK(ref attacker, new Vector3(posX + valueVec2.x, posY, posZ - valueVec2.y), attacker.rotation, unitStat, whichSkill);
-                Default_ATK(ref attacker, new Vector3(posX - valueVec2.x, posY, posZ + valueVec2.y), attacker.rotation, unitStat, whichSkill);
-                //Default_ATK(ref attacker, new Vector3(newX + 0.58f, newY, newZ), attacker.rotation, unitStat.__PUB_ATK__Val, unitStat.__PUB_Critical_Rate, unitStat.__PUB_Critical_P, whichSkill);
-                //Default_ATK(ref attacker, new Vector3(newX - 0.58f, newY, newZ), attacker.rotation, unitStat.__PUB_ATK__Val, unitStat.__PUB_Critical_Rate, unitStat.__PUB_Critical_P, whichSkill);
-            }
-            //좌측 또는 우측에서 발사하는 거면
-            else
-            {
-                Default_ATK(ref attacker, attacker.position, attacker.rotation, unitStat, whichSkill);
-                Default_ATK(ref attacker, new Vector3(posX - valueVec2.x, posY, posZ + valueVec2.y), attacker.rotation, unitStat, whichSkill);
-                Default_ATK(ref attacker, new Vector3(posX + valueVec2.x, posY, posZ - valueVec2.y), attacker.rotation, unitStat, whichSkill);
-            }
-        }
-
-        //임시로 설정한 스킬 ID이기 때문에 후에 함수 이름을 바꿔줘야할 수도 있다.
-        //속사 스킬
-        public void _Skill_00000006(Transform attacker, SkillBaseStat whichSkill, Unit__Base_Stat unitStat, PlayerController plyC, bool isPlayerUsingThis)
-        {
-            float newX = attacker.position.x;
-            float newY = attacker.position.y;
-            float newZ = attacker.position.z;
-
-            //산탄 스킬과 코드가 매우 유사하므로 최적화에 대한 고찰이 필요
-
-            //좌측 또는 우측에서 발사하는 거면
-            if (attacker.name != "Front")
-            {
-                Default_ATK(ref attacker, attacker.position, attacker.rotation, unitStat, whichSkill);
-                Default_ATK(ref attacker, new Vector3(newX + 1.16f, newY, newZ), attacker.rotation, unitStat, whichSkill);
-                Default_ATK(ref attacker, new Vector3(newX - 1.16f, newY, newZ), attacker.rotation, unitStat, whichSkill);
-            }
-            //앞에서 말사하는 거면
-            else
-            {
-                Default_ATK(ref attacker, attacker.position, attacker.rotation, unitStat, whichSkill);
-                Default_ATK(ref attacker, new Vector3(newX, newY, newZ + 1.16f), attacker.rotation, unitStat, whichSkill);
-                Default_ATK(ref attacker, new Vector3(newX, newY, newZ - 1.16f), attacker.rotation, unitStat, whichSkill);
             }
         }
 

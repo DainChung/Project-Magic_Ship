@@ -30,8 +30,10 @@ public class EnemyStat : Unit__Base_Stat {
 }
 
 public class EnemyEngine : Unit__Base_Engine {
+
     public Unit__Base_Movement_Engine __ENE_M_Engine = new Unit__Base_Movement_Engine();
     public Unit__Base_Combat_Engine __ENE_C_Engine = new Unit__Base_Combat_Engine();
+    public Unit__Skill_Engine __ENE_Skill_Engine = new Unit__Skill_Engine();
 
     //destiTrn을 바라보는 방향 또는 그 반대 방향
     private Quaternion destiQT;
@@ -173,6 +175,10 @@ public class EnemyController : MonoBehaviour {
         //이속, 회전속도, 체력, 마나, 파워 게이지, 공격력, 크리확률, 크리계수
         __ENE_Stat.SampleInit(10.0f, 30.0f, 10, 10, 10, 1, 0.1f, 2.0f);
         __ENE_Engine.enemyCoolTimer = enemyCoolTimer;
+
+        //CombatEngine에서 해당 클래스에 접근할 수 있도록 밑작업
+        __ENE_Engine.__ENE_C_Engine.__SET_unit_M_Engine = __ENE_Engine.__ENE_M_Engine;
+        __ENE_Engine.__ENE_C_Engine.__SET_unit_Skill_Engine = __ENE_Engine.__ENE_Skill_Engine;
 
         //쿨타임을 위한 부울 변수들 초기화
         for (int index = 0; index < __ENE_Engine._PUB_enemy_Is_ON_CoolTime.Length; index++)

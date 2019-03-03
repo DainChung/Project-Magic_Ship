@@ -41,6 +41,7 @@ public class PlayerEngine : Unit__Base_Engine {
 
     public Unit__Base_Movement_Engine __PLY_M_Engine = new Unit__Base_Movement_Engine();
     public Unit__Base_Combat_Engine __PLY_C_Engine = new Unit__Base_Combat_Engine();
+    public Unit__Skill_Engine __PLY_Skill_Engine = new Unit__Skill_Engine();
 }
 
 public class PlayerController : MonoBehaviour {
@@ -94,9 +95,12 @@ public class PlayerController : MonoBehaviour {
         //이속, 회전속도, 체력, 마나, 파워 게이지, 공격력, 크리확률, 크리계수
         __PLY_Stat.SampleInit(10.0f, 30.0f, 10, 10, 10, 1, 0.1f, 2.0f);
 
-        //Unit__Base_Combat_Engine이 Unit__Base_Movement_Engine에 접근 할 수 있도록 한다.
+        //Unit__Base_Combat_Engine이 Unit__Base_Movement_Engine과 __PLY_SKill_Engine에 접근 할 수 있도록 한다.
         __PLY_Engine.__PLY_C_Engine.__SET_unit_M_Engine = __PLY_Engine.__PLY_M_Engine;
+        __PLY_Engine.__PLY_C_Engine.__SET_unit_Skill_Engine = __PLY_Engine.__PLY_Skill_Engine;
 
+        //Unit__Skill_Engine이 Unit__Base_Combat_Engine에 접근할 수 있도록 한다.
+        __PLY_Engine.__PLY_Skill_Engine.__SET_unit_Combat_Engine = __PLY_Engine.__PLY_C_Engine;
 
         //----------------------------------------------------------------------------------------
         //20190117 이 지점에서 PlayerInfoManager를 통해 지정된 Skill들을 읽어온다. (Skill ID 값만 읽기)
