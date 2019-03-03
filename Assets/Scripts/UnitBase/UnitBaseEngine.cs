@@ -278,17 +278,12 @@ public class Unit__Base_Engine {
             }
         }
 
-        //커밋 후 도트 회복, 도트 딜 함수 제작 (모든 변수에 대해 작동하도록 일원화 할 것)
-        //일반 회복(또는 버프), 일반 추가 딜(또는 디버프) 함수 제작 (모든 변수에 대해 작동하도록 일원화 할 것)
-
-        //위 내용 완성 후 커밋
-
-        //커밋 후 ID 체계화 작업 및 함수 이름에 적용
+        //제너릭 메소드(T) 이용하여 Using_Skill(...) 계열과 Using_Skill_ENE(...)계열 통합할 것.
+        //그 외 제너릭 메소드를 이용해서 통합할 수 있는 것드 통합할 것
 
         //위 내용 완료 후 커밋
 
-        //제너릭 메소드(T) 이용하여 Using_Skill(...) 계열과 Using_Skill_ENE(...)계열 통합할 것.
-        //그 외 제너릭 메소드를 이용해서 통합할 수 있는 것드 통합할 것
+        //커밋 후 ID 체계화 작업 및 함수 이름에 적용
 
         //위 내용 완료 후 커밋
     }
@@ -322,6 +317,7 @@ public class Unit__Base_Engine {
             get { return prefabBulletPath; }
         }
 
+
         //하나의 투사체를 일직선 상으로 발사하는 기본 공격 (디버프 유무를 나중에 추가할 것)
         //투사체를 발사할 때 발사 위치와 발사 방향을 따로 지정해줘야 되는 경우
         public void Default_ATK(ref Transform attacker, Vector3 spawnPosition, Quaternion spawnRotation, Unit__Base_Stat unitStat, SkillBaseStat whichSkill)
@@ -346,6 +342,7 @@ public class Unit__Base_Engine {
             spawned_OBJ.GetComponent<AmmoBase>().__Init_Ammo(55.0f, attacker.tag, unitStat.__PUB_ATK__Val, unitStat.__PUB_Critical_Rate, unitStat.__PUB_Critical_P, whichSkill);
         }
 
+
         //투사체를 발사할 때 발사 위치와 발사 방향을 따로 지정할 필요가 없는 경우
         public void Default_ATK(ref Transform attacker, Unit__Base_Stat unitStat, SkillBaseStat whichSkill)
         {
@@ -361,9 +358,11 @@ public class Unit__Base_Engine {
             spawned_OBJ.GetComponent<AmmoBase>().__Init_Ammo(55.0f, attacker.tag, unitStat.__PUB_ATK__Val, unitStat.__PUB_Critical_Rate, unitStat.__PUB_Critical_P, whichSkill);
         }
 
+
+
         //Ammo부분은 역시 SkillBaseStat으로 나중에 옮기는 편이 좋을 것으로 보임.
         //Player 전용
-        public void Using_Skill(ref Transform attacker, SkillBaseStat whichSkill, Unit__Base_Stat unitStat, PlayerController plyC, bool isPlayerUsingThis)
+        public void Using_Skill(ref Transform attacker, SkillBaseStat whichSkill, PlayerController plyC, bool isPlayerUsingThis)
         {
             string funcName = "_Skill_";
 
@@ -393,35 +392,36 @@ public class Unit__Base_Engine {
             method.Invoke(unit_Skill_Engine, new object[] { attacker, whichSkill, plyC, isPlayerUsingThis });
         }
 
-        //투사체 외에 무언가를 소환하는 스킬들
-        //일단 플레이어 전용으로만 작성
-        private void _Skill_Spawn(SkillBaseStat whichSkill, PlayerController plyC)
+        //Using_Skill 통합본 작업 중
+        //Using_Skill 플레이어 전용 함수 내용 이식
+        public void Using_Skill<T>(ref Transform attacker, SkillBaseStat whichSkill, T controller, bool isUnitUsingThis)
         {
-            plyC._Set_SPW_MOS_Skill_Activated = true;
+            string funcName = "_Skill_";
 
-            //7번 스킬 지형소환처럼 마우스로 투사체가 아닌 물체를 소환하는 스킬
-            if (whichSkill.__GET_Skill_Code_S == _SKILL_CODE_Sub.MOS)
+            //임시 조치. 코드 정리 도중 ID 체계화 과정에서 수정 필수
+            if (whichSkill.__Get_Skill_ID == "00000001")
             {
-                //따로 만들어둔 SampleConstructedOBJ를 소환하도록 한다.
-                GameObject constructedOBJ = Resources.Load(prefabBulletPath + "SampleConstructedOBJ") as GameObject;
-
-                //소환할 오브젝트 소환하고 값 설정
-                GameObject spawned_OBJ;
-                spawned_OBJ = (GameObject)(MonoBehaviour.Instantiate(constructedOBJ, plyC.transform.position, plyC.transform.rotation));
-
-                spawned_OBJ.GetComponent<ConstructedOBJ>().__Init_ConstructedOBJ(whichSkill, plyC);
+                funcName += "00000000";
+                Debug.Log("This is HP DeBuff Skill");
             }
-
-            //8번 스킬 우박처럼 마우스로 투사체가 아닌 것을 소환하는 스킬
-            else if (whichSkill.__GET_Skill_Code_S == _SKILL_CODE_Sub.NULL)
-            {
-
-            }
-            //잘못된 스킬
             else
             {
-
+                funcName += whichSkill.__Get_Skill_ID;
             }
+
+            //funcName = "_Skill_" + whichSkill.__Get_Skill_ID;
+
+            //
+            System.Type type = unit_Skill_Engine.GetType();
+
+            MethodInfo method = type.GetMethod(funcName);
+            //protected나 private 함수에 접근할 수 있도록 하는 조치
+            BindingFlags eFlags = BindingFlags.Instance | BindingFlags.NonPublic;
+
+            //접근을 위한 조치를 반영한다.
+            method = typeof(Unit__Skill_Engine).GetMethod(funcName, eFlags);
+            //funcName과 동일한 이름을 가진 함수를 unit_Skill_Engine에서 호출한다.
+            method.Invoke(unit_Skill_Engine, new object[] { attacker, whichSkill, controller, isUnitUsingThis });
         }
 
         //=================================================================================================================================================================================
