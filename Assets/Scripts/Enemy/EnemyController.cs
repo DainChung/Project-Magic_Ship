@@ -135,7 +135,7 @@ public class EnemyAI {
     public void Attack_Default(float coolTime, ref Transform attacker, Unit__Base_Stat unitStat, int boolIndex)
     {
         //공격
-        __ENE_Engine._unit_Combat_Engine.Default_ATK(ref attacker, attacker.position, attacker.rotation, unitStat, null);
+        __ENE_Engine._unit_Combat_Engine.Default_ATK(ref attacker, null);
 
         //딜레이
         enemyCoolTimer.StartCoroutine(enemyCoolTimer.Timer(coolTime, (input) => { enemy_is_ON_CoolTime[boolIndex] = input; }, true, (input) => { dummyFloatTime[0] = input; }));

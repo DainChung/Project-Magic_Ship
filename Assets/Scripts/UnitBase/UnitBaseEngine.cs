@@ -9,7 +9,8 @@ using PMS_Math;
 
 public class UnitBaseEngine : MonoBehaviour {
 
-    //인스펙터 창에 보일 필요가 없으므로 숨긴다.---
+    //------------------------------------------
+    //인스펙터 창에 보일 필요가 없으므로 숨긴다.
     //각 클래스를 사용하기 위한 선언
     [HideInInspector]
     public Unit__Base_Movement_Engine _unit_Move_Engine = new Unit__Base_Movement_Engine();
@@ -98,7 +99,7 @@ public class UnitBaseEngine : MonoBehaviour {
         }
 
         //스피드 버프 또는 디버프에 대한 함수 (이동속도 값을 직접적으로 제어하지 않고 다른 변수로 제어)
-        public void __GET_BUFF__About_Speed<T>(int isBuff_OR_DeBuff, SkillBaseStat whichSkill, Unit__Base_Stat unitStat, T controller)
+        public void __GET_BUFF__About_Speed(int isBuff_OR_DeBuff, SkillBaseStat whichSkill)
         {
             try
             {
@@ -109,19 +110,18 @@ public class UnitBaseEngine : MonoBehaviour {
                 if (_unit_Base_Engine.playerController != null)
                 {
                     _unit_Base_Engine.playerController.StartCoroutine(
-                        _unit_Base_Engine.playerController.__PLY_CoolTimer.Timer_Do_Once(whichSkill.__GET_Skill_ING_Time,
-                        (input) => { unitStat.__PUB_Stat_Locker[0] = input; },
-                        unitStat.__PUB_Stat_Locker[0])
+                        _unit_Base_Engine.playerController.__PLY_CoolTimer.Timer_Do_Once(   whichSkill.__GET_Skill_ING_Time,
+                        (input) => { _unit_Base_Engine._unit_Stat.__PUB_Stat_Locker[0] = input; },
+                        _unit_Base_Engine._unit_Stat.__PUB_Stat_Locker[0]   )
                         );
                 }
                 //enemy인 경우
                 else if (_unit_Base_Engine.enemyController != null)
                 {
                     _unit_Base_Engine.enemyController.StartCoroutine(
-                        _unit_Base_Engine.enemyController._GET__ENE_AI.enemyCoolTimer.Timer_Do_Once(
-                            whichSkill.__GET_Skill_ING_Time,
-                            (input) => { unitStat.__PUB_Stat_Locker[0] = input; },
-                            unitStat.__PUB_Stat_Locker[0])
+                        _unit_Base_Engine.enemyController._GET__ENE_AI.enemyCoolTimer.Timer_Do_Once(   whichSkill.__GET_Skill_ING_Time,
+                            (input) => { _unit_Base_Engine._unit_Stat.__PUB_Stat_Locker[0] = input; },
+                            _unit_Base_Engine._unit_Stat.__PUB_Stat_Locker[0]   )
                             );
                 }
                 
@@ -169,7 +169,7 @@ public class UnitBaseEngine : MonoBehaviour {
 
         //하나의 투사체를 일직선 상으로 발사하는 기본 공격 (디버프 유무를 나중에 추가할 것)
         //투사체를 발사할 때 발사 위치와 발사 방향을 따로 지정해줘야 되는 경우
-        public void Default_ATK(ref Transform attacker, Vector3 spawnPosition, Quaternion spawnRotation, Unit__Base_Stat unitStat, SkillBaseStat whichSkill)
+        public void Default_ATK(ref Transform attacker, Vector3 spawnPosition, Quaternion spawnRotation, SkillBaseStat whichSkill)
         {
             //"Assets/Resources/Prefabs/Bullets" 경로에서 직접 Prefab을 뽑아쓰는 쪽으로 변경
 
@@ -188,27 +188,36 @@ public class UnitBaseEngine : MonoBehaviour {
             GameObject spawned_OBJ;
             spawned_OBJ = (GameObject)(MonoBehaviour.Instantiate(threw_Ammo, spawnPosition, spawnRotation));
             //투사체가 날아가는 속도를 특정 값으로 설정. 나중엔 DB에서 긁어올 것
-            spawned_OBJ.GetComponent<AmmoBase>().__Init_Ammo(55.0f, attacker.tag, unitStat.__PUB_ATK__Val, unitStat.__PUB_Critical_Rate, unitStat.__PUB_Critical_P, whichSkill);
+            spawned_OBJ.GetComponent<AmmoBase>().__Init_Ammo(
+                55.0f,
+                attacker.tag,
+                unit_Base_Engine._unit_Stat.__PUB_ATK__Val,
+                unit_Base_Engine._unit_Stat.__PUB_Critical_Rate,
+                unit_Base_Engine._unit_Stat.__PUB_Critical_P,
+                whichSkill
+                );
         }
 
 
         //투사체를 발사할 때 발사 위치와 발사 방향을 따로 지정할 필요가 없는 경우
-        public void Default_ATK(ref Transform attacker, Unit__Base_Stat unitStat, SkillBaseStat whichSkill)
+        public void Default_ATK(ref Transform attacker, SkillBaseStat whichSkill)
         {
             GameObject threw_Ammo = Resources.Load(prefabBulletPath + "SampleBullet") as GameObject;
-            //나중에는 SkillBaseStat에 private string bulletName 변수를 만들고 그것을 읽어오도록 할 것
-            //예시)  GameObject threw_Ammo = Resources.Load(prefabBulletPath + whichSkill.bulletName) as GameObject;
-
-            //private string bulletName 변수는 Sample__SkillDataBase.csv에서 읽어오도록 만들것
 
             GameObject spawned_OBJ;
             spawned_OBJ = (GameObject)(MonoBehaviour.Instantiate(threw_Ammo, attacker.position, attacker.rotation));
             //투사체가 날아가는 속도를 특정 값으로 설정. 나중엔 DB에서 긁어올 것
-            spawned_OBJ.GetComponent<AmmoBase>().__Init_Ammo(55.0f, attacker.tag, unitStat.__PUB_ATK__Val, unitStat.__PUB_Critical_Rate, unitStat.__PUB_Critical_P, whichSkill);
+            spawned_OBJ.GetComponent<AmmoBase>().__Init_Ammo(
+                55.0f,
+                attacker.tag,
+                unit_Base_Engine._unit_Stat.__PUB_ATK__Val,
+                unit_Base_Engine._unit_Stat.__PUB_Critical_Rate,
+                unit_Base_Engine._unit_Stat.__PUB_Critical_P,
+                whichSkill
+                );
         }
 
-        //Using_Skill 통합본 작업 중
-        //Using_Skill 플레이어 전용 함수 내용 이식
+        //스킬 사용시 모두 이 함수를 통함.
         public void Using_Skill(ref Transform attacker, SkillBaseStat whichSkill, bool isUnitUsingThis)
         {
             string funcName = "_Skill_";
@@ -267,7 +276,6 @@ public class UnitBaseEngine : MonoBehaviour {
     //HP쪽 스킬들처럼 한 함수가 두 가지 이상의 일을 하는 경우에는 일단 "00000000" || "00000001" 인 경우 모두 "00000000"으로 해석하도록 임시 조치를 취할 것
 
     //HP에 관여하는 스킬들
-    //플레이어 전용
     private void _Skill_00000000(Transform attacker, SkillBaseStat whichSkill, bool isUnitUsingThis)
     {
         int isHit_OR_Heal = 0;
@@ -300,7 +308,12 @@ public class UnitBaseEngine : MonoBehaviour {
 
                 //차선책으로 클래스 간 상속 구조를 뜯어고치고 UnitBaseEngine을 각 Object에 직접 추가하여 StartCoroutine함수를 this.StartCoroutine(...)으로 개편하고
                 //__PLY_Stat은 UnitBaseEngine에 변수를 따로 만들어서 함수 인자로 전달받지 말고 클래스 내에서 직접 가져다 쓸 것 => Enemy와 Player 간의 함수 통합 이슈 자체가 사라짐
-                StartCoroutine(_unit_Stat.__Get_HIT__About_Health_FREQ(whichSkill.__GET_Skill_ING_Time, 1.0f, (int)(whichSkill.__GET_Skill_Rate), isHit_OR_Heal));
+                StartCoroutine(
+                    _unit_Stat.__Get_HIT__About_Health_FREQ(   whichSkill.__GET_Skill_ING_Time,
+                    1.0f,
+                    (int)(whichSkill.__GET_Skill_Rate),
+                    isHit_OR_Heal   )
+                    );
             }
             //상대에게 도트 딜을 넣을 스킬
             else if (whichSkill.__GET_Skill_Code_M == _SKILL_CODE_Main.DBF)
@@ -308,7 +321,7 @@ public class UnitBaseEngine : MonoBehaviour {
                 //디버프가 담긴 하나의 투사체를 발사한다.
                 //투사체의 외형 바꾸기는 일단 넘어갈 것.
 
-                _unit_Combat_Engine.Default_ATK(ref attacker, _unit_Stat, whichSkill);
+                _unit_Combat_Engine.Default_ATK(ref attacker, whichSkill);
             }
             //오류
             else
@@ -326,13 +339,13 @@ public class UnitBaseEngine : MonoBehaviour {
         //SP(이동속도) 버프 스킬 OR 플레이어가 SP(이동속도) 디버프를 받았을 때
         if (whichSkill.__GET_Skill_Code_M == _SKILL_CODE_Main.BUF || !(isUnitUsingThis))
         {
-            //플레이어가 사용한 거면
+            //유닛이 사용한 거면
             if (isUnitUsingThis)
             {
                 //__GET_BUFF__About_Speed가 SP(이동속도) 버프를 수행한다.
                 isBuFF_OR_DeBuff = 1;
             }
-            //플레이어가 SP(이동속도) 디버프 스킬에 피격된 거면
+            //유닛이 SP(이동속도) 디버프 스킬에 피격된 거면
             else if (!(isUnitUsingThis))
             {
                 //__GET_BUFF__About_Speed가 SP(이동속도) 디버프를 수행한다.
@@ -344,20 +357,10 @@ public class UnitBaseEngine : MonoBehaviour {
             }
 
             //이동속도 버프 OR 디버프를 수행한다.
-            //player의 경우와 enemy의 경우를 나누면서 함수를 통합하는 방법은 이것밖에 떠오르지 않는다.
-            //player의 경우
-            if (playerController != null)
-            {
-                _unit_Move_Engine.__GET_BUFF__About_Speed(isBuFF_OR_DeBuff, whichSkill, _unit_Stat, playerController);
-            }
-            //enemy의 경우
-            else
-            {
-                //_unit_Move_Engine.__GET_BUFF__About_Speed(isBuFF_OR_DeBuff, whichSkill, _unit_Stat, enemyController);
-            }
+            _unit_Move_Engine.__GET_BUFF__About_Speed(isBuFF_OR_DeBuff, whichSkill);
 
         }
-        //상대에게 SP(이동속도) 디버프를 걸 때 스킬
+        //유닛이 상대에게 SP(이동속도) 디버프를 걸 때 스킬
         else if (whichSkill.__GET_Skill_Code_M == _SKILL_CODE_Main.DBF)
         {
 
@@ -371,12 +374,11 @@ public class UnitBaseEngine : MonoBehaviour {
 
     //후에 5번 스킬과 6번 스킬을 통합할 것
     //산탄 스킬
-    private void _Skill_00000005(Transform attacker, SkillBaseStat whichSkill, bool isPlayerUsingThis)
+    private void _Skill_00000005(Transform attacker, SkillBaseStat whichSkill, bool isUnitUsingThis)
     {
         Vector2 valueVec2 = Rotation_Math.Rotation_AND_Position(attacker.rotation, 0.58f, 0.0f);
 
         float posX = attacker.position.x;
-        float posY = attacker.position.y;
         float posZ = attacker.position.z;
 
         //일단 지정된 attacker(캐릭터의 전면부)에서 3개의 기본 탄환을 서로 각 사선에 평행하도록 발사할 것.
@@ -388,18 +390,16 @@ public class UnitBaseEngine : MonoBehaviour {
         //앞에서 발사하는 거면
         if (attacker.name == "Front")
         {
-            _unit_Combat_Engine.Default_ATK(ref attacker, attacker.position, attacker.rotation, _unit_Stat, whichSkill);
-            _unit_Combat_Engine.Default_ATK(ref attacker, new Vector3(posX + valueVec2.x, posY, posZ - valueVec2.y), attacker.rotation, _unit_Stat, whichSkill);
-            _unit_Combat_Engine.Default_ATK(ref attacker, new Vector3(posX - valueVec2.x, posY, posZ + valueVec2.y), attacker.rotation, _unit_Stat, whichSkill);
-            //Default_ATK(ref attacker, new Vector3(newX + 0.58f, newY, newZ), attacker.rotation, unitStat.__PUB_ATK__Val, unitStat.__PUB_Critical_Rate, unitStat.__PUB_Critical_P, whichSkill);
-            //Default_ATK(ref attacker, new Vector3(newX - 0.58f, newY, newZ), attacker.rotation, unitStat.__PUB_ATK__Val, unitStat.__PUB_Critical_Rate, unitStat.__PUB_Critical_P, whichSkill);
+            _unit_Combat_Engine.Default_ATK(ref attacker, attacker.position, attacker.rotation, whichSkill);
+            _unit_Combat_Engine.Default_ATK(ref attacker, new Vector3(posX + valueVec2.x, attacker.position.y, posZ - valueVec2.y), attacker.rotation, whichSkill);
+            _unit_Combat_Engine.Default_ATK(ref attacker, new Vector3(posX - valueVec2.x, attacker.position.y, posZ + valueVec2.y), attacker.rotation, whichSkill);
         }
         //좌측 또는 우측에서 발사하는 거면
         else
         {
-            _unit_Combat_Engine.Default_ATK(ref attacker, attacker.position, attacker.rotation, _unit_Stat, whichSkill);
-            _unit_Combat_Engine.Default_ATK(ref attacker, new Vector3(posX - valueVec2.x, posY, posZ + valueVec2.y), attacker.rotation, _unit_Stat, whichSkill);
-            _unit_Combat_Engine.Default_ATK(ref attacker, new Vector3(posX + valueVec2.x, posY, posZ - valueVec2.y), attacker.rotation, _unit_Stat, whichSkill);
+            _unit_Combat_Engine.Default_ATK(ref attacker, attacker.position, attacker.rotation, whichSkill);
+            _unit_Combat_Engine.Default_ATK(ref attacker, new Vector3(posX - valueVec2.x, attacker.position.y, posZ + valueVec2.y), attacker.rotation, whichSkill);
+            _unit_Combat_Engine.Default_ATK(ref attacker, new Vector3(posX + valueVec2.x, attacker.position.y, posZ - valueVec2.y), attacker.rotation, whichSkill);
         }
     }
 
@@ -415,21 +415,21 @@ public class UnitBaseEngine : MonoBehaviour {
         //좌측 또는 우측에서 발사하는 거면
         if (attacker.name != "Front")
         {
-            _unit_Combat_Engine.Default_ATK(ref attacker, attacker.position, attacker.rotation, _unit_Stat, whichSkill);
-            _unit_Combat_Engine.Default_ATK(ref attacker, new Vector3(newX + 1.16f, newY, newZ), attacker.rotation, _unit_Stat, whichSkill);
-            _unit_Combat_Engine.Default_ATK(ref attacker, new Vector3(newX - 1.16f, newY, newZ), attacker.rotation, _unit_Stat, whichSkill);
+            _unit_Combat_Engine.Default_ATK(ref attacker, attacker.position, attacker.rotation, whichSkill);
+            _unit_Combat_Engine.Default_ATK(ref attacker, new Vector3(newX + 1.16f, newY, newZ), attacker.rotation, whichSkill);
+            _unit_Combat_Engine.Default_ATK(ref attacker, new Vector3(newX - 1.16f, newY, newZ), attacker.rotation, whichSkill);
         }
         //앞에서 발사하는 거면
         else
         {
-            _unit_Combat_Engine.Default_ATK(ref attacker, attacker.position, attacker.rotation, _unit_Stat, whichSkill);
-            _unit_Combat_Engine.Default_ATK(ref attacker, new Vector3(newX, newY, newZ + 1.16f), attacker.rotation, _unit_Stat, whichSkill);
-            _unit_Combat_Engine.Default_ATK(ref attacker, new Vector3(newX, newY, newZ - 1.16f), attacker.rotation, _unit_Stat, whichSkill);
+            _unit_Combat_Engine.Default_ATK(ref attacker, attacker.position, attacker.rotation, whichSkill);
+            _unit_Combat_Engine.Default_ATK(ref attacker, new Vector3(newX, newY, newZ + 1.16f), attacker.rotation, whichSkill);
+            _unit_Combat_Engine.Default_ATK(ref attacker, new Vector3(newX, newY, newZ - 1.16f), attacker.rotation, whichSkill);
         }
     }
 
     //지형 소환
-    private void _Skill_00000007(Transform attacker, SkillBaseStat whichSkill, bool isPlayerUsingThis)
+    private void _Skill_00000007(Transform attacker, SkillBaseStat whichSkill, bool isUnitUsingThis)
     {
         //player인 경우
         if (playerController != null)

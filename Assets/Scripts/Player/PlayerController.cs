@@ -208,7 +208,7 @@ public class PlayerController : MonoBehaviour {
         if (Input.GetMouseButtonDown(0) && _Is_On_CoolTime__Default_ATK && !(_SPW_MOS_Skill_Activated))
         {
 
-            __PLY_Engine._unit_Combat_Engine.Default_ATK(ref playerAttacker, __PLY_Stat, null);
+            __PLY_Engine._unit_Combat_Engine.Default_ATK(ref playerAttacker, null);
 
             //쿨타임을 사용하기 위한 코루틴. 따로 외부 클래스 제작함. 상세 항목은 해당 클래스 참조
             //나중에 쿨타임 값 같은 것도 따로 관리할 것
