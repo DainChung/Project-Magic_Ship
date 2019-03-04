@@ -145,7 +145,13 @@ public class EnemyAI {
 public class EnemyController : MonoBehaviour {
 
     public EnemyStat __ENE_Stat = new EnemyStat();
+
     private EnemyAI __ENE_AI = new EnemyAI();
+    public EnemyAI _GET__ENE_AI
+    {
+        get { return __ENE_AI; }
+    }
+
     private EnemyUI sEnemyUI;
 
     public UnitCoolTimer enemyCoolTimer;
@@ -163,6 +169,7 @@ public class EnemyController : MonoBehaviour {
         //이속, 회전속도, 체력, 마나, 파워 게이지, 공격력, 크리확률, 크리계수
         __ENE_Stat.SampleInit(10.0f, 30.0f, 10, 10, 10, 1, 0.1f, 2.0f);
 
+        //UnitBaseEngine에 Enemy라고 알려준다.
         __ENE_AI.__ENE_Engine = transform.GetComponent<UnitBaseEngine>();
 
         __ENE_AI.enemyCoolTimer = enemyCoolTimer;

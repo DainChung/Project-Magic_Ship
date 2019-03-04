@@ -49,6 +49,12 @@ public class UnitBaseEngine : MonoBehaviour {
     //유닛들의 기본적인 움직임에 관한 클래스
     public class Unit__Base_Movement_Engine {
 
+        private UnitBaseEngine _unit_Base_Engine;
+        public UnitBaseEngine _SET_unit_Base_Engine
+        {
+            set { _unit_Base_Engine = value; }
+        }
+
         public Vector3 movingVector;
 
         private float speed_BUF_Amount;
@@ -92,14 +98,33 @@ public class UnitBaseEngine : MonoBehaviour {
         }
 
         //스피드 버프 또는 디버프에 대한 함수 (이동속도 값을 직접적으로 제어하지 않고 다른 변수로 제어)
-        public void __GET_BUFF__About_Speed(int isBuff_OR_DeBuff, SkillBaseStat whichSkill, Unit__Base_Stat unitStat, PlayerController plyC)
+        public void __GET_BUFF__About_Speed<T>(int isBuff_OR_DeBuff, SkillBaseStat whichSkill, Unit__Base_Stat unitStat, T controller)
         {
             try
             {
                 speed_BUF_Amount += (whichSkill.__GET_Skill_Rate * isBuff_OR_DeBuff);
 
                 //지속시간 계산
-                plyC.StartCoroutine(plyC.__PLY_CoolTimer.Timer_Do_Once(whichSkill.__GET_Skill_ING_Time, (input) => { unitStat.__PUB_Stat_Locker[0] = input; }, unitStat.__PUB_Stat_Locker[0]) );
+                //player인 경우
+                if (_unit_Base_Engine.playerController != null)
+                {
+                    _unit_Base_Engine.playerController.StartCoroutine(
+                        _unit_Base_Engine.playerController.__PLY_CoolTimer.Timer_Do_Once(whichSkill.__GET_Skill_ING_Time,
+                        (input) => { unitStat.__PUB_Stat_Locker[0] = input; },
+                        unitStat.__PUB_Stat_Locker[0])
+                        );
+                }
+                //enemy인 경우
+                else if (_unit_Base_Engine.enemyController != null)
+                {
+                    _unit_Base_Engine.enemyController.StartCoroutine(
+                        _unit_Base_Engine.enemyController._GET__ENE_AI.enemyCoolTimer.Timer_Do_Once(
+                            whichSkill.__GET_Skill_ING_Time,
+                            (input) => { unitStat.__PUB_Stat_Locker[0] = input; },
+                            unitStat.__PUB_Stat_Locker[0])
+                            );
+                }
+                
             }
             //isBuff_OR_DeBuff 값이 1 또는 -1이 아니면 적용되는 Exception으로 대체 예정
             catch (System.Exception)
@@ -114,257 +139,6 @@ public class UnitBaseEngine : MonoBehaviour {
             speed_BUF_Amount = 0;
         }
     }
-
-    //==================================================================================================================================================
-    //==================================================================================================================================================
-
-    //스킬들의 기능을 담고 있는 클래스
-    public class Unit__Skill_Engine {
-
-        //private Unit__Base_Combat_Engine unit_Combat_Engine;
-        //public Unit__Base_Combat_Engine __SET_unit_Combat_Engine
-        //{
-        //    set { unit_Combat_Engine = value; }
-        //}
-
-        //private Unit__Base_Movement_Engine unit_Move_Engine;
-        //public Unit__Base_Movement_Engine __SET_unit_Move_Engine
-        //{
-        //    set { unit_Move_Engine = value; }
-        //}
-
-        ////Unit__Combat_Engine에 있는 스킬 함수들 이식, 스킬 함수 호출 방법을 Reflection으로 통일
-        ////HP쪽 스킬들처럼 한 함수가 두 가지 이상의 일을 하는 경우에는 일단 "00000000" || "00000001" 인 경우 모두 "00000000"으로 해석하도록 임시 조치를 취할 것
-
-        ////HP에 관여하는 스킬들
-        ////플레이어 전용
-        //private void _Skill_00000000(Transform attacker, SkillBaseStat whichSkill, PlayerController plyC, bool isUnitUsingThis)
-        //{
-        //    int isHit_OR_Heal = 0;
-
-        //    //도트 힐 OR 도트 딜
-        //    if (whichSkill.__GET_Skill_Code_T == _SKILL_CODE_Time.FREQ)
-        //    {
-        //        //도트 힐 스킬을 사용할 때 OR 도트 딜 디버프를 받았을 때
-        //        if (whichSkill.__GET_Skill_Code_M == _SKILL_CODE_Main.BUF || !(isUnitUsingThis))
-        //        {
-        //            //플레이어가 사용한 HP 도트 힐 스킬이면
-        //            if (isUnitUsingThis)
-        //            {
-        //                //__Get_HIT__About_Health_FREQ가 HP 도트 힐을 수행하도록 한다.
-        //                isHit_OR_Heal = -1;
-        //            }
-        //            //플레이어가 HP 도트 딜 스킬에 피격된 거면
-        //            else if (!(isUnitUsingThis))
-        //            {
-        //                //__Get_HIT__About_Health_FREQ가 HP 도트 딜을 수행하도록 한다.
-        //                isHit_OR_Heal = 1;
-        //            }
-        //            //오류
-        //            else
-        //            {
-        //            }
-
-
-        //            //그놈의 StartCoroutine 때문에 PlayerController를 받아와서 이렇게 이상한 형태로 작업함. 후에 다른 방법 알아낸다면 수정 필요
-
-        //            //차선책으로 클래스 간 상속 구조를 뜯어고치고 UnitBaseEngine을 각 Object에 직접 추가하여 StartCoroutine함수를 this.StartCoroutine(...)으로 개편하고
-        //            //__PLY_Stat은 UnitBaseEngine에 변수를 따로 만들어서 함수 인자로 전달받지 말고 클래스 내에서 직접 가져다 쓸 것 => Enemy와 Player 간의 함수 통합 이슈 자체가 사라짐
-        //            plyC.StartCoroutine(plyC.__PLY_Stat.__Get_HIT__About_Health_FREQ(whichSkill.__GET_Skill_ING_Time, 1.0f, (int)(whichSkill.__GET_Skill_Rate), isHit_OR_Heal));
-        //        }
-        //        //상대에게 도트 딜을 넣을 스킬
-        //        else if (whichSkill.__GET_Skill_Code_M == _SKILL_CODE_Main.DBF)
-        //        {
-        //            //디버프가 담긴 하나의 투사체를 발사한다.
-        //            //투사체의 외형 바꾸기는 일단 넘어갈 것.
-
-        //            unit_Combat_Engine.Default_ATK(ref attacker, plyC.__PLY_Stat, whichSkill);
-        //        }
-        //        //오류
-        //        else
-        //        {
-
-        //        }
-        //    }
-        //}
-        ////Enemy 전용
-        //private void _Skill_ENE_00000000(Transform attacker, SkillBaseStat whichSkill, EnemyController eneC, bool isUnitUsingThis)
-        //{
-        //    int isHit_OR_Heal = 0;
-
-        //    //도트 힐 OR 도트 딜
-        //    if (whichSkill.__GET_Skill_Code_T == _SKILL_CODE_Time.FREQ)
-        //    {
-        //        //도트 힐 스킬을 사용할 때 OR 도트 딜 디버프를 받았을 때
-        //        if (whichSkill.__GET_Skill_Code_M == _SKILL_CODE_Main.BUF || !(isUnitUsingThis))
-        //        {
-        //            //플레이어가 사용한 HP 도트 힐 스킬이면
-        //            if (isUnitUsingThis)
-        //            {
-        //                //__Get_HIT__About_Health_FREQ가 HP 도트 힐을 수행하도록 한다.
-        //                isHit_OR_Heal = -1;
-        //            }
-        //            //플레이어가 HP 도트 딜 스킬에 피격된 거면
-        //            else if (!(isUnitUsingThis))
-        //            {
-        //                //__Get_HIT__About_Health_FREQ가 HP 도트 딜을 수행하도록 한다.
-        //                isHit_OR_Heal = 1;
-        //            }
-        //            //오류
-        //            else
-        //            {
-        //            }
-
-
-        //            //그놈의 StartCoroutine 때문에 PlayerController를 받아와서 이렇게 이상한 형태로 작업함. 후에 다른 방법 알아낸다면 수정 필요
-        //            StartCoroutine(eneC.__ENE_Stat.__Get_HIT__About_Health_FREQ(whichSkill.__GET_Skill_ING_Time, 1.0f, (int)(whichSkill.__GET_Skill_Rate), isHit_OR_Heal));
-        //        }
-        //        //상대에게 도트 딜을 넣을 스킬
-        //        else if (whichSkill.__GET_Skill_Code_M == _SKILL_CODE_Main.DBF)
-        //        {
-        //            //디버프가 담긴 하나의 투사체를 발사한다.
-        //            //투사체의 외형 바꾸기는 일단 넘어갈 것.
-        //            unit_Combat_Engine.Default_ATK(ref attacker, eneC.__ENE_Stat, whichSkill);
-        //        }
-        //        //오류
-        //        else
-        //        {
-
-        //        }
-        //    }
-        //}
-
-        ////SP(이동속도)에 관여하는 스킬들
-        //private void _Skill_00000002(Transform attacker, SkillBaseStat whichSkill, PlayerController plyC, bool isUnitUsingThis)
-        //{
-        //    int isBuFF_OR_DeBuff = 0;
-
-        //    //SP(이동속도) 버프 스킬 OR 플레이어가 SP(이동속도) 디버프를 받았을 때
-        //    if (whichSkill.__GET_Skill_Code_M == _SKILL_CODE_Main.BUF || !(isUnitUsingThis))
-        //    {
-        //        //플레이어가 사용한 거면
-        //        if (isUnitUsingThis)
-        //        {
-        //            //__GET_BUFF__About_Speed가 SP(이동속도) 버프를 수행한다.
-        //            isBuFF_OR_DeBuff = 1;
-        //        }
-        //        //플레이어가 SP(이동속도) 디버프 스킬에 피격된 거면
-        //        else if (!(isUnitUsingThis))
-        //        {
-        //            //__GET_BUFF__About_Speed가 SP(이동속도) 디버프를 수행한다.
-        //            isBuFF_OR_DeBuff = -1;
-        //        }
-        //        //오류
-        //        else
-        //        {
-        //        }
-
-        //        //이동속도 버프 OR 디버프를 수행한다.
-        //        unit_Move_Engine.__GET_BUFF__About_Speed(isBuFF_OR_DeBuff, whichSkill, plyC.__PLY_Stat, plyC);
-        //    }
-        //    //상대에게 SP(이동속도) 디버프를 걸 때 스킬
-        //    else if (whichSkill.__GET_Skill_Code_M == _SKILL_CODE_Main.DBF)
-        //    {
-
-        //    }
-        //    //오류
-        //    else
-        //    {
-
-        //    }
-        //}
-
-        ////후에 5번 스킬과 6번 스킬을 통합할 것
-        ////산탄 스킬
-        //private void _Skill_00000005(Transform attacker, SkillBaseStat whichSkill, PlayerController plyC, bool isPlayerUsingThis)
-        //{
-        //    Vector2 valueVec2 = Rotation_Math.Rotation_AND_Position(attacker.rotation, 0.58f, 0.0f);
-
-        //    float posX = attacker.position.x;
-        //    float posY = attacker.position.y;
-        //    float posZ = attacker.position.z;
-
-        //    //일단 지정된 attacker(캐릭터의 전면부)에서 3개의 기본 탄환을 서로 각 사선에 평행하도록 발사할 것.
-        //    //탄환을 몇 개 발사할 것인지는 나중에 SkillBaseStat에서 읽어올 것
-        //    //일단 3개니까 이렇게 작성할 것
-
-        //    //본 함수의 0.58f와 1.16f, 이 두 수치에 대해서는 나중에 namespace ConstValueCollection에서 const float spawnDist 변수를 만들어서 관리할 것
-
-        //    //앞에서 발사하는 거면
-        //    if (attacker.name == "Front")
-        //    {
-        //        unit_Combat_Engine.Default_ATK(ref attacker, attacker.position, attacker.rotation, plyC.__PLY_Stat, whichSkill);
-        //        unit_Combat_Engine.Default_ATK(ref attacker, new Vector3(posX + valueVec2.x, posY, posZ - valueVec2.y), attacker.rotation, plyC.__PLY_Stat, whichSkill);
-        //        unit_Combat_Engine.Default_ATK(ref attacker, new Vector3(posX - valueVec2.x, posY, posZ + valueVec2.y), attacker.rotation, plyC.__PLY_Stat, whichSkill);
-        //        //Default_ATK(ref attacker, new Vector3(newX + 0.58f, newY, newZ), attacker.rotation, unitStat.__PUB_ATK__Val, unitStat.__PUB_Critical_Rate, unitStat.__PUB_Critical_P, whichSkill);
-        //        //Default_ATK(ref attacker, new Vector3(newX - 0.58f, newY, newZ), attacker.rotation, unitStat.__PUB_ATK__Val, unitStat.__PUB_Critical_Rate, unitStat.__PUB_Critical_P, whichSkill);
-        //    }
-        //    //좌측 또는 우측에서 발사하는 거면
-        //    else
-        //    {
-        //        unit_Combat_Engine.Default_ATK(ref attacker, attacker.position, attacker.rotation, plyC.__PLY_Stat, whichSkill);
-        //        unit_Combat_Engine.Default_ATK(ref attacker, new Vector3(posX - valueVec2.x, posY, posZ + valueVec2.y), attacker.rotation, plyC.__PLY_Stat, whichSkill);
-        //        unit_Combat_Engine.Default_ATK(ref attacker, new Vector3(posX + valueVec2.x, posY, posZ - valueVec2.y), attacker.rotation, plyC.__PLY_Stat, whichSkill);
-        //    }
-        //}
-
-        ////속사 스킬
-        //private void _Skill_00000006(Transform attacker, SkillBaseStat whichSkill, PlayerController plyC, bool isPlayerUsingThis)
-        //{
-        //    float newX = attacker.position.x;
-        //    float newY = attacker.position.y;
-        //    float newZ = attacker.position.z;
-
-        //    //산탄 스킬과 코드가 매우 유사하므로 최적화에 대한 고찰이 필요
-
-        //    //좌측 또는 우측에서 발사하는 거면
-        //    if (attacker.name != "Front")
-        //    {
-        //        unit_Combat_Engine.Default_ATK(ref attacker, attacker.position, attacker.rotation, plyC.__PLY_Stat, whichSkill);
-        //        unit_Combat_Engine.Default_ATK(ref attacker, new Vector3(newX + 1.16f, newY, newZ), attacker.rotation, plyC.__PLY_Stat, whichSkill);
-        //        unit_Combat_Engine.Default_ATK(ref attacker, new Vector3(newX - 1.16f, newY, newZ), attacker.rotation, plyC.__PLY_Stat, whichSkill);
-        //    }
-        //    //앞에서 발사하는 거면
-        //    else
-        //    {
-        //        unit_Combat_Engine.Default_ATK(ref attacker, attacker.position, attacker.rotation, plyC.__PLY_Stat, whichSkill);
-        //        unit_Combat_Engine.Default_ATK(ref attacker, new Vector3(newX, newY, newZ + 1.16f), attacker.rotation, plyC.__PLY_Stat, whichSkill);
-        //        unit_Combat_Engine.Default_ATK(ref attacker, new Vector3(newX, newY, newZ - 1.16f), attacker.rotation, plyC.__PLY_Stat, whichSkill);
-        //    }
-        //}
-
-        ////지형 소환
-        //private void _Skill_00000007(Transform attacker, SkillBaseStat whichSkill, PlayerController plyC, bool isPlayerUsingThis)
-        //{
-        //    plyC._Set_SPW_MOS_Skill_Activated = true;
-
-        //    //7번 스킬 지형소환처럼 마우스로 투사체가 아닌 물체를 소환하는 스킬
-        //    if (whichSkill.__GET_Skill_Code_S == _SKILL_CODE_Sub.MOS)
-        //    {
-        //        //따로 만들어둔 SampleConstructedOBJ를 소환하도록 한다.
-        //        GameObject constructedOBJ = Resources.Load(unit_Combat_Engine.__GET_prefabBulletPath + "SampleConstructedOBJ") as GameObject;
-
-        //        //소환할 오브젝트 소환하고 값 설정
-        //        GameObject spawned_OBJ;
-        //        spawned_OBJ = (GameObject)(MonoBehaviour.Instantiate(constructedOBJ, plyC.transform.position, plyC.transform.rotation));
-
-        //        spawned_OBJ.GetComponent<ConstructedOBJ>().__Init_ConstructedOBJ(whichSkill, plyC);
-        //    }
-
-        //    //8번 스킬 우박처럼 마우스로 투사체가 아닌 것을 소환하는 스킬
-        //    else if (whichSkill.__GET_Skill_Code_S == _SKILL_CODE_Sub.NULL)
-        //    {
-
-        //    }
-        //    //잘못된 스킬
-        //    else
-        //    {
-
-        //    }
-        //}
-
-
-        }
 
     //==================================================================================================================================================
     //==================================================================================================================================================
@@ -440,7 +214,6 @@ public class UnitBaseEngine : MonoBehaviour {
             string funcName = "_Skill_";
 
             //----------------------------------------------------------------
-            //실험을 위한 임시 코딩
             //아래 코드를 이용하여 player와 enemy 구분을 확인함
 
             //Debug.Log(controller.ToString());
@@ -448,15 +221,14 @@ public class UnitBaseEngine : MonoBehaviour {
             //Debug.Log(controller.GetType().ToString());
 
             //스킬 통합이 완료되기 전까지 
-            if (_playerController != null)
-            {
-                Debug.Log("Nogada_P");
-            }
-            else if (_enemyController != null)
-            {
-                Debug.Log("Enemy");
-                //funcName += "ENE_";
-            }
+            //if (_playerController != null)
+            //{
+            //    Debug.Log("Nogada_P");
+            //}
+            //else if (_enemyController != null)
+            //{
+            //    Debug.Log("Enemy");
+            //}
             ////----------------------------------------------------------------
 
             //임시 조치. 코드 정리 도중 ID 체계화 과정에서 수정 필수
@@ -486,107 +258,6 @@ public class UnitBaseEngine : MonoBehaviour {
             //funcName과 동일한 이름을 가진 함수를 unit_Skill_Engine에서 호출한다.
             method.Invoke(unit_Base_Engine, new object[] { attacker, whichSkill, isUnitUsingThis });
         }
-
-        ////=================================================================================================================================================================================
-        ////Enemy 전용 스킬 함수
-        //public void Using_Skill_ENE(ref Transform attacker, SkillBaseStat whichSkill, Unit__Base_Stat unitStat, EnemyController eneC, bool isEnemyUsingThis)
-        //{
-        //    //필살기인 경우
-        //    if (whichSkill.__GET_Skill_Code_M == _SKILL_CODE_Main.FIN)
-        //    {
-
-        //    }
-        //    //일반 스킬인 경우
-        //    else
-        //    {
-        //        //HP에 관여하는 스킬들
-        //        if (whichSkill.__GET_Skill_Code_S == _SKILL_CODE_Sub.HP)
-        //        {
-        //            _Skill_HP_ENE(whichSkill, unitStat, eneC, isEnemyUsingThis);
-        //        }
-        //        //MP에 관여하는 스킬들 (회복하는 경우에 한정)
-        //        else if (whichSkill.__GET_Skill_Code_S == _SKILL_CODE_Sub.MP)
-        //        {
-
-        //        }
-        //        //특별한 기능 없음
-        //        else if (whichSkill.__GET_Skill_Code_S == _SKILL_CODE_Sub.NULL)
-        //        {
-
-        //        }
-        //        //PP에 관여하는 스킬들 (회복하는 경우에 한정)
-        //        else if (whichSkill.__GET_Skill_Code_S == _SKILL_CODE_Sub.PP)
-        //        {
-
-        //        }
-        //        //이동속도에 관여하는 스킬들
-        //        else if (whichSkill.__GET_Skill_Code_S == _SKILL_CODE_Sub.SP)
-        //        {
-        //            //_SKill_SP_ENE(ref threw_Ammo, whichSkill, unitStat, eneC, isEnemyUsingThis);
-        //        }
-        //        //잘못된 스킬
-        //        else
-        //        {
-
-        //        }
-        //    }
-        //}
-
-        ////HP에 관여하는 스킬들
-        ////Enemy 전용
-        //private void _Skill_HP_ENE(SkillBaseStat whichSkill, Unit__Base_Stat unitStat, EnemyController eneC, bool isEnemyUsingThis)
-        //{
-        //    int isHit_OR_Heal = 0;
-
-        //    //도트 힐 OR 도트 딜
-        //    if (whichSkill.__GET_Skill_Code_T == _SKILL_CODE_Time.FREQ)
-        //    {
-        //        //도트 힐 스킬을 사용할 때 OR 도트 딜 디버프를 받았을 때
-        //        if (whichSkill.__GET_Skill_Code_M == _SKILL_CODE_Main.BUF || !(isEnemyUsingThis))
-        //        {
-        //            //Enemy가 사용한 HP 도트 힐 스킬이면
-        //            if (isEnemyUsingThis)
-        //            {
-        //                //__Get_HIT__About_Health_FREQ가 HP 도트 힐을 수행하도록 한다.
-        //                isHit_OR_Heal = -1;
-        //            }
-        //            //Enemy가 HP 도트 딜 스킬에 피격된 거면
-        //            else if (!(isEnemyUsingThis))
-        //            {
-        //                //__Get_HIT__About_Health_FREQ가 HP 도트 딜을 수행하도록 한다.
-        //                isHit_OR_Heal = 1;
-        //            }
-        //            //오류
-        //            else
-        //            {
-        //            }
-
-
-        //            //그놈의 StartCoroutine 때문에 EnemyController를 받아와서 이렇게 이상한 형태로 작업함. 후에 다른 방법 알아낸다면 수정 필요
-        //            eneC.StartCoroutine(unitStat.__Get_HIT__About_Health_FREQ(whichSkill.__GET_Skill_ING_Time, 1.0f, (int)(whichSkill.__GET_Skill_Rate), isHit_OR_Heal));
-        //        }
-        //        //상대에게 도트 딜을 넣을 스킬
-        //        else if (whichSkill.__GET_Skill_Code_M == _SKILL_CODE_Main.DBF)
-        //        {
-
-        //        }
-        //        //오류
-        //        else
-        //        {
-
-        //        }
-        //    }
-        //    //일반 힐
-        //    else if (whichSkill.__GET_Skill_Code_T == _SKILL_CODE_Time.NULL)
-        //    {
-
-        //    }
-        //    //오류
-        //    else
-        //    {
-
-        //    }
-        //}
     }
 
     //=================================================================================================================================================================================
@@ -646,53 +317,6 @@ public class UnitBaseEngine : MonoBehaviour {
             }
         }
     }
-
-    //Enemy 전용
-    //private void _Skill_ENE_00000000(Transform attacker, SkillBaseStat whichSkill, EnemyController eneC, bool isUnitUsingThis)
-    //{
-    //    int isHit_OR_Heal = 0;
-
-    //    //도트 힐 OR 도트 딜
-    //    if (whichSkill.__GET_Skill_Code_T == _SKILL_CODE_Time.FREQ)
-    //    {
-    //        //도트 힐 스킬을 사용할 때 OR 도트 딜 디버프를 받았을 때
-    //        if (whichSkill.__GET_Skill_Code_M == _SKILL_CODE_Main.BUF || !(isUnitUsingThis))
-    //        {
-    //            //플레이어가 사용한 HP 도트 힐 스킬이면
-    //            if (isUnitUsingThis)
-    //            {
-    //                //__Get_HIT__About_Health_FREQ가 HP 도트 힐을 수행하도록 한다.
-    //                isHit_OR_Heal = -1;
-    //            }
-    //            //플레이어가 HP 도트 딜 스킬에 피격된 거면
-    //            else if (!(isUnitUsingThis))
-    //            {
-    //                //__Get_HIT__About_Health_FREQ가 HP 도트 딜을 수행하도록 한다.
-    //                isHit_OR_Heal = 1;
-    //            }
-    //            //오류
-    //            else
-    //            {
-    //            }
-
-
-    //            //그놈의 StartCoroutine 때문에 PlayerController를 받아와서 이렇게 이상한 형태로 작업함. 후에 다른 방법 알아낸다면 수정 필요
-    //            StartCoroutine(eneC.__ENE_Stat.__Get_HIT__About_Health_FREQ(whichSkill.__GET_Skill_ING_Time, 1.0f, (int)(whichSkill.__GET_Skill_Rate), isHit_OR_Heal));
-    //        }
-    //        //상대에게 도트 딜을 넣을 스킬
-    //        else if (whichSkill.__GET_Skill_Code_M == _SKILL_CODE_Main.DBF)
-    //        {
-    //            //디버프가 담긴 하나의 투사체를 발사한다.
-    //            //투사체의 외형 바꾸기는 일단 넘어갈 것.
-    //            _unit_Combat_Engine.Default_ATK(ref attacker, eneC.__ENE_Stat, whichSkill);
-    //        }
-    //        //오류
-    //        else
-    //        {
-
-    //        }
-    //    }
-    //}
 
     //SP(이동속도)에 관여하는 스킬들
     private void _Skill_00000002(Transform attacker, SkillBaseStat whichSkill, bool isUnitUsingThis)
@@ -837,11 +461,6 @@ public class UnitBaseEngine : MonoBehaviour {
         {
 
         }
-
-        //제너릭 메소드(T) 이용하여 Using_Skill(...) 계열과 Using_Skill_ENE(...)계열 통합할 것.
-        //그 외 제너릭 메소드를 이용해서 통합할 수 있는 것드 통합할 것
-
-        //위 내용 완료 후 커밋
 
         //커밋 후 ID 체계화 작업 및 함수 이름에 적용
 

@@ -93,6 +93,7 @@ public class PlayerController : MonoBehaviour {
         //이속, 회전속도, 체력, 마나, 파워 게이지, 공격력, 크리확률, 크리계수
         __PLY_Stat.SampleInit(10.0f, 30.0f, 10, 10, 10, 1, 0.1f, 2.0f);
 
+        //UnitBaseEngine에 Player라고 알려준다.
         __PLY_Engine = transform.GetComponent<UnitBaseEngine>();
 
         //Unit__Base_Combat_Engine이 Unit__Base_Movement_Engine과 __PLY_SKill_Engine에 접근 할 수 있도록 한다.
