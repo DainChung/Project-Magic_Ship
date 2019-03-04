@@ -96,11 +96,8 @@ public class PlayerController : MonoBehaviour {
         __PLY_Engine = transform.GetComponent<UnitBaseEngine>();
 
         //Unit__Base_Combat_Engine이 Unit__Base_Movement_Engine과 __PLY_SKill_Engine에 접근 할 수 있도록 한다.
-        __PLY_Engine._unit_Combat_Engine.__SET_unit_Skill_Engine = __PLY_Engine._unit_Skill_Engine;
-
-        //Unit__Skill_Engine이 Unit__Base_Combat_Engine에 접근할 수 있도록 한다.
-        __PLY_Engine._unit_Skill_Engine.__SET_unit_Combat_Engine = __PLY_Engine._unit_Combat_Engine;
-        __PLY_Engine._unit_Skill_Engine.__SET_unit_Move_Engine = __PLY_Engine._unit_Move_Engine;
+        __PLY_Engine.playerController = this;
+        __PLY_Engine._unit_Combat_Engine.__SET_unit_Base_Engine = __PLY_Engine;
 
         //UnitBaseEngine이 Unit__Base_Stat 내용에 접근할 수 있도록 한다.
         __PLY_Engine._unit_Stat = __PLY_Stat;
@@ -306,7 +303,7 @@ public class PlayerController : MonoBehaviour {
                 __PLY_Stat.__GET_HIT__About_Mana(__PLY_Selected_Skills[index].__GET_Skill_Use_Amount, 1);
 
                 //UnitBaseEngine.Using_Skill에서 스킬 기능 처리
-                __PLY_Engine._unit_Combat_Engine.Using_Skill<PlayerController>(ref playerAttacker, __PLY_Selected_Skills[index], this, true);
+                __PLY_Engine._unit_Combat_Engine.Using_Skill(ref playerAttacker, __PLY_Selected_Skills[index], true);
                 //쿨타임 관련 처리
                 __PLY_CoolTimer.StartCoroutine(
                     __PLY_CoolTimer.Timer(  __PLY_Selected_Skills[index].__GET_Skill_Cool_Time,
@@ -330,6 +327,6 @@ public class PlayerController : MonoBehaviour {
     //플레이어가 디버프 스킬에 피격받았을 때의 함수
     public void _Player_GET_DeBuff(SkillBaseStat whichDeBuffSkill_Hit_Player)
     {
-        __PLY_Engine._unit_Combat_Engine.Using_Skill<PlayerController>(ref playerAttacker, whichDeBuffSkill_Hit_Player, this, false);
+        __PLY_Engine._unit_Combat_Engine.Using_Skill(ref playerAttacker, whichDeBuffSkill_Hit_Player, false);
     }
 }

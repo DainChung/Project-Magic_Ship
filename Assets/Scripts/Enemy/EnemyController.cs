@@ -168,14 +168,11 @@ public class EnemyController : MonoBehaviour {
         __ENE_AI.enemyCoolTimer = enemyCoolTimer;
 
         //CombatEngine에서 해당 클래스에 접근할 수 있도록 밑작업
-        __ENE_AI.__ENE_Engine._unit_Combat_Engine.__SET_unit_Skill_Engine = __ENE_AI.__ENE_Engine._unit_Skill_Engine;
+        __ENE_AI.__ENE_Engine.enemyController = this;
+        __ENE_AI.__ENE_Engine._unit_Combat_Engine.__SET_unit_Base_Engine = __ENE_AI.__ENE_Engine;
 
         //Unit__Base_Engine이 Unit__Base_Stat 내용에 접근할 수 있도록 한다.
         __ENE_AI.__ENE_Engine._unit_Stat = __ENE_Stat;
-
-        //SkillEngine에서 해당 클래스에 접근할 수 있도록 밑작업
-        __ENE_AI.__ENE_Engine._unit_Skill_Engine.__SET_unit_Move_Engine = __ENE_AI.__ENE_Engine._unit_Move_Engine;
-        __ENE_AI.__ENE_Engine._unit_Skill_Engine.__SET_unit_Combat_Engine = __ENE_AI.__ENE_Engine._unit_Combat_Engine;
 
         //쿨타임을 위한 부울 변수들 초기화
         for (int index = 0; index < __ENE_AI._PUB_enemy_Is_ON_CoolTime.Length; index++)
@@ -255,7 +252,7 @@ public class EnemyController : MonoBehaviour {
     //Enemy가 디버프 스킬에 피격받았을 때의 함수
     public void _Enemy__GET_DeBuff(SkillBaseStat whichDeBuffSkill_Hit_Enemy)
     {
-        __ENE_AI.__ENE_Engine._unit_Combat_Engine.Using_Skill<EnemyController>(ref enemy_Front, whichDeBuffSkill_Hit_Enemy, this, false);
+        __ENE_AI.__ENE_Engine._unit_Combat_Engine.Using_Skill(ref enemy_Front, whichDeBuffSkill_Hit_Enemy, false);
         //__ENE_Engine.__ENE_C_Engine.Using_Skill_ENE(ref enemy_Front, whichDeBuffSkill_Hit_Enemy, __ENE_Stat, this, false);
     }
 }
