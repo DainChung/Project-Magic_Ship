@@ -7,7 +7,22 @@ using SkillBaseCode;
 
 using PMS_Math;
 
-public class Unit__Base_Engine {
+public class UnitBaseEngine : MonoBehaviour {
+
+    //인스펙터 창에 보일 필요가 없으므로 숨긴다.---
+    //각 클래스를 사용하기 위한 선언
+    [HideInInspector]
+    public Unit__Base_Movement_Engine _unit_Move_Engine = new Unit__Base_Movement_Engine();
+    [HideInInspector]
+    public Unit__Base_Combat_Engine _unit_Combat_Engine = new Unit__Base_Combat_Engine();
+    [HideInInspector]
+    public Unit__Skill_Engine _unit_Skill_Engine = new Unit__Skill_Engine();
+
+    //스탯에 접촉하기 위한 선언
+    [HideInInspector]
+    public Unit__Base_Stat _unit_Stat;
+
+    //-----------------------------------------
 
     //==================================================================================================================================================
 
@@ -84,8 +99,8 @@ public class Unit__Base_Engine {
     //==================================================================================================================================================
 
     //스킬들의 기능을 담고 있는 클래스
-    public class Unit__Skill_Engine
-    {
+    public class Unit__Skill_Engine {
+
         private Unit__Base_Combat_Engine unit_Combat_Engine;
         public Unit__Base_Combat_Engine __SET_unit_Combat_Engine
         {
@@ -132,6 +147,9 @@ public class Unit__Base_Engine {
                     
 
                     //그놈의 StartCoroutine 때문에 PlayerController를 받아와서 이렇게 이상한 형태로 작업함. 후에 다른 방법 알아낸다면 수정 필요
+
+                    //차선책으로 클래스 간 상속 구조를 뜯어고치고 UnitBaseEngine을 각 Object에 직접 추가하여 StartCoroutine함수를 this.StartCoroutine(...)으로 개편하고
+                    //__PLY_Stat은 UnitBaseEngine에 변수를 따로 만들어서 함수 인자로 전달받지 말고 클래스 내에서 직접 가져다 쓸 것 => Enemy와 Player 간의 함수 통합 이슈 자체가 사라짐
                     plyC.StartCoroutine(plyC.__PLY_Stat.__Get_HIT__About_Health_FREQ(whichSkill.__GET_Skill_ING_Time, 1.0f, (int)(whichSkill.__GET_Skill_Rate), isHit_OR_Heal));
                 }
                 //상대에게 도트 딜을 넣을 스킬
@@ -139,6 +157,7 @@ public class Unit__Base_Engine {
                 {
                     //디버프가 담긴 하나의 투사체를 발사한다.
                     //투사체의 외형 바꾸기는 일단 넘어갈 것.
+                    
                     unit_Combat_Engine.Default_ATK(ref attacker, plyC.__PLY_Stat, whichSkill);
                 }
                 //오류
@@ -341,12 +360,6 @@ public class Unit__Base_Engine {
     //이 외에도 스킬에 대한 내용도 넣어야 될 것으로 보임.
     public class Unit__Base_Combat_Engine {
 
-        private Unit__Base_Movement_Engine unit_M_Engine;
-        public Unit__Base_Movement_Engine __SET_unit_M_Engine
-        {
-            set { unit_M_Engine = value; }
-        }
-
         private Unit__Skill_Engine unit_Skill_Engine;
         public Unit__Skill_Engine __SET_unit_Skill_Engine
         {
@@ -404,45 +417,10 @@ public class Unit__Base_Engine {
             spawned_OBJ.GetComponent<AmmoBase>().__Init_Ammo(55.0f, attacker.tag, unitStat.__PUB_ATK__Val, unitStat.__PUB_Critical_Rate, unitStat.__PUB_Critical_P, whichSkill);
         }
 
-
-
-        ////Ammo부분은 역시 SkillBaseStat으로 나중에 옮기는 편이 좋을 것으로 보임.
-        ////Player 전용
-        //public void Using_Skill(ref Transform attacker, SkillBaseStat whichSkill, PlayerController plyC, bool isPlayerUsingThis)
-        //{
-        //    string funcName = "_Skill_";
-
-        //    //임시 조치. 코드 정리 도중 ID 체계화 과정에서 수정 필수
-        //    if (whichSkill.__Get_Skill_ID == "00000001")
-        //    {
-        //        funcName += "00000000";
-        //        Debug.Log("This is HP DeBuff Skill");
-        //    }
-        //    else
-        //    {
-        //        funcName += whichSkill.__Get_Skill_ID;
-        //    }
-
-        //    //funcName = "_Skill_" + whichSkill.__Get_Skill_ID;
-
-
-        //    System.Type type = unit_Skill_Engine.GetType();
-
-        //    MethodInfo method = type.GetMethod(funcName);
-        //    //protected나 private 함수에 접근할 수 있도록 하는 조치
-        //    BindingFlags eFlags = BindingFlags.Instance | BindingFlags.NonPublic;
-
-        //    //접근을 위한 조치를 반영한다.
-        //    method = typeof(Unit__Skill_Engine).GetMethod(funcName, eFlags);
-        //    //funcName과 동일한 이름을 가진 함수를 unit_Skill_Engine에서 호출한다.
-        //    method.Invoke(unit_Skill_Engine, new object[] { attacker, whichSkill, plyC, isPlayerUsingThis });
-        //}
-
         //Using_Skill 통합본 작업 중
         //Using_Skill 플레이어 전용 함수 내용 이식
         public void Using_Skill<T>(ref Transform attacker, SkillBaseStat whichSkill, T controller, bool isUnitUsingThis)
         {
-
             string funcName = "_Skill_";
 
             //----------------------------------------------------------------
@@ -453,7 +431,11 @@ public class Unit__Base_Engine {
             PlayerController nogada_P = new PlayerController();
             EnemyController nogada_E = new EnemyController();
 
-            if (controller.GetType() == nogada_P.GetType())
+            //Debug.Log(controller.ToString());
+
+            Debug.Log(controller.GetType().ToString());
+
+            if (controller.ToString() == "PlayerController")
             {
                 Debug.Log("Nogada_P");
             }

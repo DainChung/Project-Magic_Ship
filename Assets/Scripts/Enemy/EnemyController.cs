@@ -29,11 +29,9 @@ public class EnemyStat : Unit__Base_Stat {
     }
 }
 
-public class EnemyEngine : Unit__Base_Engine {
+public class EnemyAI {
 
-    public Unit__Base_Movement_Engine __ENE_M_Engine = new Unit__Base_Movement_Engine();
-    public Unit__Base_Combat_Engine __ENE_C_Engine = new Unit__Base_Combat_Engine();
-    public Unit__Skill_Engine __ENE_Skill_Engine = new Unit__Skill_Engine();
+    public UnitBaseEngine __ENE_Engine;
 
     //destiTrn을 바라보는 방향 또는 그 반대 방향
     private Quaternion destiQT;
@@ -109,23 +107,11 @@ public class EnemyEngine : Unit__Base_Engine {
         //목표지점을 바라볼 때까지 회전한다.
         if (!((angleComparison < 1.0f) && (angleComparison > - 1.0f)))
         {
-            __ENE_M_Engine.Rotate_OBJ(rotate_Speed, ref rotated_OBJ, dir);
+            __ENE_Engine._unit_Move_Engine.Rotate_OBJ(rotate_Speed, ref rotated_OBJ, dir);
         }
 
         //Debug.Log(angleComparison);
     }
-
-    //반대 방향을 찾아주는 함수.
-    //-180 < angle <= 180의 범위일 때만 유효하다.
-    //private float Get_Opposite_Direction_Angle(float angle)
-    //{
-    //    if (angle >= 0)
-    //        angle -= 180;
-    //    else
-    //        angle += 180;
-
-    //    return angle;
-    //}
 
     //충분히 가까울 때까지 앞으로 이동하는 함수
     public void Go_TO_Foward_UNTIL_RayHit(float speed, ref Transform mover, Transform target)
@@ -133,23 +119,23 @@ public class EnemyEngine : Unit__Base_Engine {
         if (Vector3.Distance(target.position, mover.position) >= 17.0f)
         {
             //전방 이동
-            __ENE_M_Engine.Move_OBJ(speed, ref mover, 1);
+            __ENE_Engine._unit_Move_Engine.Move_OBJ(speed, ref mover, 1);
         }
         //느리게 전방 이동 (보다 세밀한 움직임을 위해서)
         else if (Vector3.Distance(target.position, mover.position) < 17.0f && Vector3.Distance(target.position, mover.position) >= 16.0f)
         {
-            __ENE_M_Engine.Move_OBJ(speed / 3, ref mover, 1);
+            __ENE_Engine._unit_Move_Engine.Move_OBJ(speed / 3, ref mover, 1);
         }
         else if (Vector3.Distance(target.position, mover.position) < 16.0f && Vector3.Distance(target.position, mover.position) >= 15.0f)
         {
-            __ENE_M_Engine.Move_OBJ(speed / 8, ref mover, 1);
+            __ENE_Engine._unit_Move_Engine.Move_OBJ(speed / 8, ref mover, 1);
         }
     }
 
     public void Attack_Default(float coolTime, ref Transform attacker, Unit__Base_Stat unitStat, int boolIndex)
     {
         //공격
-        __ENE_C_Engine.Default_ATK(ref attacker, attacker.position, attacker.rotation, unitStat, null);
+        __ENE_Engine._unit_Combat_Engine.Default_ATK(ref attacker, attacker.position, attacker.rotation, unitStat, null);
 
         //딜레이
         enemyCoolTimer.StartCoroutine(enemyCoolTimer.Timer(coolTime, (input) => { enemy_is_ON_CoolTime[boolIndex] = input; }, true, (input) => { dummyFloatTime[0] = input; }));
@@ -159,7 +145,7 @@ public class EnemyEngine : Unit__Base_Engine {
 public class EnemyController : MonoBehaviour {
 
     public EnemyStat __ENE_Stat = new EnemyStat();
-    private EnemyEngine __ENE_Engine = new EnemyEngine();
+    private EnemyAI __ENE_AI = new EnemyAI();
     private EnemyUI sEnemyUI;
 
     public UnitCoolTimer enemyCoolTimer;
@@ -172,18 +158,29 @@ public class EnemyController : MonoBehaviour {
     public Transform enemy_Left;
 
     void Awake() {
+
+
         //이속, 회전속도, 체력, 마나, 파워 게이지, 공격력, 크리확률, 크리계수
         __ENE_Stat.SampleInit(10.0f, 30.0f, 10, 10, 10, 1, 0.1f, 2.0f);
-        __ENE_Engine.enemyCoolTimer = enemyCoolTimer;
+
+        __ENE_AI.__ENE_Engine = transform.GetComponent<UnitBaseEngine>();
+
+        __ENE_AI.enemyCoolTimer = enemyCoolTimer;
 
         //CombatEngine에서 해당 클래스에 접근할 수 있도록 밑작업
-        __ENE_Engine.__ENE_C_Engine.__SET_unit_M_Engine = __ENE_Engine.__ENE_M_Engine;
-        __ENE_Engine.__ENE_C_Engine.__SET_unit_Skill_Engine = __ENE_Engine.__ENE_Skill_Engine;
+        __ENE_AI.__ENE_Engine._unit_Combat_Engine.__SET_unit_Skill_Engine = __ENE_AI.__ENE_Engine._unit_Skill_Engine;
+
+        //Unit__Base_Engine이 Unit__Base_Stat 내용에 접근할 수 있도록 한다.
+        __ENE_AI.__ENE_Engine._unit_Stat = __ENE_Stat;
+
+        //SkillEngine에서 해당 클래스에 접근할 수 있도록 밑작업
+        __ENE_AI.__ENE_Engine._unit_Skill_Engine.__SET_unit_Move_Engine = __ENE_AI.__ENE_Engine._unit_Move_Engine;
+        __ENE_AI.__ENE_Engine._unit_Skill_Engine.__SET_unit_Combat_Engine = __ENE_AI.__ENE_Engine._unit_Combat_Engine;
 
         //쿨타임을 위한 부울 변수들 초기화
-        for (int index = 0; index < __ENE_Engine._PUB_enemy_Is_ON_CoolTime.Length; index++)
+        for (int index = 0; index < __ENE_AI._PUB_enemy_Is_ON_CoolTime.Length; index++)
         {
-            __ENE_Engine._PUB_enemy_Is_ON_CoolTime[index] = true;
+            __ENE_AI._PUB_enemy_Is_ON_CoolTime[index] = true;
         }
     }
 
@@ -200,19 +197,19 @@ public class EnemyController : MonoBehaviour {
         if (__ENE_Stat.__PUB__Health_Point <= __ENE_Stat.half_HP)
         {
             //플레이어 반대 방향을 보도록 한다.
-            __ENE_Engine.Rotate_TO_Direction(__ENE_Stat.__PUB_Rotation_Speed, ref enemyTransform, playerTransform, true);
+            __ENE_AI.Rotate_TO_Direction(__ENE_Stat.__PUB_Rotation_Speed, ref enemyTransform, playerTransform, true);
 
             //일정 시간동안 해당 유닛의 전방을 향해 이동한다.
-            if (__ENE_Engine._PUB_enemy_Is_ON_CoolTime[0])
+            if (__ENE_AI._PUB_enemy_Is_ON_CoolTime[0])
             {
-                __ENE_Engine.__ENE_M_Engine.Move_OBJ(__ENE_Stat.__PUB_Move_Speed, ref enemyTransform, 1);
+                __ENE_AI.__ENE_Engine._unit_Move_Engine.Move_OBJ(__ENE_Stat.__PUB_Move_Speed, ref enemyTransform, 1);
                 //4초 동안 퇴각
-                StartCoroutine(enemyCoolTimer.Timer_Do_Once(4.0f, (input) => { __ENE_Engine._PUB_enemy_Is_ON_CoolTime[0] = input; }, true));
+                StartCoroutine(enemyCoolTimer.Timer_Do_Once(4.0f, (input) => { __ENE_AI._PUB_enemy_Is_ON_CoolTime[0] = input; }, true));
             }
             else
             {
                 //16초 동안 정지
-                StartCoroutine(enemyCoolTimer.Timer_Do_Once(16.0f, (input) => { __ENE_Engine._PUB_enemy_Is_ON_CoolTime[0] = input; }, false));
+                StartCoroutine(enemyCoolTimer.Timer_Do_Once(16.0f, (input) => { __ENE_AI._PUB_enemy_Is_ON_CoolTime[0] = input; }, false));
                 //회복 패턴은 정예 선박만 넣는것이 좋을 것 같다
                 //StartCoroutine(__ENE_Stat.__Get_HIT__About_Health_FREQ(2.0f, 1.0f, 1, -1));
             }
@@ -221,17 +218,17 @@ public class EnemyController : MonoBehaviour {
         else
         {
             //플레이어를 바라보도록 한다.
-            __ENE_Engine.Rotate_TO_Direction(__ENE_Stat.__PUB_Rotation_Speed, ref enemyTransform, playerTransform, false);
+            __ENE_AI.Rotate_TO_Direction(__ENE_Stat.__PUB_Rotation_Speed, ref enemyTransform, playerTransform, false);
 
             //전방으로 이동한다.
-            __ENE_Engine.Go_TO_Foward_UNTIL_RayHit(__ENE_Stat.__PUB_Move_Speed, ref enemyTransform, playerTransform);
+            __ENE_AI.Go_TO_Foward_UNTIL_RayHit(__ENE_Stat.__PUB_Move_Speed, ref enemyTransform, playerTransform);
 
             //일단 공격을 시켜보자
             //예상대로 기본 공격은 플레이어가 요령껏 피하기 쉽다
-            if (__ENE_Engine._PUB_enemy_Is_ON_CoolTime[1])
+            if (__ENE_AI._PUB_enemy_Is_ON_CoolTime[1])
             {
                 //쿨타임에 랜덤변수를 더해서 난이도를 조금 올린다.
-                __ENE_Engine.Attack_Default(2.0f + Random.Range(0.0f, 1.0f), ref enemy_Front, __ENE_Stat, 1);
+                __ENE_AI.Attack_Default(2.0f + Random.Range(0.0f, 1.0f), ref enemy_Front, __ENE_Stat, 1);
             }
             //측면 공격
             //if (__ENE_Engine._PUB_enemy_Is_ON_CoolTime[2])
@@ -258,7 +255,7 @@ public class EnemyController : MonoBehaviour {
     //Enemy가 디버프 스킬에 피격받았을 때의 함수
     public void _Enemy__GET_DeBuff(SkillBaseStat whichDeBuffSkill_Hit_Enemy)
     {
-        __ENE_Engine.__ENE_C_Engine.Using_Skill<EnemyController>(ref enemy_Front, whichDeBuffSkill_Hit_Enemy, this, false);
+        __ENE_AI.__ENE_Engine._unit_Combat_Engine.Using_Skill<EnemyController>(ref enemy_Front, whichDeBuffSkill_Hit_Enemy, this, false);
         //__ENE_Engine.__ENE_C_Engine.Using_Skill_ENE(ref enemy_Front, whichDeBuffSkill_Hit_Enemy, __ENE_Stat, this, false);
     }
 }

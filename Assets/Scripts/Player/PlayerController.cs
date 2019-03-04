@@ -37,19 +37,17 @@ public class PlayerStat : Unit__Base_Stat {
     }
 }
 
-public class PlayerEngine : Unit__Base_Engine {
-
-    public Unit__Base_Movement_Engine __PLY_M_Engine = new Unit__Base_Movement_Engine();
-    public Unit__Base_Combat_Engine __PLY_C_Engine = new Unit__Base_Combat_Engine();
-    public Unit__Skill_Engine __PLY_Skill_Engine = new Unit__Skill_Engine();
-}
-
 public class PlayerController : MonoBehaviour {
 
     //플레이어의 스탯
     public PlayerStat __PLY_Stat = new PlayerStat();
     //플레이어의 동작을 위한 클래스
-    private PlayerEngine __PLY_Engine = new PlayerEngine();
+    private UnitBaseEngine __PLY_Engine;
+    public UnitBaseEngine __GET__PLY_Engine
+    {
+        get { return __PLY_Engine; }
+    }
+
     //그냥 쿨타임
     [HideInInspector]
     public UnitCoolTimer __PLY_CoolTimer;
@@ -95,12 +93,17 @@ public class PlayerController : MonoBehaviour {
         //이속, 회전속도, 체력, 마나, 파워 게이지, 공격력, 크리확률, 크리계수
         __PLY_Stat.SampleInit(10.0f, 30.0f, 10, 10, 10, 1, 0.1f, 2.0f);
 
+        __PLY_Engine = transform.GetComponent<UnitBaseEngine>();
+
         //Unit__Base_Combat_Engine이 Unit__Base_Movement_Engine과 __PLY_SKill_Engine에 접근 할 수 있도록 한다.
-        __PLY_Engine.__PLY_C_Engine.__SET_unit_M_Engine = __PLY_Engine.__PLY_M_Engine;
-        __PLY_Engine.__PLY_C_Engine.__SET_unit_Skill_Engine = __PLY_Engine.__PLY_Skill_Engine;
+        __PLY_Engine._unit_Combat_Engine.__SET_unit_Skill_Engine = __PLY_Engine._unit_Skill_Engine;
 
         //Unit__Skill_Engine이 Unit__Base_Combat_Engine에 접근할 수 있도록 한다.
-        __PLY_Engine.__PLY_Skill_Engine.__SET_unit_Combat_Engine = __PLY_Engine.__PLY_C_Engine;
+        __PLY_Engine._unit_Skill_Engine.__SET_unit_Combat_Engine = __PLY_Engine._unit_Combat_Engine;
+        __PLY_Engine._unit_Skill_Engine.__SET_unit_Move_Engine = __PLY_Engine._unit_Move_Engine;
+
+        //UnitBaseEngine이 Unit__Base_Stat 내용에 접근할 수 있도록 한다.
+        __PLY_Engine._unit_Stat = __PLY_Stat;
 
         //----------------------------------------------------------------------------------------
         //20190117 이 지점에서 PlayerInfoManager를 통해 지정된 Skill들을 읽어온다. (Skill ID 값만 읽기)
@@ -166,33 +169,26 @@ public class PlayerController : MonoBehaviour {
         //기본 이동
         if (Input.GetKey(KeyCode.W))
         {
-            __PLY_Engine.__PLY_M_Engine.Move_OBJ(__PLY_Stat.__PUB_Move_Speed, ref playerTransform, 1);
+            __PLY_Engine._unit_Move_Engine.Move_OBJ(__PLY_Stat.__PUB_Move_Speed, ref playerTransform, 1);
         }
         else if (Input.GetKey(KeyCode.S))
         {
-            __PLY_Engine.__PLY_M_Engine.Move_OBJ(__PLY_Stat.__PUB_Move_Speed, ref playerTransform, -1f);
+            __PLY_Engine._unit_Move_Engine.Move_OBJ(__PLY_Stat.__PUB_Move_Speed, ref playerTransform, -1f);
         }
         else
         { }
 
         if (Input.GetKey(KeyCode.A))
         {
-            __PLY_Engine.__PLY_M_Engine.Rotate_OBJ(__PLY_Stat.__PUB_Rotation_Speed, ref playerTransform, -1);
+            __PLY_Engine._unit_Move_Engine.Rotate_OBJ(__PLY_Stat.__PUB_Rotation_Speed, ref playerTransform, -1);
         }
         else if (Input.GetKey(KeyCode.D))
         {
-            __PLY_Engine.__PLY_M_Engine.Rotate_OBJ(__PLY_Stat.__PUB_Rotation_Speed, ref playerTransform, 1);
+            __PLY_Engine._unit_Move_Engine.Rotate_OBJ(__PLY_Stat.__PUB_Rotation_Speed, ref playerTransform, 1);
         }
         else
         { }
 
-        //20190130 아래 코드를 응용해서 아래의 주석 내용을 구현할 것
-        //공격 형식을 바꿔야 될 수 도 있음
-        //Q로 측면, 전면을 교체하고 마우스 좌클릭(GetMouseButtonDown OR GetMouseButton 모두 실험해볼 것) 상태동안 방향 조절하고
-        //마우스 좌클릭을 그만둘 때 (GetMouseButtonUp) 탄환 발사 형식으로 조절 고려 중
-        //20190215 => 일단 고려만 해둘 것
-
-        //이를 구현하기 전에[ 우선 카메라가 쿼터뷰가 되도록 해야할 것
         if (Input.GetMouseButton(1))
         {
             //임시코드(GUI - CH)
@@ -214,7 +210,7 @@ public class PlayerController : MonoBehaviour {
         if (Input.GetMouseButtonDown(0) && _Is_On_CoolTime__Default_ATK && !(_SPW_MOS_Skill_Activated))
         {
 
-            __PLY_Engine.__PLY_C_Engine.Default_ATK(ref playerAttacker, __PLY_Stat, null);
+            __PLY_Engine._unit_Combat_Engine.Default_ATK(ref playerAttacker, __PLY_Stat, null);
 
             //쿨타임을 사용하기 위한 코루틴. 따로 외부 클래스 제작함. 상세 항목은 해당 클래스 참조
             //나중에 쿨타임 값 같은 것도 따로 관리할 것
@@ -258,7 +254,7 @@ public class PlayerController : MonoBehaviour {
             //스피드 버프 OR 디버프 해제
             //스킬 넣는 부분은 일단 저런식으로 하는 수 밖에 없음
             //나중에 스킬 위치를 마음대로 바꿀 수 있도록 변경할 때 고민이 필요함
-            __PLY_Engine.__PLY_M_Engine.Init_Speed_BUF_Amount();
+            __PLY_Engine._unit_Move_Engine.Init_Speed_BUF_Amount();
             //스피드 버프 해제로 일단 간주
             __PLY_Stat.__PUB_Stat_Locker[0] = false;
         }
@@ -310,7 +306,7 @@ public class PlayerController : MonoBehaviour {
                 __PLY_Stat.__GET_HIT__About_Mana(__PLY_Selected_Skills[index].__GET_Skill_Use_Amount, 1);
 
                 //UnitBaseEngine.Using_Skill에서 스킬 기능 처리
-                __PLY_Engine.__PLY_C_Engine.Using_Skill<PlayerController>(ref playerAttacker, __PLY_Selected_Skills[index], this, true);
+                __PLY_Engine._unit_Combat_Engine.Using_Skill<PlayerController>(ref playerAttacker, __PLY_Selected_Skills[index], this, true);
                 //쿨타임 관련 처리
                 __PLY_CoolTimer.StartCoroutine(
                     __PLY_CoolTimer.Timer(  __PLY_Selected_Skills[index].__GET_Skill_Cool_Time,
@@ -334,6 +330,6 @@ public class PlayerController : MonoBehaviour {
     //플레이어가 디버프 스킬에 피격받았을 때의 함수
     public void _Player_GET_DeBuff(SkillBaseStat whichDeBuffSkill_Hit_Player)
     {
-        __PLY_Engine.__PLY_C_Engine.Using_Skill<PlayerController>(ref playerAttacker, whichDeBuffSkill_Hit_Player, this, false);
+        __PLY_Engine._unit_Combat_Engine.Using_Skill<PlayerController>(ref playerAttacker, whichDeBuffSkill_Hit_Player, this, false);
     }
 }
