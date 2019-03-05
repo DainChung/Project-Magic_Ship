@@ -381,25 +381,56 @@ public class UnitBaseEngine : MonoBehaviour {
         float posX = attacker.position.x;
         float posZ = attacker.position.z;
 
+        //나중엔 int indexMax = whichSkill.ammoAmount;
+        int indexMax = 3;
+        int posHelper = -1;
+
+        //앞인지 측면인지 구분하기 위한 변수
+        //1이면 앞, -1이면 측면
+        int isFront_OR_RL = 0;
+
+        //보정된 x, z 좌표값
+        float newX;
+        float newZ;
+
         //일단 지정된 attacker(캐릭터의 전면부)에서 3개의 기본 탄환을 서로 각 사선에 평행하도록 발사할 것.
         //탄환을 몇 개 발사할 것인지는 나중에 SkillBaseStat에서 읽어올 것
         //일단 3개니까 이렇게 작성할 것
 
         //본 함수의 0.58f와 1.16f, 이 두 수치에 대해서는 나중에 namespace ConstValueCollection에서 const float spawnDist 변수를 만들어서 관리할 것
 
+        //indexMax 값 변형 -> 홀수여야만 가능
+        indexMax = (indexMax - 1) / 2;      
+
         //앞에서 발사하는 거면
         if (attacker.name == "Front")
         {
-            _unit_Combat_Engine.Default_ATK(ref attacker, attacker.position, attacker.rotation, whichSkill);
-            _unit_Combat_Engine.Default_ATK(ref attacker, new Vector3(posX + valueVec2.x, attacker.position.y, posZ - valueVec2.y), attacker.rotation, whichSkill);
-            _unit_Combat_Engine.Default_ATK(ref attacker, new Vector3(posX - valueVec2.x, attacker.position.y, posZ + valueVec2.y), attacker.rotation, whichSkill);
+            isFront_OR_RL = 1;
         }
         //좌측 또는 우측에서 발사하는 거면
         else
         {
-            _unit_Combat_Engine.Default_ATK(ref attacker, attacker.position, attacker.rotation, whichSkill);
-            _unit_Combat_Engine.Default_ATK(ref attacker, new Vector3(posX - valueVec2.x, attacker.position.y, posZ + valueVec2.y), attacker.rotation, whichSkill);
-            _unit_Combat_Engine.Default_ATK(ref attacker, new Vector3(posX + valueVec2.x, attacker.position.y, posZ - valueVec2.y), attacker.rotation, whichSkill);
+            isFront_OR_RL = -1;
+        }
+
+        //음수부터 반복문을 돌린다
+        for (int index = -indexMax; index < indexMax + 1; index++)
+        {
+            //x, z 좌표값 보정
+            newX = posX - (valueVec2.x * posHelper * index) * isFront_OR_RL;
+            newZ = posZ + (valueVec2.y * posHelper * index) * isFront_OR_RL;
+
+            _unit_Combat_Engine.Default_ATK(ref attacker, new Vector3(newX, attacker.position.y, newZ), attacker.rotation, whichSkill);
+
+            //앞에서 발사하는 경우 좌표 값 보정 예시 (탄환 개수가 최대 3개일 때, 보정해야 되는 지점)
+            //_unit_Combat_Engine.Default_ATK(ref attacker, new Vector3(posX + valueVec2.x, attacker.position.y, posZ - valueVec2.y), attacker.rotation, whichSkill);
+            //_unit_Combat_Engine.Default_ATK(ref attacker, new Vector3(posX - valueVec2.x, attacker.position.y, posZ + valueVec2.y), attacker.rotation, whichSkill);
+
+            //좌측, 우측에서 발사하는 경우 좌표 값 보정 예시 (탄환 개수가 최대 3개일 때, 보정해야 되는 지점)
+            //_unit_Combat_Engine.Default_ATK(ref attacker, new Vector3(posX - valueVec2.x, attacker.position.y, posZ + valueVec2.y), attacker.rotation, whichSkill);
+            //_unit_Combat_Engine.Default_ATK(ref attacker, new Vector3(posX + valueVec2.x, attacker.position.y, posZ - valueVec2.y), attacker.rotation, whichSkill);
+
+            posHelper *= (-1);
         }
     }
 
