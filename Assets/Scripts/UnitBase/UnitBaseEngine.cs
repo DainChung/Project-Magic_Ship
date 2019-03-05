@@ -241,10 +241,17 @@ public class UnitBaseEngine : MonoBehaviour {
             ////----------------------------------------------------------------
 
             //임시 조치. 코드 정리 도중 ID 체계화 과정에서 수정 필수
+            //체력 회복(00000000), 디버프(00000001)
             if (whichSkill.__Get_Skill_ID == "00000001")
             {
                 funcName += "00000000";
                 Debug.Log("This is HP DeBuff Skill");
+            }
+            //임시 조치. 코드 정리 중 ID 체계화 과정에서 수정 필수
+            //산탄(00000005), 속사(00000006)
+            else if (whichSkill.__Get_Skill_ID == "00000006")
+            {
+                funcName += "00000005";
             }
             else
             {
@@ -385,9 +392,8 @@ public class UnitBaseEngine : MonoBehaviour {
         int indexMax = 3;
         int posHelper = -1;
 
-        //앞인지 측면인지 구분하기 위한 변수
-        //1이면 앞, -1이면 측면
-        int isFront_OR_RL = 0;
+        //산탄 스킬이면 1, 속사스킬이면 -1
+        int isShotGun_OR_FastGun = 1;
 
         //보정된 x, z 좌표값
         float newX;
@@ -400,64 +406,65 @@ public class UnitBaseEngine : MonoBehaviour {
         //본 함수의 0.58f와 1.16f, 이 두 수치에 대해서는 나중에 namespace ConstValueCollection에서 const float spawnDist 변수를 만들어서 관리할 것
 
         //indexMax 값 변형 -> 홀수여야만 가능
-        indexMax = (indexMax - 1) / 2;      
+        indexMax = (indexMax - 1) / 2;
 
-        //앞에서 발사하는 거면
-        if (attacker.name == "Front")
+        //속사 스킬이면
+        if (whichSkill.__Get_Skill_ID == "00000006")
         {
-            isFront_OR_RL = 1;
+            //속사 스킬의 경우, 앞에서 발사하는 경우 좌표 값 보정 예시 (탄환 개수가 최대 3개일때, 보정해야 되는 지점)
+            //_unit_Combat_Engine.Default_ATK(ref attacker, new Vector3(posX + valueVec2.y, attacker.position.y, posZ + valueVec2.x), attacker.rotation, whichSkill);
+            //_unit_Combat_Engine.Default_ATK(ref attacker, new Vector3(posX - valueVec2.y, attacker.position.y, posZ - valueVec2.x), attacker.rotation, whichSkill);
+
+            //값을 바꿔치기 해서 위의 보정 알고리즘이 아래 반복문에서 적용되도록 한다.
+            valueVec2.Set(valueVec2.y, valueVec2.x);
+
+            isShotGun_OR_FastGun = -1;
         }
-        //좌측 또는 우측에서 발사하는 거면
-        else
-        {
-            isFront_OR_RL = -1;
-        }
+        //산탄 스킬의 경우, 앞에서 발사하는 경우 좌표 값 보정 예시 (탄환 개수가 최대 3개일 때, 보정해야 되는 지점)
+        //_unit_Combat_Engine.Default_ATK(ref attacker, new Vector3(posX + valueVec2.x, attacker.position.y, posZ - valueVec2.y), attacker.rotation, whichSkill);
+        //_unit_Combat_Engine.Default_ATK(ref attacker, new Vector3(posX - valueVec2.x, attacker.position.y, posZ + valueVec2.y), attacker.rotation, whichSkill);
 
         //음수부터 반복문을 돌린다
         for (int index = -indexMax; index < indexMax + 1; index++)
         {
+
             //x, z 좌표값 보정
-            newX = posX - (valueVec2.x * posHelper * index) * isFront_OR_RL;
-            newZ = posZ + (valueVec2.y * posHelper * index) * isFront_OR_RL;
+            newX = posX - (valueVec2.x * posHelper * index);
+            newZ = posZ + (valueVec2.y * posHelper * index) * isShotGun_OR_FastGun;
 
             _unit_Combat_Engine.Default_ATK(ref attacker, new Vector3(newX, attacker.position.y, newZ), attacker.rotation, whichSkill);
 
-            //앞에서 발사하는 경우 좌표 값 보정 예시 (탄환 개수가 최대 3개일 때, 보정해야 되는 지점)
-            //_unit_Combat_Engine.Default_ATK(ref attacker, new Vector3(posX + valueVec2.x, attacker.position.y, posZ - valueVec2.y), attacker.rotation, whichSkill);
-            //_unit_Combat_Engine.Default_ATK(ref attacker, new Vector3(posX - valueVec2.x, attacker.position.y, posZ + valueVec2.y), attacker.rotation, whichSkill);
-
-            //좌측, 우측에서 발사하는 경우 좌표 값 보정 예시 (탄환 개수가 최대 3개일 때, 보정해야 되는 지점)
-            //_unit_Combat_Engine.Default_ATK(ref attacker, new Vector3(posX - valueVec2.x, attacker.position.y, posZ + valueVec2.y), attacker.rotation, whichSkill);
-            //_unit_Combat_Engine.Default_ATK(ref attacker, new Vector3(posX + valueVec2.x, attacker.position.y, posZ - valueVec2.y), attacker.rotation, whichSkill);
+            
 
             posHelper *= (-1);
         }
     }
 
     //속사 스킬
-    private void _Skill_00000006(Transform attacker, SkillBaseStat whichSkill, PlayerController plyC, bool isPlayerUsingThis)
-    {
-        float newX = attacker.position.x;
-        float newY = attacker.position.y;
-        float newZ = attacker.position.z;
+    //private void _Skill_00000006(Transform attacker, SkillBaseStat whichSkill, bool isPlayerUsingThis)
+    //{
+    //    Vector2 valueVec2 = Rotation_Math.Rotation_AND_Position(attacker.rotation, 0.58f, 0.0f);
 
-        //산탄 스킬과 코드가 매우 유사하므로 최적화에 대한 고찰이 필요
+    //    float posX = attacker.position.x;
+    //    float posZ = attacker.position.z;
 
-        //좌측 또는 우측에서 발사하는 거면
-        if (attacker.name != "Front")
-        {
-            _unit_Combat_Engine.Default_ATK(ref attacker, attacker.position, attacker.rotation, whichSkill);
-            _unit_Combat_Engine.Default_ATK(ref attacker, new Vector3(newX + 1.16f, newY, newZ), attacker.rotation, whichSkill);
-            _unit_Combat_Engine.Default_ATK(ref attacker, new Vector3(newX - 1.16f, newY, newZ), attacker.rotation, whichSkill);
-        }
-        //앞에서 발사하는 거면
-        else
-        {
-            _unit_Combat_Engine.Default_ATK(ref attacker, attacker.position, attacker.rotation, whichSkill);
-            _unit_Combat_Engine.Default_ATK(ref attacker, new Vector3(newX, newY, newZ + 1.16f), attacker.rotation, whichSkill);
-            _unit_Combat_Engine.Default_ATK(ref attacker, new Vector3(newX, newY, newZ - 1.16f), attacker.rotation, whichSkill);
-        }
-    }
+    //    //산탄 스킬과 코드가 매우 유사하므로 최적화에 대한 고찰이 필요
+
+    //    //좌측 또는 우측에서 발사하는 거면
+    //    if (attacker.name != "Front")
+    //    {
+    //        _unit_Combat_Engine.Default_ATK(ref attacker, attacker.position, attacker.rotation, whichSkill);
+    //        _unit_Combat_Engine.Default_ATK(ref attacker, new Vector3(posX - valueVec2.x, attacker.position.y, posZ + valueVec2.y), attacker.rotation, whichSkill);
+    //        _unit_Combat_Engine.Default_ATK(ref attacker, new Vector3(posX + valueVec2.x, attacker.position.y, posZ - valueVec2.y), attacker.rotation, whichSkill);
+    //    }
+    //    //앞에서 발사하는 거면
+    //    else
+    //    {
+    //        _unit_Combat_Engine.Default_ATK(ref attacker, attacker.position, attacker.rotation, whichSkill);
+    //        _unit_Combat_Engine.Default_ATK(ref attacker, new Vector3(newX, newY, newZ + 1.16f), attacker.rotation, whichSkill);
+    //        _unit_Combat_Engine.Default_ATK(ref attacker, new Vector3(newX, newY, newZ - 1.16f), attacker.rotation, whichSkill);
+    //    }
+    //}
 
     //지형 소환
     private void _Skill_00000007(Transform attacker, SkillBaseStat whichSkill, bool isUnitUsingThis)
