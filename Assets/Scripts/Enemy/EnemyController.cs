@@ -1,13 +1,22 @@
 ﻿using UnityEngine;
 using System.Collections;
 
+using System.Collections.Generic;
+using System.Linq;
+
 using PMS_Math;
 
 public class EnemyStat : Unit__Base_Stat {
 
     public int half_HP;
 
-    public void SampleInit(float mSp, float rSp, int hp, int mp, int pp, int atk, float criR, float criP)
+    private int ai_Level;
+    public int _GET_ai_Level
+    {
+        get { return ai_Level;  }
+    }
+
+    public void SampleInit(float mSp, float rSp, int hp, int mp, int pp, int atk, float criR, float criP, int ai_Lv)
     {
         base.__PUB_Move_Speed = mSp;
         base.__PUB_Rotation_Speed = rSp;
@@ -26,10 +35,25 @@ public class EnemyStat : Unit__Base_Stat {
 
         //소수점 이하는 내림해서 값이 결정됨.
         half_HP = (int)(__MAX_Health_Point / 2);
+
+        ai_Level = ai_Lv;
+
+        //버프, 디버프 통제용
+        for (int i = 0; i < 5; i++)
+        {
+            __PUB_Stat_Locker.Add(false);
+        }
+
+        //기본 마나 회복
+        __PUB_Stat_Locker[2] = true;
     }
 }
 
-public class EnemyAI {
+//구 EnemyAI
+//AI 수준에 따라 다른 행동을 쉽게 할 수 있도록 EnemyAI.cs를 별도로 만들고
+//아래 클래스는 EnemyAIEngine으로 명칭 변경
+//특정 방향을 바라보기, 목표로부터 일정 거리 이하가 될 때까지 앞으로 이동, 기본 공격 처럼 매우 기본적인 행동에 대한 함수들이 있다.
+public class EnemyAIEngine {
 
     public UnitBaseEngine __ENE_Engine;
 
@@ -146,11 +170,13 @@ public class EnemyController : MonoBehaviour {
 
     public EnemyStat __ENE_Stat = new EnemyStat();
 
-    private EnemyAI __ENE_AI = new EnemyAI();
-    public EnemyAI _GET__ENE_AI
+    private EnemyAIEngine __ENE_AI_Engine = new EnemyAIEngine();
+    public EnemyAIEngine _GET__ENE_AI_Engine
     {
-        get { return __ENE_AI; }
+        get { return __ENE_AI_Engine; }
     }
+
+    private EnemyAI __ENE_AI;
 
     private EnemyUI sEnemyUI;
 
@@ -163,29 +189,38 @@ public class EnemyController : MonoBehaviour {
     public Transform enemy_Right;
     public Transform enemy_Left;
 
+    //AI 레벨에 따라 완벽하게 다른 행동을 할 수 있도록 밑작업
+    private List<System.Action> _AI_FuncList = new List<System.Action>();
+
     void Awake() {
 
 
-        //이속, 회전속도, 체력, 마나, 파워 게이지, 공격력, 크리확률, 크리계수
-        __ENE_Stat.SampleInit(10.0f, 30.0f, 10, 10, 10, 1, 0.1f, 2.0f);
+        //이속, 회전속도, 체력, 마나, 파워 게이지, 공격력, 크리확률, 크리계수, AI레벨
+        __ENE_Stat.SampleInit(10.0f, 30.0f, 10, 10, 10, 1, 0.1f, 2.0f, 0);
 
         //UnitBaseEngine에 Enemy라고 알려준다.
-        __ENE_AI.__ENE_Engine = transform.GetComponent<UnitBaseEngine>();
+        __ENE_AI_Engine.__ENE_Engine = transform.GetComponent<UnitBaseEngine>();
 
-        __ENE_AI.enemyCoolTimer = enemyCoolTimer;
+        __ENE_AI_Engine.enemyCoolTimer = enemyCoolTimer;
 
         //CombatEngine에서 해당 클래스에 접근할 수 있도록 밑작업
-        __ENE_AI.__ENE_Engine.enemyController = this;
-        __ENE_AI.__ENE_Engine._unit_Combat_Engine.__SET_unit_Base_Engine = __ENE_AI.__ENE_Engine;
+        __ENE_AI_Engine.__ENE_Engine.enemyController = this;
+        __ENE_AI_Engine.__ENE_Engine._unit_Combat_Engine.__SET_unit_Base_Engine = __ENE_AI_Engine.__ENE_Engine;
 
         //Unit__Base_Engine이 Unit__Base_Stat 내용에 접근할 수 있도록 한다.
-        __ENE_AI.__ENE_Engine._unit_Stat = __ENE_Stat;
+        __ENE_AI_Engine.__ENE_Engine._unit_Stat = __ENE_Stat;
+
+
+        __ENE_AI = transform.GetComponent<EnemyAI>();
+
 
         //쿨타임을 위한 부울 변수들 초기화
-        for (int index = 0; index < __ENE_AI._PUB_enemy_Is_ON_CoolTime.Length; index++)
+        for (int index = 0; index < __ENE_AI_Engine._PUB_enemy_Is_ON_CoolTime.Length; index++)
         {
-            __ENE_AI._PUB_enemy_Is_ON_CoolTime[index] = true;
+            __ENE_AI_Engine._PUB_enemy_Is_ON_CoolTime[index] = true;
         }
+
+        _AI_FuncList.Add(() => __ENE_AI.AI_Simple_Level0()); ;
     }
 
 	// Use this for initialization
@@ -197,52 +232,49 @@ public class EnemyController : MonoBehaviour {
 	void Update () {
 
         //나중에 EnemyAI 클래스를 따로 만들어서 이하 내용과 같은 기능을 하도록 넣을 것.
-        //체력이 최대 체력의 절반 이하일 때 (도망가야할 때)
-        if (__ENE_Stat.__PUB__Health_Point <= __ENE_Stat.half_HP)
-        {
-            //플레이어 반대 방향을 보도록 한다.
-            __ENE_AI.Rotate_TO_Direction(__ENE_Stat.__PUB_Rotation_Speed, ref enemyTransform, playerTransform, true);
+        _AI_FuncList[__ENE_Stat._GET_ai_Level]();
 
-            //일정 시간동안 해당 유닛의 전방을 향해 이동한다.
-            if (__ENE_AI._PUB_enemy_Is_ON_CoolTime[0])
-            {
-                __ENE_AI.__ENE_Engine._unit_Move_Engine.Move_OBJ(__ENE_Stat.__PUB_Move_Speed, ref enemyTransform, 1);
-                //4초 동안 퇴각
-                StartCoroutine(enemyCoolTimer.Timer_Do_Once(4.0f, (input) => { __ENE_AI._PUB_enemy_Is_ON_CoolTime[0] = input; }, true));
-            }
-            else
-            {
-                //16초 동안 정지
-                StartCoroutine(enemyCoolTimer.Timer_Do_Once(16.0f, (input) => { __ENE_AI._PUB_enemy_Is_ON_CoolTime[0] = input; }, false));
-                //회복 패턴은 정예 선박만 넣는것이 좋을 것 같다
-                //StartCoroutine(__ENE_Stat.__Get_HIT__About_Health_FREQ(2.0f, 1.0f, 1, -1));
-            }
+        //스피드 버프 OR 디버프 지속시간 종료 여부
+        if (__ENE_Stat.__PUB_Stat_Locker[0])
+        {
+            //스피드 버프 OR 디버프 해제
+            __ENE_AI_Engine.__ENE_Engine._unit_Move_Engine.Init_Speed_BUF_Amount();
+            //스피드 버프 해제로 일단 간주
+            __ENE_Stat.__PUB_Stat_Locker[0] = false;
         }
-        //체력이 최대 체력의 절반을 초과할 때 (공격해야할 때)
-        else
+
+        //체력 버프 OR 디버프 지속시간 종료 여부
+        if (__ENE_Stat.__PUB_Stat_Locker[1])
         {
-            //플레이어를 바라보도록 한다.
-            __ENE_AI.Rotate_TO_Direction(__ENE_Stat.__PUB_Rotation_Speed, ref enemyTransform, playerTransform, false);
 
-            //전방으로 이동한다.
-            __ENE_AI.Go_TO_Foward_UNTIL_RayHit(__ENE_Stat.__PUB_Move_Speed, ref enemyTransform, playerTransform);
+        }
 
-            //일단 공격을 시켜보자
-            //예상대로 기본 공격은 플레이어가 요령껏 피하기 쉽다
-            if (__ENE_AI._PUB_enemy_Is_ON_CoolTime[1])
-            {
-                //쿨타임에 랜덤변수를 더해서 난이도를 조금 올린다.
-                __ENE_AI.Attack_Default(2.0f + Random.Range(0.0f, 1.0f), ref enemy_Front, __ENE_Stat, 1);
-            }
-            //측면 공격
-            //if (__ENE_Engine._PUB_enemy_Is_ON_CoolTime[2])
-            //{
-            //    __ENE_Engine.Attack_Default(2.0f, ref default_Ammo, ref enemy_Right, __ENE_Stat.__PUB_ATK__Val, 1);
-            //}
-            //if (__ENE_Engine._PUB_enemy_Is_ON_CoolTime[3])
-            //{
-            //    __ENE_Engine.Attack_Default(2.0f, ref default_Ammo, ref enemy_Left, __ENE_Stat.__PUB_ATK__Val, 2);
-            //}
+        //기본 마나 회복 지속시간 종료 여부
+        if (__ENE_Stat.__PUB_Stat_Locker[2])
+        {
+            //일단 1씩 회복한다.
+            __ENE_Stat.__GET_HIT__About_Mana(10, -1);
+            //다음 기본 마나 회복 시간까지 대기 
+            __ENE_Stat.__PUB_Stat_Locker[2] = false;
+
+            //일단 10초마다 마나를 회복하도록 결정
+            __ENE_AI_Engine.enemyCoolTimer.StartCoroutine(
+                __ENE_AI_Engine.enemyCoolTimer.Timer_Do_Once(10.0f,
+                (input) => { __ENE_Stat.__PUB_Stat_Locker[2] = input; },
+                false)
+                );
+        }
+
+        //PP 버프 OR 디버프 지속시간 종료 여부
+        if (__ENE_Stat.__PUB_Stat_Locker[3])
+        {
+
+        }
+
+        //크리티컬 버프 OR 디버프 지속시간 종료 여부
+        if (__ENE_Stat.__PUB_Stat_Locker[4])
+        {
+
         }
     }
 
@@ -259,7 +291,7 @@ public class EnemyController : MonoBehaviour {
     //Enemy가 디버프 스킬에 피격받았을 때의 함수
     public void _Enemy__GET_DeBuff(SkillBaseStat whichDeBuffSkill_Hit_Enemy)
     {
-        __ENE_AI.__ENE_Engine._unit_Combat_Engine.Using_Skill(ref enemy_Front, whichDeBuffSkill_Hit_Enemy, false);
+        __ENE_AI_Engine.__ENE_Engine._unit_Combat_Engine.Using_Skill(ref enemy_Front, whichDeBuffSkill_Hit_Enemy, false);
         //__ENE_Engine.__ENE_C_Engine.Using_Skill_ENE(ref enemy_Front, whichDeBuffSkill_Hit_Enemy, __ENE_Stat, this, false);
     }
 }

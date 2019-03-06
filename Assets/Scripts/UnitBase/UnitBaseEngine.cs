@@ -110,23 +110,29 @@ public class UnitBaseEngine : MonoBehaviour {
                 if (_unit_Base_Engine.playerController != null)
                 {
                     _unit_Base_Engine.playerController.StartCoroutine(
-                        _unit_Base_Engine.playerController.__PLY_CoolTimer.Timer_Do_Once(   whichSkill.__GET_Skill_ING_Time,
+                        _unit_Base_Engine.playerController.__PLY_CoolTimer.Timer_Do_Once(whichSkill.__GET_Skill_ING_Time,
                         (input) => { _unit_Base_Engine._unit_Stat.__PUB_Stat_Locker[0] = input; },
-                        _unit_Base_Engine._unit_Stat.__PUB_Stat_Locker[0]   )
+                        _unit_Base_Engine._unit_Stat.__PUB_Stat_Locker[0])
                         );
                 }
                 //enemy인 경우
                 else if (_unit_Base_Engine.enemyController != null)
                 {
                     _unit_Base_Engine.enemyController.StartCoroutine(
-                        _unit_Base_Engine.enemyController._GET__ENE_AI.enemyCoolTimer.Timer_Do_Once(   whichSkill.__GET_Skill_ING_Time,
+                        _unit_Base_Engine.enemyController._GET__ENE_AI_Engine.enemyCoolTimer.Timer_Do_Once(whichSkill.__GET_Skill_ING_Time,
                             (input) => { _unit_Base_Engine._unit_Stat.__PUB_Stat_Locker[0] = input; },
-                            _unit_Base_Engine._unit_Stat.__PUB_Stat_Locker[0]   )
+                            _unit_Base_Engine._unit_Stat.__PUB_Stat_Locker[0])
                             );
+                }
+                //오류
+                else
+                {
+
                 }
                 
             }
             //isBuff_OR_DeBuff 값이 1 또는 -1이 아니면 적용되는 Exception으로 대체 예정
+            //또는 _unit_Base_Engine.playerController == null && _unit_Base_Engine.enemyController == null 인 경우
             catch (System.Exception)
             {
                 //아무것도 안 한다.
@@ -379,8 +385,7 @@ public class UnitBaseEngine : MonoBehaviour {
         }
     }
 
-    //후에 5번 스킬과 6번 스킬을 통합할 것
-    //산탄 스킬
+    //산탄(5번, "00000005") 스킬과 속사(6번, "00000006") 스킬을 통합한 것
     private void _Skill_00000005(Transform attacker, SkillBaseStat whichSkill, bool isUnitUsingThis)
     {
         Vector2 valueVec2 = Rotation_Math.Rotation_AND_Position(attacker.rotation, 0.58f, 0.0f);
@@ -405,7 +410,7 @@ public class UnitBaseEngine : MonoBehaviour {
 
         //본 함수의 0.58f와 1.16f, 이 두 수치에 대해서는 나중에 namespace ConstValueCollection에서 const float spawnDist 변수를 만들어서 관리할 것
 
-        //indexMax 값 변형 -> 홀수여야만 가능
+        //indexMax 값 변형 -> 홀수여야만 정상작동
         indexMax = (indexMax - 1) / 2;
 
         //속사 스킬이면
@@ -415,9 +420,10 @@ public class UnitBaseEngine : MonoBehaviour {
             //_unit_Combat_Engine.Default_ATK(ref attacker, new Vector3(posX + valueVec2.y, attacker.position.y, posZ + valueVec2.x), attacker.rotation, whichSkill);
             //_unit_Combat_Engine.Default_ATK(ref attacker, new Vector3(posX - valueVec2.y, attacker.position.y, posZ - valueVec2.x), attacker.rotation, whichSkill);
 
-            //값을 바꿔치기 해서 위의 보정 알고리즘이 아래 반복문에서 적용되도록 한다.
+            //값을 바꿔치기 해서 위의 보정 예시가 아래 반복문에서 적용되도록 한다.
             valueVec2.Set(valueVec2.y, valueVec2.x);
 
+            //z 좌표 보정 수식의 부호를 바꿔준다.
             isShotGun_OR_FastGun = -1;
         }
         //산탄 스킬의 경우, 앞에서 발사하는 경우 좌표 값 보정 예시 (탄환 개수가 최대 3개일 때, 보정해야 되는 지점)
@@ -430,41 +436,16 @@ public class UnitBaseEngine : MonoBehaviour {
 
             //x, z 좌표값 보정
             newX = posX - (valueVec2.x * posHelper * index);
+            //속사 (6번, "00000006")스킬인 경우
+            //newZ = posZ - (valueVec.y * posHelper * index)가 된다 (isShotGun_OR_FastGun == -1)
             newZ = posZ + (valueVec2.y * posHelper * index) * isShotGun_OR_FastGun;
 
             _unit_Combat_Engine.Default_ATK(ref attacker, new Vector3(newX, attacker.position.y, newZ), attacker.rotation, whichSkill);
 
-            
 
             posHelper *= (-1);
         }
     }
-
-    //속사 스킬
-    //private void _Skill_00000006(Transform attacker, SkillBaseStat whichSkill, bool isPlayerUsingThis)
-    //{
-    //    Vector2 valueVec2 = Rotation_Math.Rotation_AND_Position(attacker.rotation, 0.58f, 0.0f);
-
-    //    float posX = attacker.position.x;
-    //    float posZ = attacker.position.z;
-
-    //    //산탄 스킬과 코드가 매우 유사하므로 최적화에 대한 고찰이 필요
-
-    //    //좌측 또는 우측에서 발사하는 거면
-    //    if (attacker.name != "Front")
-    //    {
-    //        _unit_Combat_Engine.Default_ATK(ref attacker, attacker.position, attacker.rotation, whichSkill);
-    //        _unit_Combat_Engine.Default_ATK(ref attacker, new Vector3(posX - valueVec2.x, attacker.position.y, posZ + valueVec2.y), attacker.rotation, whichSkill);
-    //        _unit_Combat_Engine.Default_ATK(ref attacker, new Vector3(posX + valueVec2.x, attacker.position.y, posZ - valueVec2.y), attacker.rotation, whichSkill);
-    //    }
-    //    //앞에서 발사하는 거면
-    //    else
-    //    {
-    //        _unit_Combat_Engine.Default_ATK(ref attacker, attacker.position, attacker.rotation, whichSkill);
-    //        _unit_Combat_Engine.Default_ATK(ref attacker, new Vector3(newX, newY, newZ + 1.16f), attacker.rotation, whichSkill);
-    //        _unit_Combat_Engine.Default_ATK(ref attacker, new Vector3(newX, newY, newZ - 1.16f), attacker.rotation, whichSkill);
-    //    }
-    //}
 
     //지형 소환
     private void _Skill_00000007(Transform attacker, SkillBaseStat whichSkill, bool isUnitUsingThis)
@@ -499,9 +480,5 @@ public class UnitBaseEngine : MonoBehaviour {
         {
 
         }
-
-        //커밋 후 ID 체계화 작업 및 함수 이름에 적용
-
-        //위 내용 완료 후 커밋
     }
 }

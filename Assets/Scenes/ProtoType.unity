@@ -836,6 +836,17 @@ GameObject:
   m_PrefabParentObject: {fileID: 1000010970246002, guid: d6b5abd17c7a20740b0067a811e43de8,
     type: 2}
   m_PrefabInternal: {fileID: 129262855}
+--- !u!114 &975558648
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 975558647}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7f8c9f7cf0380534ca742510035b1174, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!114 &975558656
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -847,6 +858,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 27c8b38576891d943b4943986e7f467e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  playerController: {fileID: 0}
+  enemyController: {fileID: 0}
 --- !u!1 &1040680712 stripped
 GameObject:
   m_PrefabParentObject: {fileID: 100000, guid: bfa29fa049ea5784486541f269325549, type: 3}
@@ -945,6 +958,17 @@ GameObject:
   m_PrefabParentObject: {fileID: 1000010970246002, guid: d6b5abd17c7a20740b0067a811e43de8,
     type: 2}
   m_PrefabInternal: {fileID: 88491402}
+--- !u!114 &1151364078
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1151364077}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7f8c9f7cf0380534ca742510035b1174, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!114 &1151364086
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -956,6 +980,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 27c8b38576891d943b4943986e7f467e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  playerController: {fileID: 0}
+  enemyController: {fileID: 0}
 --- !u!1001 &1172594921
 Prefab:
   m_ObjectHideFlags: 0
@@ -1369,6 +1395,17 @@ GameObject:
   m_PrefabParentObject: {fileID: 1000010970246002, guid: d6b5abd17c7a20740b0067a811e43de8,
     type: 2}
   m_PrefabInternal: {fileID: 657538390}
+--- !u!114 &1625413721
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1625413720}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7f8c9f7cf0380534ca742510035b1174, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!114 &1625413729
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1380,6 +1417,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 27c8b38576891d943b4943986e7f467e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  playerController: {fileID: 0}
+  enemyController: {fileID: 0}
 --- !u!1 &1653395938
 GameObject:
   m_ObjectHideFlags: 0
@@ -1534,6 +1573,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 27c8b38576891d943b4943986e7f467e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  playerController: {fileID: 0}
+  enemyController: {fileID: 0}
 --- !u!1 &1717432176
 GameObject:
   m_ObjectHideFlags: 0
@@ -1665,6 +1706,17 @@ GameObject:
   m_PrefabParentObject: {fileID: 1000010970246002, guid: d6b5abd17c7a20740b0067a811e43de8,
     type: 2}
   m_PrefabInternal: {fileID: 1821173735}
+--- !u!114 &1935186575
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1935186574}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7f8c9f7cf0380534ca742510035b1174, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!114 &1935186583
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1676,6 +1728,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 27c8b38576891d943b4943986e7f467e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  playerController: {fileID: 0}
+  enemyController: {fileID: 0}
 --- !u!1 &2063272821 stripped
 GameObject:
   m_PrefabParentObject: {fileID: 100000, guid: c53ca8bfd353121488d5667c744f644c, type: 3}
