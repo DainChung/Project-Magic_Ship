@@ -1698,6 +1698,11 @@ Prefab:
       propertyPath: playerTransform
       value: 
       objectReference: {fileID: 1653395943}
+    - target: {fileID: 114000012457981410, guid: d6b5abd17c7a20740b0067a811e43de8,
+        type: 2}
+      propertyPath: sample_AI_Level
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: d6b5abd17c7a20740b0067a811e43de8, type: 2}
   m_IsPrefabParent: 0

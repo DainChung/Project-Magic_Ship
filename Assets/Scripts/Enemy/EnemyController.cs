@@ -189,6 +189,11 @@ public class EnemyController : MonoBehaviour {
     public Transform enemy_Right;
     public Transform enemy_Left;
 
+    //AI 레벨을 인스펙터창에서 조절하기 위해 넣은 임시 변수
+    //0이면 기존의 기본형 AI
+    //1이면 0.5 ~ 1.5초 마다 랜덤한 행동을 하는 AI
+    public int sample_AI_Level;
+
     //AI 레벨에 따라 완벽하게 다른 행동을 할 수 있도록 밑작업
     private List<System.Action> _AI_FuncList = new List<System.Action>();
 
@@ -196,7 +201,8 @@ public class EnemyController : MonoBehaviour {
 
 
         //이속, 회전속도, 체력, 마나, 파워 게이지, 공격력, 크리확률, 크리계수, AI레벨
-        __ENE_Stat.SampleInit(10.0f, 30.0f, 10, 10, 10, 1, 0.1f, 2.0f, 0);
+        //__ENE_Stat.SampleInit(10.0f, 30.0f, 10, 10, 10, 1, 0.1f, 2.0f, 0);
+        __ENE_Stat.SampleInit(10.0f, 30.0f, 10, 10, 10, 1, 0.1f, 2.0f, sample_AI_Level);
 
         //UnitBaseEngine에 Enemy라고 알려준다.
         __ENE_AI_Engine.__ENE_Engine = transform.GetComponent<UnitBaseEngine>();
@@ -220,7 +226,8 @@ public class EnemyController : MonoBehaviour {
             __ENE_AI_Engine._PUB_enemy_Is_ON_CoolTime[index] = true;
         }
 
-        _AI_FuncList.Add(() => __ENE_AI.AI_Simple_Level0()); ;
+        _AI_FuncList.Add(() => __ENE_AI.AI_Simple_Level0());
+        _AI_FuncList.Add(() => __ENE_AI.AI_DeapLearning__Random_Ver());
     }
 
 	// Use this for initialization
