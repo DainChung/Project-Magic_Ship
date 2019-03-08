@@ -58,7 +58,7 @@ public class UnitBaseEngine : MonoBehaviour {
 
         public Vector3 movingVector;
 
-        private float speed_BUF_Amount;
+        protected float speed_BUF_Amount;
 
         //몇몇 변수 값 초기화
         void Awake()
@@ -220,6 +220,26 @@ public class UnitBaseEngine : MonoBehaviour {
                 unit_Base_Engine._unit_Stat.__PUB_Critical_Rate,
                 unit_Base_Engine._unit_Stat.__PUB_Critical_P,
                 whichSkill
+                );
+        }
+
+        /** 탄환 발사
+         * @param attacker 탄환을 발사하는 주체
+         * @param BulletName 발사할 탄환의 이름 ("Resources/Prefabs/Bullet/" 경로상의 프리팹)
+         */
+        public void Default_ATK(ref Transform attacker, string BulletName)
+        {
+            // 탄환 생성
+            GameObject OBullet = Resources.Load(prefabBulletPath + BulletName) as GameObject;
+            GameObject spawned_OBJ = (GameObject)(MonoBehaviour.Instantiate(OBullet, attacker.position, attacker.rotation));
+
+            // 탄환 발사
+            spawned_OBJ.GetComponent<AmmoBase>().__Init_Ammo(
+                55.0f,
+                attacker.tag,
+                unit_Base_Engine._unit_Stat.__PUB_ATK__Val,
+                unit_Base_Engine._unit_Stat.__PUB_Critical_Rate,
+                unit_Base_Engine._unit_Stat.__PUB_Critical_P
                 );
         }
 

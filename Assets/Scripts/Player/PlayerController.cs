@@ -48,6 +48,9 @@ public class PlayerController : MonoBehaviour {
         get { return __PLY_Engine; }
     }
 
+    /** 현재 사용하는 탄환 프리팹 이름 */
+    private string SLoadedBulletName;
+
     //그냥 쿨타임
     [HideInInspector]
     public UnitCoolTimer __PLY_CoolTimer;
@@ -122,6 +125,8 @@ public class PlayerController : MonoBehaviour {
         {
             _Is_On_CoolTime_Skill[i] = true;
         }
+
+        SLoadedBulletName = "SampleBullet";
     }
 
     // Use this for initialization
@@ -133,6 +138,8 @@ public class PlayerController : MonoBehaviour {
 
         //해당 스크립트와 CombatEngine에서 모두 사용하기 위해 이렇게 초기화하여 전달한다.
         __PLY_CoolTimer = transform.GetComponent<UnitCoolTimer>();
+
+        SLoadedBulletName = "SampleBullet";
     }
 	
 	// Update is called once per frame
@@ -208,7 +215,8 @@ public class PlayerController : MonoBehaviour {
         if (Input.GetMouseButtonDown(0) && _Is_On_CoolTime__Default_ATK && !(_SPW_MOS_Skill_Activated))
         {
 
-            __PLY_Engine._unit_Combat_Engine.Default_ATK(ref playerAttacker, null);
+//            __PLY_Engine._unit_Combat_Engine.Default_ATK(ref playerAttacker, (SkillBaseStat) null);
+            __PLY_Engine._unit_Combat_Engine.Default_ATK(ref playerAttacker, SLoadedBulletName);
 
             //쿨타임을 사용하기 위한 코루틴. 따로 외부 클래스 제작함. 상세 항목은 해당 클래스 참조
             //나중에 쿨타임 값 같은 것도 따로 관리할 것
@@ -222,7 +230,7 @@ public class PlayerController : MonoBehaviour {
         //나중에 구현하자
         if (Input.GetMouseButtonDown(1))
         {
-            
+
         }
 
         //Debug.Log(__PLY_Selected_Skills[0].time);
@@ -241,7 +249,7 @@ public class PlayerController : MonoBehaviour {
         //3번 스킬
         else if (Input.GetKeyDown(KeyCode.Alpha3) && !(_SPW_MOS_Skill_Activated))
         {
-            PLY_Controller_Using_Skill(2);
+            SLoadedBulletName = "Bullet_MakeSlow";
         }
         else
         { }
