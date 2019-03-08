@@ -260,7 +260,7 @@ public class EnemyController : MonoBehaviour {
         if (__ENE_Stat.__PUB_Stat_Locker[2])
         {
             //일단 1씩 회복한다.
-            __ENE_Stat.__GET_HIT__About_Mana(10, -1);
+            __ENE_Stat.HealMana(10, -1);
             //다음 기본 마나 회복 시간까지 대기 
             __ENE_Stat.__PUB_Stat_Locker[2] = false;
 

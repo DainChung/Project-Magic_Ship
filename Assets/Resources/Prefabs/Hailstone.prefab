@@ -9,34 +9,34 @@ Prefab:
     m_Modifications: []
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 0}
-  m_RootGameObject: {fileID: 1000013904618532}
+  m_RootGameObject: {fileID: 1000012818220250}
   m_IsPrefabParent: 1
---- !u!1 &1000013904618532
+--- !u!1 &1000012818220250
 GameObject:
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   serializedVersion: 4
   m_Component:
-  - 4: {fileID: 4000011523942660}
-  - 33: {fileID: 33000010738251102}
-  - 135: {fileID: 135000010260345026}
-  - 23: {fileID: 23000010298335258}
-  - 54: {fileID: 54000011711018402}
-  - 114: {fileID: 114000013764876854}
+  - 4: {fileID: 4000013019393860}
+  - 33: {fileID: 33000011201636934}
+  - 135: {fileID: 135000013945712502}
+  - 23: {fileID: 23000010766790124}
+  - 114: {fileID: 114000014123944752}
+  - 54: {fileID: 54000012509730576}
   m_Layer: 0
-  m_Name: Bullet_MakeSlow
+  m_Name: Hailstone
   m_TagString: SampleBullet
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &4000011523942660
+--- !u!4 &4000013019393860
 Transform:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1000013904618532}
+  m_GameObject: {fileID: 1000012818220250}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -0.055984378, y: 1.026, z: 4.3}
   m_LocalScale: {x: 0.5717815, y: 0.5717815, z: 0.5717815}
@@ -44,12 +44,12 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 0
---- !u!23 &23000010298335258
+--- !u!23 &23000010766790124
 MeshRenderer:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1000013904618532}
+  m_GameObject: {fileID: 1000012818220250}
   m_Enabled: 1
   m_CastShadows: 1
   m_ReceiveShadows: 1
@@ -73,19 +73,19 @@ MeshRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingOrder: 0
---- !u!33 &33000010738251102
+--- !u!33 &33000011201636934
 MeshFilter:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1000013904618532}
+  m_GameObject: {fileID: 1000012818220250}
   m_Mesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
---- !u!54 &54000011711018402
+--- !u!54 &54000012509730576
 Rigidbody:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1000013904618532}
+  m_GameObject: {fileID: 1000012818220250}
   serializedVersion: 2
   m_Mass: 1
   m_Drag: 0
@@ -95,26 +95,24 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
---- !u!114 &114000013764876854
+--- !u!114 &114000014123944752
 MonoBehaviour:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1000013904618532}
+  m_GameObject: {fileID: 1000012818220250}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 63d5f25ea0c36ec43bdb70dc04a03b0a, type: 3}
+  m_Script: {fileID: 11500000, guid: 959301f7667939d49b1cde3765454a55, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   isItCritical: 0
-  FMovementSpeedModifier: 0.3
-  FMovementSpeedModifyDuration: 1
---- !u!135 &135000010260345026
+--- !u!135 &135000013945712502
 SphereCollider:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1000013904618532}
+  m_GameObject: {fileID: 1000012818220250}
   m_Material: {fileID: 0}
   m_IsTrigger: 1
   m_Enabled: 1

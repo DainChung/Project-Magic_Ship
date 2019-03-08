@@ -71,7 +71,7 @@ public class PlayerController : MonoBehaviour {
     //쿨타임 때문에 임시로 적용한 bool 변수, 개선된 알고리즘이 생각나면 바꿔야 될 것
     private bool _Is_On_CoolTime__Default_ATK;
 
-    private bool[] _Is_On_CoolTime_Skill = new bool[3];
+    private bool[] _Is_On_CoolTime_Skill = new bool[4];
 
     //_SKILL_CODE_Main.SPW 스킬 중 _SKILL_CODE_Sub.MOS값을 갖는 스킬 사용 시 마우스 사용을 위해 투입된 bool 값
     private bool _SPW_MOS_Skill_Activated = false;
@@ -251,6 +251,10 @@ public class PlayerController : MonoBehaviour {
         {
             SLoadedBulletName = "Bullet_MakeSlow";
         }
+        else if (Input.GetKeyDown(KeyCode.Alpha4) && !(_SPW_MOS_Skill_Activated))
+        {
+//            PLY_Controller_Using_Skill(3);
+        }
         else
         { }
 
@@ -275,7 +279,7 @@ public class PlayerController : MonoBehaviour {
         if (__PLY_Stat.__PUB_Stat_Locker[2])
         {
             //일단 1씩 회복한다.
-            __PLY_Stat.__GET_HIT__About_Mana(10, -1);
+            __PLY_Stat.HealMana(10, -1);
             //다음 기본 마나 회복 시간까지 대기 
             __PLY_Stat.__PUB_Stat_Locker[2] = false;
 
@@ -309,7 +313,7 @@ public class PlayerController : MonoBehaviour {
             if (__PLY_Stat.__Is_Mana_Enough(__PLY_Selected_Skills[index].__GET_Skill_Use_Amount))
             {
                 //필요한 마나 소모
-                __PLY_Stat.__GET_HIT__About_Mana(__PLY_Selected_Skills[index].__GET_Skill_Use_Amount, 1);
+                __PLY_Stat.HealMana(__PLY_Selected_Skills[index].__GET_Skill_Use_Amount, 1);
 
                 //UnitBaseEngine.Using_Skill에서 스킬 기능 처리
                 __PLY_Engine._unit_Combat_Engine.Using_Skill(ref playerAttacker, __PLY_Selected_Skills[index], true);

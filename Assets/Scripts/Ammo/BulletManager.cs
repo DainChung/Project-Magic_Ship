@@ -2,6 +2,13 @@
 using System.Collections;
 
 public class BulletManager : MonoBehaviour {
+    private bool BIsSpeedModified;
+
+    private void Start()
+    {
+        BIsSpeedModified = false;
+    }
+
     public void ModifySpeedForSeconds(Collider Target, float Modifier, float Duration)
     {
         StartCoroutine(ModifySpeedForSeconds_Corutine(Target, Modifier, Duration));
@@ -16,9 +23,15 @@ public class BulletManager : MonoBehaviour {
      */    
     public IEnumerator ModifySpeedForSeconds_Corutine(Collider Target, float Modifier, float Duration)
     {
-        Target.GetComponent<UnitBaseEngine>()._unit_Stat.__PUB_Move_Speed *= Modifier;
-        yield return new WaitForSeconds(Duration);
-        Target.GetComponent<UnitBaseEngine>()._unit_Stat.__PUB_Move_Speed /= Modifier;
-        yield break;
+        if (BIsSpeedModified == false)
+        {
+            BIsSpeedModified = true;
+            Target.GetComponent<UnitBaseEngine>()._unit_Stat.__PUB_Move_Speed *= Modifier;
+            yield return new WaitForSeconds(Duration);
+            Target.GetComponent<UnitBaseEngine>()._unit_Stat.__PUB_Move_Speed /= Modifier;
+
+            BIsSpeedModified = false;
+            yield break;
+        }
     }
 }

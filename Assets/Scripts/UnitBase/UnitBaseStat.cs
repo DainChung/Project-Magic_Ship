@@ -188,12 +188,15 @@ public class Unit__Base_Stat {
         return result;
     }
 
-    //마나를 회복하거나 사용하는 함수
-    public void __GET_HIT__About_Mana(int damage, int isHit_OR_Heal)
+    /** 마나를 변경시킬 때 사용한다.
+     * @param Amount 마나 변화량
+     * @param IsHeal 회복(true), 감소(false)
+     */
+    public void HealMana(int Amount, int IsHeal)
     {
         //Exception 관련 내용을 넣을지는 isHit_OR_Heal부분을 Enum으로 변경하고나서 생각할 것
         //damage만큼 마나를 깎는다. 또는 회복한다.
-        __Mana_Point -= (damage * isHit_OR_Heal);
+        __Mana_Point += (Amount * IsHeal);
 
         //따로 if문을 돌려서 계산 후 처리를 쉽게 하도록 한다.
         //체력이 없는 경우, 체력 값을 0으로 유지한다. (나중에 사망 후 제거처리할 것)
@@ -202,22 +205,34 @@ public class Unit__Base_Stat {
             __Mana_Point = 0;
         }
 
-        //체력 회복 시 이미 최대 체력을 넘긴 상태라면
-        if (__Mana_Point > __MAX_Health_Point)
+        //마나 회복 시 이미 최대 마나를 넘긴 상태라면
+        if (__Mana_Point > __MAX_Mana_Point)
         {
-            //최대 체력으로 초기화해준다.
-            __Mana_Point = __MAX_Health_Point;
+            //최대 마나로 초기화해준다.
+            __Mana_Point = __MAX_Mana_Point;
+        }
+    }
+
+    /** 마나를 시간에 걸쳐 여러번 회복한다.
+     * @param duringTime 회복 지속시간
+     * @param freqTime 다음 회복까지의 시간
+     * @param Amount 한 번 회복할 때의 회복양
+     */
+    public IEnumerator HealManaRepeat(float duringTime, float freqTime, int Amount, int isHit_OR_Heal)
+    {
+        //체력을 올리고 내리고를 얼마나 반복할 것인지 계산
+        int howMany = (int)(duringTime / freqTime);
+
+        for (int i = 0; i < howMany; i++)
+        {
+            //올리고자 하는 값을 올린다. (isHit_OR_Heal 값에 따라 딜 또는 힐로 연산된다.)
+            HealMana(Amount, isHit_OR_Heal);
+            Debug.Log("Get Mana Healed");
+            //위의 작업을 일정 시간 마다 반복한다.
+            yield return new WaitForSeconds(freqTime);
         }
 
-        ////피격 및 계산 여부를 확실히 알기 위해 작성한 내용
-        //if (isHit_OR_Heal == 1)
-        //{
-        //    Debug.Log("Use Mana: " + damage + ", Remain MP: " + __Mana_Point);
-        //}
-        //else if (isHit_OR_Heal == -1)
-        //{
-        //    Debug.Log("Heal Mana: " + damage + ", Remain MP: " + __Mana_Point);
-        //}
-        //else { }
+        //해당 코루틴 자동 종료
+        yield break;
     }
 }

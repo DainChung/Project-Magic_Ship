@@ -273,6 +273,11 @@ public class UnitBaseEngine : MonoBehaviour {
                 funcName += "00000000";
                 Debug.Log("This is HP DeBuff Skill");
             }
+            else if (whichSkill.__Get_Skill_ID == "00000004")
+            {
+                funcName += "00000003";
+                Debug.Log("This is MP Heal Skill");
+            }
             //임시 조치. 코드 정리 중 ID 체계화 과정에서 수정 필수
             //산탄(00000005), 속사(00000006)
             else if (whichSkill.__Get_Skill_ID == "00000006")
@@ -402,6 +407,50 @@ public class UnitBaseEngine : MonoBehaviour {
         else
         {
 
+        }
+    }
+
+    /** 마나에 관여하는 스킬
+     * @param attacker 
+     */
+    private void _Skill_00000004(Transform attacker, SkillBaseStat whichSkill, bool isUnitUsingThis = true)
+    {
+        int IsHeal;
+
+        //도트 힐 OR 도트 딜
+        if (whichSkill.__GET_Skill_Code_T == _SKILL_CODE_Time.FREQ)
+        {
+            //도트 힐 스킬을 사용할 때 OR 도트 딜 디버프를 받았을 때
+            if (whichSkill.__GET_Skill_Code_M == _SKILL_CODE_Main.BUF || !(isUnitUsingThis))
+            {
+                // Mana 도트 힐 수행
+                if (isUnitUsingThis)
+                    IsHeal = 1;
+
+                // Mana 도트 딜 수행
+                else
+                    IsHeal = -1;
+
+                StartCoroutine(
+                    _unit_Stat.HealManaRepeat(whichSkill.__GET_Skill_ING_Time,
+                    1.0f,
+                    (int)(whichSkill.__GET_Skill_Rate),
+                    IsHeal)
+                    );
+            }
+            //상대에게 도트 딜을 넣을 스킬
+            else if (whichSkill.__GET_Skill_Code_M == _SKILL_CODE_Main.DBF)
+            {
+                //디버프가 담긴 하나의 투사체를 발사한다.
+                //투사체의 외형 바꾸기는 일단 넘어갈 것.
+
+                _unit_Combat_Engine.Default_ATK(ref attacker, whichSkill);
+            }
+            //오류
+            else
+            {
+
+            }
         }
     }
 

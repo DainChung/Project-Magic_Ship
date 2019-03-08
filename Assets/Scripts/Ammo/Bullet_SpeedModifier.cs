@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
+// 충돌한 대상의 이동속도를 변경시키는 탄환의 프리팹에 이 스크립트를 넣는다.
 public class Bullet_SpeedModifier : AmmoBase {
     private BulletManager SBulletManager;
 
