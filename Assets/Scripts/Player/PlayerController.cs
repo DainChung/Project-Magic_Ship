@@ -261,7 +261,10 @@ public class PlayerController : MonoBehaviour {
             // GetComponent<UnitBaseEngine>().SpawnHailstoneSpawner();
 
             // 마나 회복
-            __PLY_Engine._Skill_00000004();
+            //__PLY_Engine._Skill_00000004();
+
+            // 파워 회복
+            __PLY_Engine._Skill_00000009();
         }
         else
         { }

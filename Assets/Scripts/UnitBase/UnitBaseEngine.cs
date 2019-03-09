@@ -542,4 +542,27 @@ public class UnitBaseEngine : MonoBehaviour {
         Vector3 SpawnPosition = transform.position + transform.forward * Distance + new Vector3(0, Height, 0);
         Instantiate(SpawnerPrefab, SpawnPosition, GetComponent<Transform>().rotation);
     }
+
+    /** 기에 관여하는 스킬
+     * @param duringTime 회복 지속시간
+     * @param freqTime 다음 회복까지의 시간
+     * @param Amount 한 번 회복할 때의 회복양
+     * @param isUnitUsingThis Mana increases(true), Mana decreases(false)
+     */
+    public void _Skill_00000009(float duringTime = 4.0f, float freqTime = 1.0f, int Amount = 2, bool isUnitUsingThis = true)
+    {
+        int IsHeal;
+
+        ////도트 힐 OR 도트 딜
+        //if (whichSkill.__GET_Skill_Code_T == _SKILL_CODE_Time.FREQ &&
+        //    whichSkill.__GET_Skill_Code_M == _SKILL_CODE_Main.BUF || !(isUnitUsingThis))
+        {
+            if (isUnitUsingThis) IsHeal = 1;
+            else IsHeal = -1;
+
+            // 마나가 주기적으로 상승/감소한다.
+            StartCoroutine(_unit_Stat.HealPowerRepeat(duringTime, freqTime, Amount, IsHeal)
+                );
+        }
+    }
 }
