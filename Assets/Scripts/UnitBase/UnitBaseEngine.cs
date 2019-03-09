@@ -63,7 +63,7 @@ public class UnitBaseEngine : MonoBehaviour {
         //몇몇 변수 값 초기화
         void Awake()
         {
-            movingVector.Set(0,0,0);
+            movingVector.Set(0, 0, 0);
             speed_BUF_Amount = 0.0f;
         }
 
@@ -73,7 +73,7 @@ public class UnitBaseEngine : MonoBehaviour {
             try
             {
                 //스피드 버프 값을 더하여 이동속도를 늘리거나 줄인다.
-                movingVector.Set(0,0,(move_Speed + speed_BUF_Amount) * Time.deltaTime * dir);
+                movingVector.Set(0, 0, (move_Speed + speed_BUF_Amount) * Time.deltaTime * dir);
                 //moved_OBJ.GetComponent<Rigidbody>().AddForce(movingVector);
                 moved_OBJ.Translate(movingVector);
             }
@@ -129,7 +129,7 @@ public class UnitBaseEngine : MonoBehaviour {
                 {
 
                 }
-                
+
             }
             //isBuff_OR_DeBuff 값이 1 또는 -1이 아니면 적용되는 Exception으로 대체 예정
             //또는 _unit_Base_Engine.playerController == null && _unit_Base_Engine.enemyController == null 인 경우
@@ -347,10 +347,10 @@ public class UnitBaseEngine : MonoBehaviour {
                 //차선책으로 클래스 간 상속 구조를 뜯어고치고 UnitBaseEngine을 각 Object에 직접 추가하여 StartCoroutine함수를 this.StartCoroutine(...)으로 개편하고
                 //__PLY_Stat은 UnitBaseEngine에 변수를 따로 만들어서 함수 인자로 전달받지 말고 클래스 내에서 직접 가져다 쓸 것 => Enemy와 Player 간의 함수 통합 이슈 자체가 사라짐
                 StartCoroutine(
-                    _unit_Stat.__Get_HIT__About_Health_FREQ(   whichSkill.__GET_Skill_ING_Time,
+                    _unit_Stat.__Get_HIT__About_Health_FREQ(whichSkill.__GET_Skill_ING_Time,
                     1.0f,
                     (int)(whichSkill.__GET_Skill_Rate),
-                    isHit_OR_Heal   )
+                    isHit_OR_Heal)
                     );
             }
             //상대에게 도트 딜을 넣을 스킬
@@ -549,5 +549,18 @@ public class UnitBaseEngine : MonoBehaviour {
         {
 
         }
+    }
+
+    /** 8. 우박: 하늘에서 우박이 떨어진다.
+     * @param Distance Distance between player and hailstone spawner
+     * @param Height Height of spawn location 
+     */
+    public void SpawnHailstoneSpawner(float Distance = 10.0f, float Height = 10.0f)
+    {
+        // 스포너 프리팹 가져오기
+        GameObject SpawnerPrefab = (GameObject) Resources.Load("Prefabs/SpawnArea/Hailstone Spawner");
+
+        Vector3 SpawnPosition = transform.position + transform.forward * Distance + new Vector3(0, Height, 0);
+        Instantiate(SpawnerPrefab, SpawnPosition, GetComponent<Transform>().rotation);
     }
 }

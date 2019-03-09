@@ -249,11 +249,16 @@ public class PlayerController : MonoBehaviour {
         //3번 스킬
         else if (Input.GetKeyDown(KeyCode.Alpha3) && !(_SPW_MOS_Skill_Activated))
         {
-            SLoadedBulletName = "Bullet_MakeSlow";
+            PLY_Controller_Using_Skill(2);
         }
+        // for test
         else if (Input.GetKeyDown(KeyCode.Alpha4) && !(_SPW_MOS_Skill_Activated))
         {
-//            PLY_Controller_Using_Skill(3);
+            // 역풍탄
+            // SLoadedBulletName = "Bullet_MakeSlow";
+
+            // 우박
+            GetComponent<UnitBaseEngine>().SpawnHailstoneSpawner();
         }
         else
         { }

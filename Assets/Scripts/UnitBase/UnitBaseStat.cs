@@ -117,8 +117,10 @@ public class Unit__Base_Stat {
     //    yield break;
     //}
 
-    //__Health_Point에 일정 수치를 가감하기 위한 함수
-    //일반 딜, 일반 힐 등 체력에 관한 연산을 한 번만 수행할 때 사용한다.
+    /** Health 가감 연산
+     * @param damage HP를 가감할 수치
+     * @param isHit_Or_Heal HP감소(1), HP증가(-1)
+     */
     public void __GET_HIT__About_Health(int damage, int isHit_OR_Heal)
     {
         //Exception 관련 내용을 넣을지는 isHit_OR_Heal부분을 Enum으로 변경하고나서 생각할 것
