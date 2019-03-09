@@ -411,46 +411,25 @@ public class UnitBaseEngine : MonoBehaviour {
     }
 
     /** 마나에 관여하는 스킬
-     * @param attacker 
+     * @param duringTime 회복 지속시간
+     * @param freqTime 다음 회복까지의 시간
+     * @param Amount 한 번 회복할 때의 회복양
+     * @param isUnitUsingThis Mana increases(true), Mana decreases(false)
      */
-    private void _Skill_00000004(Transform attacker, SkillBaseStat whichSkill, bool isUnitUsingThis = true)
+    public void _Skill_00000004(float duringTime = 4.0f, float freqTime = 1.0f, int Amount = 2, bool isUnitUsingThis = true)
     {
         int IsHeal;
 
-        //도트 힐 OR 도트 딜
-        if (whichSkill.__GET_Skill_Code_T == _SKILL_CODE_Time.FREQ)
+        ////도트 힐 OR 도트 딜
+        //if (whichSkill.__GET_Skill_Code_T == _SKILL_CODE_Time.FREQ &&
+        //    whichSkill.__GET_Skill_Code_M == _SKILL_CODE_Main.BUF || !(isUnitUsingThis))
         {
-            //도트 힐 스킬을 사용할 때 OR 도트 딜 디버프를 받았을 때
-            if (whichSkill.__GET_Skill_Code_M == _SKILL_CODE_Main.BUF || !(isUnitUsingThis))
-            {
-                // Mana 도트 힐 수행
-                if (isUnitUsingThis)
-                    IsHeal = 1;
+                if (isUnitUsingThis) IsHeal = 1;
+                else IsHeal = -1;
 
-                // Mana 도트 딜 수행
-                else
-                    IsHeal = -1;
-
-                StartCoroutine(
-                    _unit_Stat.HealManaRepeat(whichSkill.__GET_Skill_ING_Time,
-                    1.0f,
-                    (int)(whichSkill.__GET_Skill_Rate),
-                    IsHeal)
+                // 마나가 주기적으로 상승/감소한다.
+                StartCoroutine(_unit_Stat.HealManaRepeat(duringTime, freqTime, Amount, IsHeal)
                     );
-            }
-            //상대에게 도트 딜을 넣을 스킬
-            else if (whichSkill.__GET_Skill_Code_M == _SKILL_CODE_Main.DBF)
-            {
-                //디버프가 담긴 하나의 투사체를 발사한다.
-                //투사체의 외형 바꾸기는 일단 넘어갈 것.
-
-                _unit_Combat_Engine.Default_ATK(ref attacker, whichSkill);
-            }
-            //오류
-            else
-            {
-
-            }
         }
     }
 

@@ -258,7 +258,10 @@ public class PlayerController : MonoBehaviour {
             // SLoadedBulletName = "Bullet_MakeSlow";
 
             // 우박
-            GetComponent<UnitBaseEngine>().SpawnHailstoneSpawner();
+            // GetComponent<UnitBaseEngine>().SpawnHailstoneSpawner();
+
+            // 마나 회복
+            __PLY_Engine._Skill_00000004();
         }
         else
         { }
