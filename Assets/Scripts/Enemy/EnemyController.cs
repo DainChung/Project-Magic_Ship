@@ -72,6 +72,20 @@ public class EnemyAIEngine {
 
     public UnitCoolTimer enemyCoolTimer;
 
+    public bool AngleComparison()
+    {
+        bool result = false;
+
+        return result;
+    }
+
+    //시계방향 또는 반시계방향으로 돌아야된다는 걸 알려주는 함수
+    //true면 시계방향, false면 반시계방향
+    public bool GET_RotataionDir(float curAngle, float destiAngle)
+    {
+        return (curAngle - destiAngle < 0);
+    }
+
     //destinationDir 방향으로 회전하는 함수
     public void Rotate_TO_Direction(float rotate_Speed, ref Transform rotated_OBJ, Transform destiTrn, bool is_RunAway)
     {
@@ -114,7 +128,7 @@ public class EnemyAIEngine {
 
         //dir값을 결정한다.
         //각도 차를 구하여 시계방향으로 돌지 반시계방향으로 돌지 결정한다. (1이 시계 방향)
-        if (curAngle - destiAngle_FOR_dir >= 0)
+        if (  !( GET_RotataionDir(curAngle, destiAngle_FOR_dir) )  )
         {
             dir *= (-1);
         }
@@ -129,8 +143,9 @@ public class EnemyAIEngine {
 
         //약간의 오차를 허용한다.
         //목표지점을 바라볼 때까지 회전한다.
-        if (!((angleComparison < 1.0f) && (angleComparison > - 1.0f)))
+        if ( !( (angleComparison < 1.0f) && (angleComparison > - 1.0f) ) )
         {
+            Debug.Log(angleComparison);
             __ENE_Engine._unit_Move_Engine.Rotate_OBJ(rotate_Speed, ref rotated_OBJ, dir);
         }
 

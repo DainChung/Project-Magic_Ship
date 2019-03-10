@@ -23,6 +23,12 @@ namespace PMS_Math {
             return result;
         }
 
+        //rotated_OBJ와 destiTrn의 각도가 destiAngle에 근접한지 확인하는 함수
+        public static bool AngleComparison_BETWEEN_Two_Objs(float destiAngle, Transform rotated_OBJ, Transform destiTrn)
+        {
+            return false;
+        }
+
         //반대 방향을 찾아주는 함수.
         //-180 < angle <= 180의 범위일 때만 유효하다.
         public static float Get_Opposite_Direction_Angle(float angle)
