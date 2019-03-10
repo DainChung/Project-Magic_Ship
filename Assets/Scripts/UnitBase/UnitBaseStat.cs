@@ -141,6 +141,7 @@ public class Unit__Base_Stat {
      */
     public void __GET_HIT__About_Health(int damage, int isHit_OR_Heal)
     {
+
         //Exception 관련 내용을 넣을지는 isHit_OR_Heal부분을 Enum으로 변경하고나서 생각할 것
         //체력이 존재하는 경우, damage만큼 체력을 깎는다. 또는 회복한다.
         if (__Health_Point > 0)
