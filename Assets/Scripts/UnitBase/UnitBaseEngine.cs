@@ -58,12 +58,12 @@ public class UnitBaseEngine : MonoBehaviour {
 
         public Vector3 movingVector;
 
-        private float speed_BUF_Amount;
+        protected float speed_BUF_Amount;
 
         //몇몇 변수 값 초기화
         void Awake()
         {
-            movingVector.Set(0,0,0);
+            movingVector.Set(0, 0, 0);
             speed_BUF_Amount = 0.0f;
         }
 
@@ -73,7 +73,7 @@ public class UnitBaseEngine : MonoBehaviour {
             try
             {
                 //스피드 버프 값을 더하여 이동속도를 늘리거나 줄인다.
-                movingVector.Set(0,0,(move_Speed + speed_BUF_Amount) * Time.deltaTime * dir);
+                movingVector.Set(0, 0, (move_Speed + speed_BUF_Amount) * Time.deltaTime * dir);
                 //moved_OBJ.GetComponent<Rigidbody>().AddForce(movingVector);
                 moved_OBJ.Translate(movingVector);
             }
@@ -129,7 +129,7 @@ public class UnitBaseEngine : MonoBehaviour {
                 {
 
                 }
-                
+
             }
             //isBuff_OR_DeBuff 값이 1 또는 -1이 아니면 적용되는 Exception으로 대체 예정
             //또는 _unit_Base_Engine.playerController == null && _unit_Base_Engine.enemyController == null 인 경우
@@ -223,6 +223,26 @@ public class UnitBaseEngine : MonoBehaviour {
                 );
         }
 
+        /** 탄환 발사
+         * @param attacker 탄환을 발사하는 주체
+         * @param BulletName 발사할 탄환의 이름 ("Resources/Prefabs/Bullet/" 경로상의 프리팹)
+         */
+        public void Default_ATK(ref Transform attacker, string BulletName)
+        {
+            // 탄환 생성
+            GameObject OBullet = Resources.Load(prefabBulletPath + BulletName) as GameObject;
+            GameObject spawned_OBJ = (GameObject)(MonoBehaviour.Instantiate(OBullet, attacker.position, attacker.rotation));
+
+            // 탄환 발사
+            spawned_OBJ.GetComponent<AmmoBase>().__Init_Ammo(
+                55.0f,
+                attacker.tag,
+                unit_Base_Engine._unit_Stat.__PUB_ATK__Val,
+                unit_Base_Engine._unit_Stat.__PUB_Critical_Rate,
+                unit_Base_Engine._unit_Stat.__PUB_Critical_P
+                );
+        }
+
         //스킬 사용시 모두 이 함수를 통함.
         public void Using_Skill(ref Transform attacker, SkillBaseStat whichSkill, bool isUnitUsingThis)
         {
@@ -252,6 +272,11 @@ public class UnitBaseEngine : MonoBehaviour {
             {
                 funcName += "00000000";
                 Debug.Log("This is HP DeBuff Skill");
+            }
+            else if (whichSkill.__Get_Skill_ID == "00000004")
+            {
+                funcName += "00000003";
+                Debug.Log("This is MP Heal Skill");
             }
             //임시 조치. 코드 정리 중 ID 체계화 과정에서 수정 필수
             //산탄(00000005), 속사(00000006)
@@ -322,10 +347,10 @@ public class UnitBaseEngine : MonoBehaviour {
                 //차선책으로 클래스 간 상속 구조를 뜯어고치고 UnitBaseEngine을 각 Object에 직접 추가하여 StartCoroutine함수를 this.StartCoroutine(...)으로 개편하고
                 //__PLY_Stat은 UnitBaseEngine에 변수를 따로 만들어서 함수 인자로 전달받지 말고 클래스 내에서 직접 가져다 쓸 것 => Enemy와 Player 간의 함수 통합 이슈 자체가 사라짐
                 StartCoroutine(
-                    _unit_Stat.__Get_HIT__About_Health_FREQ(   whichSkill.__GET_Skill_ING_Time,
+                    _unit_Stat.__Get_HIT__About_Health_FREQ(whichSkill.__GET_Skill_ING_Time,
                     1.0f,
                     (int)(whichSkill.__GET_Skill_Rate),
-                    isHit_OR_Heal   )
+                    isHit_OR_Heal)
                     );
             }
             //상대에게 도트 딜을 넣을 스킬
@@ -382,6 +407,29 @@ public class UnitBaseEngine : MonoBehaviour {
         else
         {
 
+        }
+    }
+
+    /** 마나에 관여하는 스킬
+     * @param duringTime 회복 지속시간
+     * @param freqTime 다음 회복까지의 시간
+     * @param Amount 한 번 회복할 때의 회복양
+     * @param isUnitUsingThis Mana increases(true), Mana decreases(false)
+     */
+    public void _Skill_00000004(float duringTime = 4.0f, float freqTime = 1.0f, int Amount = 2, bool isUnitUsingThis = true)
+    {
+        int IsHeal;
+
+        ////도트 힐 OR 도트 딜
+        //if (whichSkill.__GET_Skill_Code_T == _SKILL_CODE_Time.FREQ &&
+        //    whichSkill.__GET_Skill_Code_M == _SKILL_CODE_Main.BUF || !(isUnitUsingThis))
+        {
+                if (isUnitUsingThis) IsHeal = 1;
+                else IsHeal = -1;
+
+                // 마나가 주기적으로 상승/감소한다.
+                StartCoroutine(_unit_Stat.HealManaRepeat(duringTime, freqTime, Amount, IsHeal)
+                    );
         }
     }
 
@@ -479,6 +527,42 @@ public class UnitBaseEngine : MonoBehaviour {
         else
         {
 
+        }
+    }
+
+    /** 8. 우박: 하늘에서 우박이 떨어진다.
+     * @param Distance Distance between player and hailstone spawner
+     * @param Height Height of spawn location 
+     */
+    public void SpawnHailstoneSpawner(float Distance = 10.0f, float Height = 10.0f)
+    {
+        // 스포너 프리팹 가져오기
+        GameObject SpawnerPrefab = (GameObject) Resources.Load("Prefabs/SpawnArea/Hailstone Spawner");
+
+        Vector3 SpawnPosition = transform.position + transform.forward * Distance + new Vector3(0, Height, 0);
+        Instantiate(SpawnerPrefab, SpawnPosition, GetComponent<Transform>().rotation);
+    }
+
+    /** 기에 관여하는 스킬
+     * @param duringTime 회복 지속시간
+     * @param freqTime 다음 회복까지의 시간
+     * @param Amount 한 번 회복할 때의 회복양
+     * @param isUnitUsingThis Mana increases(true), Mana decreases(false)
+     */
+    public void _Skill_00000009(float duringTime = 4.0f, float freqTime = 1.0f, int Amount = 2, bool isUnitUsingThis = true)
+    {
+        int IsHeal;
+
+        ////도트 힐 OR 도트 딜
+        //if (whichSkill.__GET_Skill_Code_T == _SKILL_CODE_Time.FREQ &&
+        //    whichSkill.__GET_Skill_Code_M == _SKILL_CODE_Main.BUF || !(isUnitUsingThis))
+        {
+            if (isUnitUsingThis) IsHeal = 1;
+            else IsHeal = -1;
+
+            // 마나가 주기적으로 상승/감소한다.
+            StartCoroutine(_unit_Stat.HealPowerRepeat(duringTime, freqTime, Amount, IsHeal)
+                );
         }
     }
 }

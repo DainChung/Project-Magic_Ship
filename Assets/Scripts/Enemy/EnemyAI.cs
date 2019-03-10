@@ -176,7 +176,7 @@ public class EnemyAI : MonoBehaviour {
             StartCoroutine(enemyController.enemyCoolTimer.Timer(0.5f + Random.Range(0.0f, 1.0f), (input) => { isbehaveCoolTimeOn = input; }, true, (input) => { dummy = input; }));
         }
 
-        Debug.Log(realIndex);
+        //Debug.Log(realIndex);
 
         //일반 공격은 쿨타임이 지났을 때만 사용할 수 있도록 한다.
         if (realIndex >= 0 && realIndex <= 2)

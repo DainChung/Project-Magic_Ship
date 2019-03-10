@@ -3,27 +3,27 @@ using System.Collections;
 
 public class AmmoBase : MonoBehaviour {
 
-    private float __Ammo_Speed;
+    protected float __Ammo_Speed;
 
     //누가 쐈냐
-    private string __Who_Shot = "";
+    protected string __Who_Shot = "";
 
-    private int __Ammo_Damage;
+    protected int __Ammo_Damage;
     public int _GET__Ammo_Damage
     {
         get { return __Ammo_Damage; }
     }
 
-    private Vector3 addedForce;
+    protected Vector3 addedForce;
 
     //크리 여부를 확인하고 값이 결정됨 true면 크리, 아니면 일반
     public bool isItCritical;
 
-    private SkillBaseStat whichSkill;
+    protected SkillBaseStat whichSkill;
 
     //해당 투사체가 적에게 명중 시 어떤 디버프를 걸 수 있는 지에 대한 정보도 필요함.
 
-    void Start()
+    protected void Start()
     {
         addedForce = transform.forward * __Ammo_Speed;
 
@@ -31,7 +31,7 @@ public class AmmoBase : MonoBehaviour {
     }
 
     //투사체가 수행하는 연산을 위한 값 초기화
-    public void __Init_Ammo(float speed, string tag, int damage, float criRate, float criPoint, SkillBaseStat skillStat)
+    public void __Init_Ammo(float speed, string tag, int damage, float criRate, float criPoint, SkillBaseStat skillStat = null)
     {
         __Ammo_Speed = speed;
         __Who_Shot = tag;
@@ -63,7 +63,7 @@ public class AmmoBase : MonoBehaviour {
         }
     }
 
-    void OnTriggerEnter(Collider other)
+    protected void OnTriggerEnter(Collider other)
     {
         if(other.transform.tag == "SampleObstacle")
         {

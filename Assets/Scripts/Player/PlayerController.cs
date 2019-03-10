@@ -48,6 +48,9 @@ public class PlayerController : MonoBehaviour {
         get { return __PLY_Engine; }
     }
 
+    /** 현재 사용하는 탄환 프리팹 이름 */
+    private string SLoadedBulletName;
+
     //그냥 쿨타임
     [HideInInspector]
     public UnitCoolTimer __PLY_CoolTimer;
@@ -68,7 +71,7 @@ public class PlayerController : MonoBehaviour {
     //쿨타임 때문에 임시로 적용한 bool 변수, 개선된 알고리즘이 생각나면 바꿔야 될 것
     private bool _Is_On_CoolTime__Default_ATK;
 
-    private bool[] _Is_On_CoolTime_Skill = new bool[3];
+    private bool[] _Is_On_CoolTime_Skill = new bool[4];
 
     //_SKILL_CODE_Main.SPW 스킬 중 _SKILL_CODE_Sub.MOS값을 갖는 스킬 사용 시 마우스 사용을 위해 투입된 bool 값
     private bool _SPW_MOS_Skill_Activated = false;
@@ -122,6 +125,8 @@ public class PlayerController : MonoBehaviour {
         {
             _Is_On_CoolTime_Skill[i] = true;
         }
+
+        SLoadedBulletName = "SampleBullet";
     }
 
     // Use this for initialization
@@ -133,6 +138,8 @@ public class PlayerController : MonoBehaviour {
 
         //해당 스크립트와 CombatEngine에서 모두 사용하기 위해 이렇게 초기화하여 전달한다.
         __PLY_CoolTimer = transform.GetComponent<UnitCoolTimer>();
+
+        SLoadedBulletName = "SampleBullet";
     }
 	
 	// Update is called once per frame
@@ -208,7 +215,8 @@ public class PlayerController : MonoBehaviour {
         if (Input.GetMouseButtonDown(0) && _Is_On_CoolTime__Default_ATK && !(_SPW_MOS_Skill_Activated))
         {
 
-            __PLY_Engine._unit_Combat_Engine.Default_ATK(ref playerAttacker, null);
+//            __PLY_Engine._unit_Combat_Engine.Default_ATK(ref playerAttacker, (SkillBaseStat) null);
+            __PLY_Engine._unit_Combat_Engine.Default_ATK(ref playerAttacker, SLoadedBulletName);
 
             //쿨타임을 사용하기 위한 코루틴. 따로 외부 클래스 제작함. 상세 항목은 해당 클래스 참조
             //나중에 쿨타임 값 같은 것도 따로 관리할 것
@@ -222,7 +230,7 @@ public class PlayerController : MonoBehaviour {
         //나중에 구현하자
         if (Input.GetMouseButtonDown(1))
         {
-            
+
         }
 
         //Debug.Log(__PLY_Selected_Skills[0].time);
@@ -242,6 +250,21 @@ public class PlayerController : MonoBehaviour {
         else if (Input.GetKeyDown(KeyCode.Alpha3) && !(_SPW_MOS_Skill_Activated))
         {
             PLY_Controller_Using_Skill(2);
+        }
+        // for test
+        else if (Input.GetKeyDown(KeyCode.Alpha4) && !(_SPW_MOS_Skill_Activated))
+        {
+            // 역풍탄
+            // SLoadedBulletName = "Bullet_MakeSlow";
+
+            // 우박
+            // GetComponent<UnitBaseEngine>().SpawnHailstoneSpawner();
+
+            // 마나 회복
+            //__PLY_Engine._Skill_00000004();
+
+            // 파워 회복
+            __PLY_Engine._Skill_00000009();
         }
         else
         { }
@@ -267,7 +290,7 @@ public class PlayerController : MonoBehaviour {
         if (__PLY_Stat.__PUB_Stat_Locker[2])
         {
             //일단 1씩 회복한다.
-            __PLY_Stat.__GET_HIT__About_Mana(10, -1);
+            __PLY_Stat.HealMana(10, -1);
             //다음 기본 마나 회복 시간까지 대기 
             __PLY_Stat.__PUB_Stat_Locker[2] = false;
 
@@ -301,7 +324,7 @@ public class PlayerController : MonoBehaviour {
             if (__PLY_Stat.__Is_Mana_Enough(__PLY_Selected_Skills[index].__GET_Skill_Use_Amount))
             {
                 //필요한 마나 소모
-                __PLY_Stat.__GET_HIT__About_Mana(__PLY_Selected_Skills[index].__GET_Skill_Use_Amount, 1);
+                __PLY_Stat.HealMana(__PLY_Selected_Skills[index].__GET_Skill_Use_Amount, 1);
 
                 //UnitBaseEngine.Using_Skill에서 스킬 기능 처리
                 __PLY_Engine._unit_Combat_Engine.Using_Skill(ref playerAttacker, __PLY_Selected_Skills[index], true);

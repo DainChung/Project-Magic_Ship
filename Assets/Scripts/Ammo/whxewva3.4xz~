@@ -1,0 +1,30 @@
+﻿using UnityEngine;
+using System.Collections;
+
+public class Ammo_Slow : AmmoBase {
+    public float FMovementSpeedModifier;
+
+    protected void Start()
+    {
+        base.Start();
+
+        FMovementSpeedModifier = 0.8f;
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        // 적 or 플레이어에 충돌시, 이동속도 감소
+        if(other.transform.tag == "SampleEnemy" || other.transform.tag == "Player")
+        {
+            other.GetComponent<Unit__Base_Stat>().__PUB_Move_Speed *= 0.8f;
+        }
+
+        /** 부모 함수 호출
+         * @execute 벽에 충돌시, 탄환 오브젝트 삭제
+         * @execute 적 or 플레이어에 충돌시, 피격 연산 후 오브젝트 삭제
+         */
+        base.OnTriggerEnter(other);
+    }
+    
+    public 
+}
