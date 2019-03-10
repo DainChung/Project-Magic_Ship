@@ -4,6 +4,8 @@ using System.Collections;
 
 using System.Collections.Generic;
 
+using File_IO;
+
 //EnemyAI에 직접적으로 관련된 클래스를 새로 생성함
 public class EnemyAI : MonoBehaviour {
 
@@ -24,11 +26,21 @@ public class EnemyAI : MonoBehaviour {
     private bool isbehaveCoolTimeOn = true;
     private int realIndex = 3;
 
+    //20190310
+    ////이속 버프 & 디버프 중첩 방지가 작동하는 지 알아보기 위한 임시 변수
+    //private SkillBaseStat sampleSkillTest;
+
+    //private bool sampleSkillCoolTime;
+
     // Use this for initialization
     void Awake () {
         enemyController = transform.GetComponent<EnemyController>();
         __ENE_Stat = enemyController.__ENE_Stat;
         __ENE_AI_Engine = enemyController._GET__ENE_AI_Engine;
+
+        ////이속 디버프 스킬을 기본으로 사용하도록 임시로 지정한다.
+        //sampleSkillTest = IO_CSV.__Get_Searched_SkillBaseStat("00000003");
+        //sampleSkillCoolTime = true;
 
         //기본 공격=====
         //정면
@@ -129,17 +141,31 @@ public class EnemyAI : MonoBehaviour {
             //전방으로 이동한다.
             __ENE_AI_Engine.Go_TO_Foward_UNTIL_RayHit(__ENE_Stat.__PUB_Move_Speed, ref enemyController.enemyTransform, enemyController.playerTransform);
 
-            //일단 공격을 시켜보자
-            //예상대로 기본 공격은 플레이어가 요령껏 피하기 쉽다
-            //각도 차에 따라 다른 위치로 발사한다.
+            //각도 차에 따라 다른 위치로 발사한다. (아직 미구현)
             if (__ENE_AI_Engine._PUB_enemy_Is_ON_CoolTime[1])
             {
-                
+
 
                 //플레이어를 거의 정면으로 바라보고 있을 때
                 //if(curAngleComparison <= 10.0f)
-                    //쿨타임에 랜덤변수를 더해서 난이도를 조금 올린다.
-                    __ENE_AI_Engine.Attack_Default(2.0f + Random.Range(0.0f, 1.0f), ref enemyController.enemy_Front, __ENE_Stat, 1);
+                //쿨타임에 랜덤변수를 더해서 난이도를 조금 올린다.
+                __ENE_AI_Engine.Attack_Default(2.0f + Random.Range(0.0f, 1.0f), ref enemyController.enemy_Front, __ENE_Stat, 1);
+
+                ////20190310
+                ////이속 디버프 스킬을 기본 공격으로 사용하도록 임시로 테스트 한다.
+                ////같은 스탯에 대한 버프, 디버프 중첩 방지 성공
+                //if (sampleSkillCoolTime)
+                //{
+                //    __ENE_AI_Engine.__ENE_Engine._unit_Combat_Engine.Using_Skill(ref enemyController.enemy_Front, sampleSkillTest, true);
+
+                //    //쿨타임 관련 처리를 해준다
+                //    StartCoroutine(
+                //        enemyController.enemyCoolTimer.Timer(sampleSkillTest.__GET_Skill_Cool_Time,
+                //        (input) => { sampleSkillCoolTime = input; }, sampleSkillCoolTime,
+                //        (input) => { sampleSkillTest.time = input; })
+                //        );
+                //}
+
                 //플레이어가 적의 좌측에 있을 때
                 //else if(curAngleComparison <= 100.0f && curAngleComparison >= 80.0f && GET_RotataionDir(curAngle, destiAngle))
                 //__ENE_AI_Engine.Attack_Default(2.0f + Random.Range(0.0f, 1.0f), ref enemyController.enemy_Left, __ENE_Stat, 1);

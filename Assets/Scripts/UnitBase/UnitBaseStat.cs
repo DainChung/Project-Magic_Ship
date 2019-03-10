@@ -22,11 +22,15 @@ public class Unit__Base_Stat {
     protected float _Critical_Rate; //치명타율
     protected float _Critical_P;    //치명타 계수
 
-    private float FOriginalMoveSpeed;
+    //버프 & 디버프 중첩을 위한 이동속도, 회전속도 변수
+    protected float FOriginalMoveSpeed;
+    protected float FOriginalRotateSpeed;
 
-    //버프 및 디버프 관련 연산 처리를 위한 변수
+    //버프 및 디버프 쿨타임 관련 처리를 위한 변수
     //speed, hp, mp, pp, cri 순서로 들어가도록 할 것
-    private List<bool> _Stat_Locker = new List<bool>();
+    private List<bool> _Stat_IsCoolTimeOn = new List<bool>();
+    //버프 및 디버프 중첩을 막기 위한 변수
+    private List<bool> _Stat_Real_Locker = new List<bool>();
 
     //위 변수들에 접근할 수 있도록 하는 변수들
     public float __PUB_Move_Speed
@@ -71,10 +75,15 @@ public class Unit__Base_Stat {
         get { return _Critical_P; }
         set { _Critical_P = value; }
     }
-    public List<bool> __PUB_Stat_Locker
+    public List<bool> __PUB_Stat_IsCoolTimeOn
     {
-        get { return _Stat_Locker; }
-        set { _Stat_Locker = value; }
+        get { return _Stat_IsCoolTimeOn; }
+        set { _Stat_IsCoolTimeOn = value; }
+    }
+    public List<bool> __PUB_Stat_Real_Locker
+    {
+        get { return _Stat_Real_Locker; }
+        set { _Stat_Real_Locker = value; }
     }
 
     public int __GET_Max_HP
@@ -88,6 +97,15 @@ public class Unit__Base_Stat {
     public int __GET_Max_PP
     {
         get { return __MAX_Power_Point; }
+    }
+
+    public float __GET_FOriginalMoveSpeed
+    {
+        get { return FOriginalMoveSpeed; }
+    }
+    public float __GET_FOriginalRotateSpeed
+    {
+        get { return FOriginalRotateSpeed; }
     }
 
     ////스탯에 직접 영향을 주는 모든 함수는 여기에서 처리해야 될 것 같음.
@@ -164,44 +182,34 @@ public class Unit__Base_Stat {
         //체력을 올리고 내리고를 얼마나 반복할 것인지 계산
         int howMany = (int)(duringTime / freqTime);
 
+        _Stat_Real_Locker[1] = true;
+
         for (int i = 0; i < howMany; i++)
         {
             //올리고자 하는 값을 올린다. (isHit_OR_Heal 값에 따라 딜 또는 힐로 연산된다.)
             __GET_HIT__About_Health(damage, isHit_OR_Heal);
-            Debug.Log("Get Heal");
+            //Debug.Log("Get Heal");
             //위의 작업을 일정 시간 마다 반복한다.
             yield return new WaitForSeconds(freqTime);
         }
 
+        _Stat_Real_Locker[1] = false;
         //해당 코루틴 자동 종료
         yield break;
     }
 
-    //마나를 사용할 때, 마나가 충분한지 확인하는 함수
-    public bool __Is_Mana_Enough(int damage)
-    {
-        bool result;
-
-        if (__Mana_Point >= damage)
-            result = true;
-        else
-            result = false;
-
-        return result;
-    }
-
     /** 마나를 변경시킬 때 사용한다.
-     * @param Amount 마나 변화량
-     * @param IsHeal 회복(true), 감소(false)
+     * @param damage 마나 변화량
+     * @param isHit_OR_Heal 회복(-1), 감소(1)
      */
-    public void HealMana(int Amount, int IsHeal)
+    public void __Get_HIT__About_Mana(int damage, int isHit_OR_Heal)
     {
         //Exception 관련 내용을 넣을지는 isHit_OR_Heal부분을 Enum으로 변경하고나서 생각할 것
         //damage만큼 마나를 깎는다. 또는 회복한다.
-        __Mana_Point += (Amount * IsHeal);
+        __Mana_Point -= (damage * isHit_OR_Heal);
 
         //따로 if문을 돌려서 계산 후 처리를 쉽게 하도록 한다.
-        //체력이 없는 경우, 체력 값을 0으로 유지한다. (나중에 사망 후 제거처리할 것)
+        //마나가 없는 경우, 마나 값을 0으로 유지한다.
         if (__Mana_Point <= 0)
         {
             __Mana_Point = 0;
@@ -215,12 +223,34 @@ public class Unit__Base_Stat {
         }
     }
 
-    /** 마나를 시간에 걸쳐 여러번 회복한다.
-     * @param duringTime 회복 지속시간
-     * @param freqTime 다음 회복까지의 시간
-     * @param Amount 한 번 회복할 때의 회복양
+    //public void HealMana(int Amount, int IsHeal)
+    //{
+    //    //Exception 관련 내용을 넣을지는 isHit_OR_Heal부분을 Enum으로 변경하고나서 생각할 것
+    //    //damage만큼 마나를 깎는다. 또는 회복한다.
+    //    __Mana_Point += (Amount * IsHeal);
+
+    //    //따로 if문을 돌려서 계산 후 처리를 쉽게 하도록 한다.
+    //    //체력이 없는 경우, 체력 값을 0으로 유지한다. (나중에 사망 후 제거처리할 것)
+    //    if (__Mana_Point <= 0)
+    //    {
+    //        __Mana_Point = 0;
+    //    }
+
+    //    //마나 회복 시 이미 최대 마나를 넘긴 상태라면
+    //    if (__Mana_Point > __MAX_Mana_Point)
+    //    {
+    //        //최대 마나로 초기화해준다.
+    //        __Mana_Point = __MAX_Mana_Point;
+    //    }
+    //}
+
+    /** 마나를 시간에 걸쳐 여러번 회복 또는 감소한다.
+     * @param duringTime 회복 또는 감소 지속시간
+     * @param freqTime 다음 회복 또는 감소까지의 시간
+     * @param damage 한 번에 회복하거나 감소하는 마나량
+     * @param isHit_OR_Heal 회복(-1), 감소(1)
      */
-    public IEnumerator HealManaRepeat(float duringTime, float freqTime, int Amount, int isHit_OR_Heal)
+    public IEnumerator __Get_HIT__About_Mana_FREQ(float duringTime, float freqTime, int damage, int isHit_OR_Heal)
     {
         //마나를 올리고 내리고를 얼마나 반복할 것인지 계산
         int howMany = (int)(duringTime / freqTime);
@@ -228,8 +258,8 @@ public class Unit__Base_Stat {
         for (int i = 0; i < howMany; i++)
         {
             //올리고자 하는 값을 올린다. (isHit_OR_Heal 값에 따라 딜 또는 힐로 연산된다.)
-            HealMana(Amount, isHit_OR_Heal);
-            Debug.Log("Get Mana Healed");
+            __Get_HIT__About_Mana(damage, isHit_OR_Heal);
+            //Debug.Log("Get Mana Healed");
             //위의 작업을 일정 시간 마다 반복한다.
             yield return new WaitForSeconds(freqTime);
         }
@@ -237,16 +267,33 @@ public class Unit__Base_Stat {
         //해당 코루틴 자동 종료
         yield break;
     }
+    //public IEnumerator HealManaRepeat(float duringTime, float freqTime, int Amount, int isHit_OR_Heal)
+    //{
+    //    //마나를 올리고 내리고를 얼마나 반복할 것인지 계산
+    //    int howMany = (int)(duringTime / freqTime);
+
+    //    for (int i = 0; i < howMany; i++)
+    //    {
+    //        //올리고자 하는 값을 올린다. (isHit_OR_Heal 값에 따라 딜 또는 힐로 연산된다.)
+    //        HealMana(Amount, isHit_OR_Heal);
+    //        Debug.Log("Get Mana Healed");
+    //        //위의 작업을 일정 시간 마다 반복한다.
+    //        yield return new WaitForSeconds(freqTime);
+    //    }
+
+    //    //해당 코루틴 자동 종료
+    //    yield break;
+    //}
 
     /** 파워를 변경시킬 때 사용한다.
-     * @param Amount 파워 변화량
-     * @param IsHeal 회복(true), 감소(false)
+     * @param damage 파워 변화량
+     * @param isHit_OR_Heal 회복(-1), 감소(1)
      */
-    public void HealPower(int Amount, int IsHeal)
+    public void __Get_HIT__About_Power(int damage, int isHit_OR_Heal)
     {
         //Exception 관련 내용을 넣을지는 isHit_OR_Heal부분을 Enum으로 변경하고나서 생각할 것
         //damage만큼 파워를 깎는다. 또는 회복한다.
-        __Power_Point += (Amount * IsHeal);
+        __Power_Point -= (damage * isHit_OR_Heal);
 
         //따로 if문을 돌려서 계산 후 처리를 쉽게 하도록 한다.
         //파워가 없는 경우, 파워 값을 0으로 유지한다. (나중에 사망 후 제거처리할 것)
@@ -262,13 +309,34 @@ public class Unit__Base_Stat {
             __Power_Point = __MAX_Power_Point;
         }
     }
+    //public void HealPower(int Amount, int IsHeal)
+    //{
+    //    //Exception 관련 내용을 넣을지는 isHit_OR_Heal부분을 Enum으로 변경하고나서 생각할 것
+    //    //damage만큼 파워를 깎는다. 또는 회복한다.
+    //    __Power_Point += (Amount * IsHeal);
 
-    /** 파워를 시간에 걸쳐 여러번 회복한다.
-     * @param duringTime 회복 지속시간
-     * @param freqTime 다음 회복까지의 시간
-     * @param Amount 한 번 회복할 때의 회복양
+    //    //따로 if문을 돌려서 계산 후 처리를 쉽게 하도록 한다.
+    //    //파워가 없는 경우, 파워 값을 0으로 유지한다. (나중에 사망 후 제거처리할 것)
+    //    if (__Power_Point <= 0)
+    //    {
+    //        __Power_Point = 0;
+    //    }
+
+    //    //파워 회복 시 이미 최대 파워를 넘긴 상태라면
+    //    if (__Power_Point > __MAX_Power_Point)
+    //    {
+    //        //최대 파워로 초기화해준다.
+    //        __Power_Point = __MAX_Power_Point;
+    //    }
+    //}
+
+    /** 파워를 시간에 걸쳐 여러번 회복 또는 감소한다.
+     * @param duringTime 회복 또는 감소 지속시간
+     * @param freqTime 다음 회복 또는 감소까지의 시간
+     * @param damage 한 번에 회복하거나 감소하는 파워량
+     * @param isHit_OR_Heal 회복(-1), 감소(1)
      */
-    public IEnumerator HealPowerRepeat(float duringTime, float freqTime, int Amount, int isHit_OR_Heal)
+    public IEnumerator __Get_HIT__About_Power_FREQ(float duringTime, float freqTime, int damage, int isHit_OR_Heal)
     {
         // 파워를 올리고 내리고를 얼마나 반복할 것인지 계산
         int howMany = (int)(duringTime / freqTime);
@@ -276,14 +344,44 @@ public class Unit__Base_Stat {
         for (int i = 0; i < howMany; i++)
         {
             //올리고자 하는 값을 올린다. (isHit_OR_Heal 값에 따라 딜 또는 힐로 연산된다.)
-            HealPower(Amount, isHit_OR_Heal);
-            Debug.Log("Get Mana Healed");
+            __Get_HIT__About_Power(damage, isHit_OR_Heal);
+            //Debug.Log("Get Power Healed");
             //위의 작업을 일정 시간 마다 반복한다.
             yield return new WaitForSeconds(freqTime);
         }
 
         //해당 코루틴 자동 종료
         yield break;
+    }
+    //public IEnumerator HealPowerRepeat(float duringTime, float freqTime, int Amount, int isHit_OR_Heal)
+    //{
+    //    // 파워를 올리고 내리고를 얼마나 반복할 것인지 계산
+    //    int howMany = (int)(duringTime / freqTime);
+
+    //    for (int i = 0; i < howMany; i++)
+    //    {
+    //        //올리고자 하는 값을 올린다. (isHit_OR_Heal 값에 따라 딜 또는 힐로 연산된다.)
+    //        HealPower(Amount, isHit_OR_Heal);
+    //        Debug.Log("Get Mana Healed");
+    //        //위의 작업을 일정 시간 마다 반복한다.
+    //        yield return new WaitForSeconds(freqTime);
+    //    }
+
+    //    //해당 코루틴 자동 종료
+    //    yield break;
+    //}
+
+    //마나를 사용할 때, 마나가 충분한지 확인하는 함수
+    public bool __Is_Mana_Enough(int damage)
+    {
+        bool result;
+
+        if (__Mana_Point >= damage)
+            result = true;
+        else
+            result = false;
+
+        return result;
     }
 
 }

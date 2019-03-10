@@ -17,11 +17,15 @@ public class PlayerStat : Unit__Base_Stat {
 
         base.__PUB__Health_Point = hp;
         base.__PUB__Mana_Point = mp;
-        base.__PUB__Power_Point = pp;
+        //파워 포인트는 0에서부터 시작한다
+        base.__PUB__Power_Point = 0;
 
         base.__PUB_ATK__Val = atk;
         base.__PUB_Critical_Rate = criR;
         base.__PUB_Critical_P = criP;
+
+        base.FOriginalMoveSpeed = base._Move_Speed;
+        base.FOriginalRotateSpeed = base._Rotation_Speed;
 
         //일단 상수 5를 이용하도록 할 것
         //나중에 그냥 Array로 바꾸거나 말거나 아무튼 더 생각할 것
@@ -29,11 +33,12 @@ public class PlayerStat : Unit__Base_Stat {
         {
             //시작하자마자 버프나 디버프 받는 일은 아직 상정하지 않았으므로
             //일단 다 false로 초기화.
-            base.__PUB_Stat_Locker.Add(false);
+            base.__PUB_Stat_IsCoolTimeOn.Add(false);
+            base.__PUB_Stat_Real_Locker.Add(false);
         }
 
         //기본 마나 회복 작동을 위해 이것만 true로 초기화 한다.
-        __PUB_Stat_Locker[2] = true;
+        __PUB_Stat_IsCoolTimeOn[2] = true;
     }
 }
 
@@ -47,9 +52,6 @@ public class PlayerController : MonoBehaviour {
     {
         get { return __PLY_Engine; }
     }
-
-    /** 현재 사용하는 탄환 프리팹 이름 */
-    private string SLoadedBulletName;
 
     //그냥 쿨타임
     [HideInInspector]
@@ -102,6 +104,7 @@ public class PlayerController : MonoBehaviour {
         //Unit__Base_Combat_Engine이 Unit__Base_Movement_Engine과 __PLY_SKill_Engine에 접근 할 수 있도록 한다.
         __PLY_Engine.playerController = this;
         __PLY_Engine._unit_Combat_Engine.__SET_unit_Base_Engine = __PLY_Engine;
+        __PLY_Engine._unit_Move_Engine._SET_unit_Base_Engine = __PLY_Engine;
 
         //UnitBaseEngine이 Unit__Base_Stat 내용에 접근할 수 있도록 한다.
         __PLY_Engine._unit_Stat = __PLY_Stat;
@@ -125,8 +128,6 @@ public class PlayerController : MonoBehaviour {
         {
             _Is_On_CoolTime_Skill[i] = true;
         }
-
-        SLoadedBulletName = "SampleBullet";
     }
 
     // Use this for initialization
@@ -138,13 +139,12 @@ public class PlayerController : MonoBehaviour {
 
         //해당 스크립트와 CombatEngine에서 모두 사용하기 위해 이렇게 초기화하여 전달한다.
         __PLY_CoolTimer = transform.GetComponent<UnitCoolTimer>();
-
-        SLoadedBulletName = "SampleBullet";
     }
 	
 	// Update is called once per frame
 	void Update ()
     {
+
         //투사체를 발사하는 위치 변경, Q키를 눌러 전환한다.
         //4~5차 단계에서 UI를 추가할 것
         if (Input.GetKeyDown(KeyCode.Q))
@@ -194,7 +194,7 @@ public class PlayerController : MonoBehaviour {
         else
         { }
 
-        if (Input.GetMouseButton(1))
+        if (Input.GetMouseButtonDown(1))
         {
             //임시코드(GUI - CH)
             __PLY_Stat.__PUB__Health_Point -= 1;
@@ -215,15 +215,17 @@ public class PlayerController : MonoBehaviour {
         if (Input.GetMouseButtonDown(0) && _Is_On_CoolTime__Default_ATK && !(_SPW_MOS_Skill_Activated))
         {
 
-//            __PLY_Engine._unit_Combat_Engine.Default_ATK(ref playerAttacker, (SkillBaseStat) null);
-            __PLY_Engine._unit_Combat_Engine.Default_ATK(ref playerAttacker, SLoadedBulletName);
+            __PLY_Engine._unit_Combat_Engine.Default_ATK(ref playerAttacker, (SkillBaseStat) null);
 
             //쿨타임을 사용하기 위한 코루틴. 따로 외부 클래스 제작함. 상세 항목은 해당 클래스 참조
             //나중에 쿨타임 값 같은 것도 따로 관리할 것
             __PLY_CoolTimer.StartCoroutine(
-                __PLY_CoolTimer.Timer(1.0f, (input) => { _Is_On_CoolTime__Default_ATK = input; },
-                _Is_On_CoolTime__Default_ATK,
-                (input) => { default_ATK_Remained_Time = input; }  )
+                __PLY_CoolTimer.Timer(
+                    1.0f,
+                    (input) => { _Is_On_CoolTime__Default_ATK = input; },
+                    _Is_On_CoolTime__Default_ATK,
+                    (input) => { default_ATK_Remained_Time = input; }
+                    )
                 );
         }
         //마우스 우클릭 -> 측면 공격
@@ -258,58 +260,58 @@ public class PlayerController : MonoBehaviour {
             // SLoadedBulletName = "Bullet_MakeSlow";
 
             // 우박
-            // GetComponent<UnitBaseEngine>().SpawnHailstoneSpawner();
+            //GetComponent<UnitBaseEngine>()._Skill_00000008();
 
             // 마나 회복
             //__PLY_Engine._Skill_00000004();
 
             // 파워 회복
-            __PLY_Engine._Skill_00000009();
+            //__PLY_Engine._Skill_00000009();
         }
         else
         { }
 
         //스피드 버프 OR 디버프 지속시간 종료 여부
-        if (__PLY_Stat.__PUB_Stat_Locker[0])
+        if (__PLY_Stat.__PUB_Stat_IsCoolTimeOn[0])
         {
             //스피드 버프 OR 디버프 해제
             //스킬 넣는 부분은 일단 저런식으로 하는 수 밖에 없음
             //나중에 스킬 위치를 마음대로 바꿀 수 있도록 변경할 때 고민이 필요함
             __PLY_Engine._unit_Move_Engine.Init_Speed_BUF_Amount();
             //스피드 버프 해제로 일단 간주
-            __PLY_Stat.__PUB_Stat_Locker[0] = false;
+            __PLY_Stat.__PUB_Stat_IsCoolTimeOn[0] = false;
         }
 
         //체력 버프 OR 디버프 지속시간 종료 여부
-        if (__PLY_Stat.__PUB_Stat_Locker[1])
+        if (__PLY_Stat.__PUB_Stat_IsCoolTimeOn[1])
         {
 
         }
 
         //기본 마나 회복 지속시간 종료 여부
-        if (__PLY_Stat.__PUB_Stat_Locker[2])
+        if (__PLY_Stat.__PUB_Stat_IsCoolTimeOn[2])
         {
             //일단 1씩 회복한다.
-            __PLY_Stat.HealMana(10, -1);
+            __PLY_Stat.__Get_HIT__About_Mana(1, -1);
             //다음 기본 마나 회복 시간까지 대기 
-            __PLY_Stat.__PUB_Stat_Locker[2] = false;
+            __PLY_Stat.__PUB_Stat_IsCoolTimeOn[2] = false;
 
             //일단 10초마다 마나를 회복하도록 결정
             __PLY_CoolTimer.StartCoroutine(
                 __PLY_CoolTimer.Timer_Do_Once(  10.0f,
-                (input) => { __PLY_Stat.__PUB_Stat_Locker[2] = input; },
+                (input) => { __PLY_Stat.__PUB_Stat_IsCoolTimeOn[2] = input; },
                 false  )
                 );
         }
 
         //PP 버프 OR 디버프 지속시간 종료 여부
-        if (__PLY_Stat.__PUB_Stat_Locker[3])
+        if (__PLY_Stat.__PUB_Stat_IsCoolTimeOn[3])
         {
 
         }
 
         //크리티컬 버프 OR 디버프 지속시간 종료 여부
-        if (__PLY_Stat.__PUB_Stat_Locker[4])
+        if (__PLY_Stat.__PUB_Stat_IsCoolTimeOn[4])
         {
 
         }
@@ -324,7 +326,7 @@ public class PlayerController : MonoBehaviour {
             if (__PLY_Stat.__Is_Mana_Enough(__PLY_Selected_Skills[index].__GET_Skill_Use_Amount))
             {
                 //필요한 마나 소모
-                __PLY_Stat.HealMana(__PLY_Selected_Skills[index].__GET_Skill_Use_Amount, 1);
+                __PLY_Stat.__Get_HIT__About_Mana(__PLY_Selected_Skills[index].__GET_Skill_Use_Amount, -1);
 
                 //UnitBaseEngine.Using_Skill에서 스킬 기능 처리
                 __PLY_Engine._unit_Combat_Engine.Using_Skill(ref playerAttacker, __PLY_Selected_Skills[index], true);
@@ -351,6 +353,7 @@ public class PlayerController : MonoBehaviour {
     //플레이어가 디버프 스킬에 피격받았을 때의 함수
     public void _Player_GET_DeBuff(SkillBaseStat whichDeBuffSkill_Hit_Player)
     {
+        Debug.Log("================================================================");
         __PLY_Engine._unit_Combat_Engine.Using_Skill(ref playerAttacker, whichDeBuffSkill_Hit_Player, false);
     }
 }

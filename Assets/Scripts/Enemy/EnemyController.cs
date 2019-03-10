@@ -33,6 +33,9 @@ public class EnemyStat : Unit__Base_Stat {
         base.__PUB_Critical_Rate = criR;
         base.__PUB_Critical_P = criP;
 
+        base.FOriginalMoveSpeed = base._Move_Speed;
+        base.FOriginalRotateSpeed = base._Rotation_Speed;
+
         //소수점 이하는 내림해서 값이 결정됨.
         half_HP = (int)(__MAX_Health_Point / 2);
 
@@ -41,11 +44,12 @@ public class EnemyStat : Unit__Base_Stat {
         //버프, 디버프 통제용
         for (int i = 0; i < 5; i++)
         {
-            __PUB_Stat_Locker.Add(false);
+            __PUB_Stat_IsCoolTimeOn.Add(false);
+            __PUB_Stat_Real_Locker.Add(false);
         }
 
         //기본 마나 회복
-        __PUB_Stat_Locker[2] = true;
+        __PUB_Stat_IsCoolTimeOn[2] = true;
     }
 }
 
@@ -145,7 +149,7 @@ public class EnemyAIEngine {
         //목표지점을 바라볼 때까지 회전한다.
         if ( !( (angleComparison < 1.0f) && (angleComparison > - 1.0f) ) )
         {
-            Debug.Log(angleComparison);
+            //Debug.Log(angleComparison);
             __ENE_Engine._unit_Move_Engine.Rotate_OBJ(rotate_Speed, ref rotated_OBJ, dir);
         }
 
@@ -227,6 +231,7 @@ public class EnemyController : MonoBehaviour {
         //CombatEngine에서 해당 클래스에 접근할 수 있도록 밑작업
         __ENE_AI_Engine.__ENE_Engine.enemyController = this;
         __ENE_AI_Engine.__ENE_Engine._unit_Combat_Engine.__SET_unit_Base_Engine = __ENE_AI_Engine.__ENE_Engine;
+        __ENE_AI_Engine.__ENE_Engine._unit_Move_Engine._SET_unit_Base_Engine = __ENE_AI_Engine.__ENE_Engine;
 
         //Unit__Base_Engine이 Unit__Base_Stat 내용에 접근할 수 있도록 한다.
         __ENE_AI_Engine.__ENE_Engine._unit_Stat = __ENE_Stat;
@@ -257,44 +262,44 @@ public class EnemyController : MonoBehaviour {
         _AI_FuncList[__ENE_Stat._GET_ai_Level]();
 
         //스피드 버프 OR 디버프 지속시간 종료 여부
-        if (__ENE_Stat.__PUB_Stat_Locker[0])
+        if (__ENE_Stat.__PUB_Stat_IsCoolTimeOn[0])
         {
             //스피드 버프 OR 디버프 해제
             __ENE_AI_Engine.__ENE_Engine._unit_Move_Engine.Init_Speed_BUF_Amount();
             //스피드 버프 해제로 일단 간주
-            __ENE_Stat.__PUB_Stat_Locker[0] = false;
+            __ENE_Stat.__PUB_Stat_IsCoolTimeOn[0] = false;
         }
 
         //체력 버프 OR 디버프 지속시간 종료 여부
-        if (__ENE_Stat.__PUB_Stat_Locker[1])
+        if (__ENE_Stat.__PUB_Stat_IsCoolTimeOn[1])
         {
 
         }
 
         //기본 마나 회복 지속시간 종료 여부
-        if (__ENE_Stat.__PUB_Stat_Locker[2])
+        if (__ENE_Stat.__PUB_Stat_IsCoolTimeOn[2])
         {
             //일단 1씩 회복한다.
-            __ENE_Stat.HealMana(10, -1);
+            __ENE_Stat.__Get_HIT__About_Mana(1, -1);
             //다음 기본 마나 회복 시간까지 대기 
-            __ENE_Stat.__PUB_Stat_Locker[2] = false;
+            __ENE_Stat.__PUB_Stat_IsCoolTimeOn[2] = false;
 
             //일단 10초마다 마나를 회복하도록 결정
             __ENE_AI_Engine.enemyCoolTimer.StartCoroutine(
                 __ENE_AI_Engine.enemyCoolTimer.Timer_Do_Once(10.0f,
-                (input) => { __ENE_Stat.__PUB_Stat_Locker[2] = input; },
+                (input) => { __ENE_Stat.__PUB_Stat_IsCoolTimeOn[2] = input; },
                 false)
                 );
         }
 
         //PP 버프 OR 디버프 지속시간 종료 여부
-        if (__ENE_Stat.__PUB_Stat_Locker[3])
+        if (__ENE_Stat.__PUB_Stat_IsCoolTimeOn[3])
         {
 
         }
 
         //크리티컬 버프 OR 디버프 지속시간 종료 여부
-        if (__ENE_Stat.__PUB_Stat_Locker[4])
+        if (__ENE_Stat.__PUB_Stat_IsCoolTimeOn[4])
         {
 
         }

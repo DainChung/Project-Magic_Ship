@@ -1,25 +1,34 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class HailstoneSpawner : MonoBehaviour {
-    /** Hailstone Prefab */
+public class HailStoneSpawner : MonoBehaviour {
+    /** 우박 프리팹 */
     public GameObject HailstonePrefab;
 
-    /** Hailstone is spawned randomly per 'FSpawnTime' */
+    /** FSpawnTime마다 우박을 소환한다. */
     public float FSpawnTime;
 
-    /** Hailstone is spawned as many as 'FSpawnNumber' */
+    /** FSpawnNumber의 크기만큼 우박을 소환한다. */
     public int FSpawnNumber;
 
-    /** Spawn Area Length */
+    /** 우박 소환 지역의 크기 */
     private float FXRange;
     private float FZRange;
-    
+
+    private int skill_Damage;
+    private bool isPlayerUsing;
+
+    public void __Init_HailStoneSpawner(SkillBaseStat whichSkill, int damage, bool isPlayerUsing_input)
+    {
+        FSpawnNumber = (int)(whichSkill.__GET_Skill_ING_Time / FSpawnTime);
+        skill_Damage = (int)(damage * whichSkill.__GET_Skill_Rate);
+        isPlayerUsing = isPlayerUsing_input;
+    }
+
     // Use this for initialization
     void Start () {
         // 우박 프리팹 가져오기
-        if(!HailstonePrefab)
-        HailstonePrefab = (GameObject)Resources.Load("Prefabs/Hailstone");
+        if(!HailstonePrefab)    HailstonePrefab = (GameObject)Resources.Load("Prefabs/Bullet/Hailstone");
 
         FXRange = transform.localScale.x / 2.0f;
         FZRange = transform.localScale.z / 2.0f;
@@ -27,7 +36,7 @@ public class HailstoneSpawner : MonoBehaviour {
         StartCoroutine(SpawnHailstone());
     }
 
-    // Visualize Spawn Area on Editor
+    // 에디터에서만 보이는 표시
     void OnDrawGizmos()
     {
         Gizmos.color = new Color(0.8f, 0.5f, 0.5f, 0.6f);
@@ -35,16 +44,18 @@ public class HailstoneSpawner : MonoBehaviour {
     }
 
     /** 우박을 모두 소환한 후 인스턴스 삭제
-     * @param Radius Force of horizontal direction
-     * @param FallModifier Fall speed modifier     
+     * @param FallModifier 낙하 속도     
      */
-    IEnumerator SpawnHailstone(float Radius = 2, float FallModifier = 6)
+    IEnumerator SpawnHailstone(float FallModifier = 6)
     {
         // 주기적으로 우박 생성, 임의의 방향으로 떨어짐
         for (int ISpawnedNumber = 0; ISpawnedNumber < FSpawnNumber; ISpawnedNumber++)
         {
             GameObject HailstoneInstance = (GameObject) Instantiate(HailstonePrefab, GetRandomSpawnLocation(), new Quaternion());
-            HailstoneInstance.GetComponent<Rigidbody>().AddForce(GetRandomForce(Radius, FallModifier), ForceMode.Impulse);
+            HailstoneInstance.GetComponent<HailStone>().__Init_HailStone(skill_Damage, isPlayerUsing);
+
+            HailstoneInstance.GetComponent<Rigidbody>().AddForce(GetRandomForce(FallModifier), ForceMode.Impulse);
+
             yield return new WaitForSeconds(FSpawnTime);
         }
 
@@ -52,7 +63,7 @@ public class HailstoneSpawner : MonoBehaviour {
         yield break;
     }
 
-    // Get random spawn location of hailstone
+    // 낙하할 위치를 임의로 지정
     Vector3 GetRandomSpawnLocation()
     {
         float FRandomX = transform.position.x + Random.Range(-FXRange, FXRange);
@@ -62,11 +73,10 @@ public class HailstoneSpawner : MonoBehaviour {
         return new Vector3(FRandomX, FHeight, FRandomZ);
     }
 
-    /** Get random force direction of hailstone
-     * @param Radius Force of horizontal direction
-     * @param FallModifier Fall speed modifier
+    /** 우박의 낙하 방향을 임의로 지정
+     * @param FallModifier 낙하 속도
      */ 
-    Vector3 GetRandomForce(float Radius, float FallModifier)
+    Vector3 GetRandomForce(float FallModifier)
     {
         float Angle = Random.Range(0, 360);
 

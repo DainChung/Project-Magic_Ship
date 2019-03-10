@@ -102,8 +102,10 @@ public class AmmoBase : MonoBehaviour {
             //디버프가 딸린 투사체의 경우
             if (whichSkill != null)
             {
-                //디버프를 준다. (아직 구현 안 함)
-                Debug.Log("Player Get DeBuff");
+                //디버프를 준다.
+                //Debug.Log("Player Get DeBuff");
+
+                other.GetComponent<PlayerController>()._Player_GET_DeBuff(whichSkill);
             }
 
             //투사체를 제거한다.

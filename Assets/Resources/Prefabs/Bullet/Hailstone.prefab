@@ -22,8 +22,8 @@ GameObject:
   - 33: {fileID: 33000011201636934}
   - 135: {fileID: 135000013945712502}
   - 23: {fileID: 23000010766790124}
-  - 114: {fileID: 114000014123944752}
   - 54: {fileID: 54000012509730576}
+  - 114: {fileID: 114000012136844006}
   m_Layer: 0
   m_Name: Hailstone
   m_TagString: SampleBullet
@@ -95,7 +95,7 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
---- !u!114 &114000014123944752
+--- !u!114 &114000012136844006
 MonoBehaviour:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
@@ -103,10 +103,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 1000012818220250}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 959301f7667939d49b1cde3765454a55, type: 3}
+  m_Script: {fileID: 11500000, guid: 9e505b0664c46e8469032838d50c5b90, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  isItCritical: 0
 --- !u!135 &135000013945712502
 SphereCollider:
   m_ObjectHideFlags: 1

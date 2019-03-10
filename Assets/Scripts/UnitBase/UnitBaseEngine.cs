@@ -7,7 +7,8 @@ using SkillBaseCode;
 
 using PMS_Math;
 
-public class UnitBaseEngine : MonoBehaviour {
+public class UnitBaseEngine : MonoBehaviour
+{
 
     //------------------------------------------
     //인스펙터 창에 보일 필요가 없으므로 숨긴다.
@@ -48,7 +49,8 @@ public class UnitBaseEngine : MonoBehaviour {
     //==================================================================================================================================================
 
     //유닛들의 기본적인 움직임에 관한 클래스
-    public class Unit__Base_Movement_Engine {
+    public class Unit__Base_Movement_Engine
+    {
 
         private UnitBaseEngine _unit_Base_Engine;
         public UnitBaseEngine _SET_unit_Base_Engine
@@ -73,7 +75,7 @@ public class UnitBaseEngine : MonoBehaviour {
             try
             {
                 //스피드 버프 값을 더하여 이동속도를 늘리거나 줄인다.
-                movingVector.Set(0, 0, (move_Speed + speed_BUF_Amount) * Time.deltaTime * dir);
+                movingVector.Set(0, 0, move_Speed * Time.deltaTime * dir);
                 //moved_OBJ.GetComponent<Rigidbody>().AddForce(movingVector);
                 moved_OBJ.Translate(movingVector);
             }
@@ -89,7 +91,7 @@ public class UnitBaseEngine : MonoBehaviour {
         {
             try
             {
-                rotated_OBJ.Rotate(Vector3.up, Time.deltaTime * (rotate_Speed + speed_BUF_Amount) * dir);
+                rotated_OBJ.Rotate(Vector3.up, Time.deltaTime * rotate_Speed * dir);
             }
             //나중에 dir 값과 관련된 Exception 따로 넣어서 수정할 것
             catch (System.Exception)
@@ -98,30 +100,38 @@ public class UnitBaseEngine : MonoBehaviour {
             }
         }
 
-        //스피드 버프 또는 디버프에 대한 함수 (이동속도 값을 직접적으로 제어하지 않고 다른 변수로 제어)
+        //스피드 버프 또는 디버프에 대한 함수 (이동속도 값을 직접적으로 제어)
         public void __GET_BUFF__About_Speed(int isBuff_OR_DeBuff, SkillBaseStat whichSkill)
         {
             try
             {
-                speed_BUF_Amount += (whichSkill.__GET_Skill_Rate * isBuff_OR_DeBuff);
+                //whichSkill의 _Skill_Rate 값을 곱한만큼으로 이동속도와 회전속도를 증감한다.
+                //(적용될 이동속도) = (유닛의 원래 이동속도) * (스킬 계수)
+                //(적용될 회전속도) = (유닛의 원래 회전속도) * (스킬 계수)
+                _unit_Base_Engine._unit_Stat.__PUB_Move_Speed += _unit_Base_Engine._unit_Stat.__GET_FOriginalMoveSpeed * whichSkill.__GET_Skill_Rate * isBuff_OR_DeBuff;
+                _unit_Base_Engine._unit_Stat.__PUB_Rotation_Speed += _unit_Base_Engine._unit_Stat.__GET_FOriginalRotateSpeed * whichSkill.__GET_Skill_Rate * isBuff_OR_DeBuff;
 
                 //지속시간 계산
                 //player인 경우
                 if (_unit_Base_Engine.playerController != null)
                 {
                     _unit_Base_Engine.playerController.StartCoroutine(
-                        _unit_Base_Engine.playerController.__PLY_CoolTimer.Timer_Do_Once(whichSkill.__GET_Skill_ING_Time,
-                        (input) => { _unit_Base_Engine._unit_Stat.__PUB_Stat_Locker[0] = input; },
-                        _unit_Base_Engine._unit_Stat.__PUB_Stat_Locker[0])
+                        _unit_Base_Engine.playerController.__PLY_CoolTimer.Timer_Do_Once(
+                            whichSkill.__GET_Skill_ING_Time,
+                            (input) => { _unit_Base_Engine._unit_Stat.__PUB_Stat_IsCoolTimeOn[0] = input; },
+                            _unit_Base_Engine._unit_Stat.__PUB_Stat_IsCoolTimeOn[0]
+                            )
                         );
                 }
                 //enemy인 경우
                 else if (_unit_Base_Engine.enemyController != null)
                 {
                     _unit_Base_Engine.enemyController.StartCoroutine(
-                        _unit_Base_Engine.enemyController._GET__ENE_AI_Engine.enemyCoolTimer.Timer_Do_Once(whichSkill.__GET_Skill_ING_Time,
-                            (input) => { _unit_Base_Engine._unit_Stat.__PUB_Stat_Locker[0] = input; },
-                            _unit_Base_Engine._unit_Stat.__PUB_Stat_Locker[0])
+                            _unit_Base_Engine.enemyController._GET__ENE_AI_Engine.enemyCoolTimer.Timer_Do_Once(
+                                whichSkill.__GET_Skill_ING_Time,
+                                (input) => { _unit_Base_Engine._unit_Stat.__PUB_Stat_IsCoolTimeOn[0] = input; },
+                                _unit_Base_Engine._unit_Stat.__PUB_Stat_IsCoolTimeOn[0]
+                                )
                             );
                 }
                 //오류
@@ -130,19 +140,25 @@ public class UnitBaseEngine : MonoBehaviour {
 
                 }
 
+
+                _unit_Base_Engine._unit_Stat.__PUB_Stat_Real_Locker[0] = true;
             }
             //isBuff_OR_DeBuff 값이 1 또는 -1이 아니면 적용되는 Exception으로 대체 예정
             //또는 _unit_Base_Engine.playerController == null && _unit_Base_Engine.enemyController == null 인 경우
             catch (System.Exception)
             {
                 //아무것도 안 한다.
+                
             }
         }
 
         //스피드 관련 버프 OR 디버프가 끝나면 다시 초기화 한다.
         public void Init_Speed_BUF_Amount()
         {
-            speed_BUF_Amount = 0;
+            _unit_Base_Engine._unit_Stat.__PUB_Move_Speed = _unit_Base_Engine._unit_Stat.__GET_FOriginalMoveSpeed;
+            _unit_Base_Engine._unit_Stat.__PUB_Rotation_Speed = _unit_Base_Engine._unit_Stat.__GET_FOriginalRotateSpeed;
+
+            _unit_Base_Engine._unit_Stat.__PUB_Stat_Real_Locker[0] = false;
         }
     }
 
@@ -151,7 +167,8 @@ public class UnitBaseEngine : MonoBehaviour {
 
     //유닛들의 기본적인 공격에 대한 클래스
     //이 외에도 스킬에 대한 내용도 넣어야 될 것으로 보임.
-    public class Unit__Base_Combat_Engine {
+    public class Unit__Base_Combat_Engine
+    {
 
         private UnitBaseEngine unit_Base_Engine;
         public UnitBaseEngine __SET_unit_Base_Engine
@@ -271,12 +288,14 @@ public class UnitBaseEngine : MonoBehaviour {
             if (whichSkill.__Get_Skill_ID == "00000001")
             {
                 funcName += "00000000";
-                Debug.Log("This is HP DeBuff Skill");
+                //Debug.Log("This is HP DeBuff Skill");
             }
-            else if (whichSkill.__Get_Skill_ID == "00000004")
+            //이동 속도 버프, 디버프 묶기
+            //이속 버프(00000002), 디버프(00000003)
+            else if (whichSkill.__Get_Skill_ID == "00000003")
             {
-                funcName += "00000003";
-                Debug.Log("This is MP Heal Skill");
+                funcName += "00000002";
+                //Debug.Log("This is SP DeBuff Skill");
             }
             //임시 조치. 코드 정리 중 ID 체계화 과정에서 수정 필수
             //산탄(00000005), 속사(00000006)
@@ -324,34 +343,45 @@ public class UnitBaseEngine : MonoBehaviour {
             //도트 힐 스킬을 사용할 때 OR 도트 딜 디버프를 받았을 때
             if (whichSkill.__GET_Skill_Code_M == _SKILL_CODE_Main.BUF || !(isUnitUsingThis))
             {
-                //플레이어가 사용한 HP 도트 힐 스킬이면
-                if (isUnitUsingThis)
+                //이미 체력 버프나 디버프를 받는 중이 아니면
+                if (    !(_unit_Stat.__PUB_Stat_Real_Locker[1])  )
                 {
-                    //__Get_HIT__About_Health_FREQ가 HP 도트 힐을 수행하도록 한다.
-                    isHit_OR_Heal = -1;
+                    //플레이어가 사용한 HP 도트 힐 스킬이면
+                    if (isUnitUsingThis)
+                    {
+                        //__Get_HIT__About_Health_FREQ가 HP 도트 힐을 수행하도록 한다.
+                        isHit_OR_Heal = -1;
+                    }
+                    //플레이어가 HP 도트 딜 스킬에 피격된 거면
+                    else if (!(isUnitUsingThis))
+                    {
+                        //__Get_HIT__About_Health_FREQ가 HP 도트 딜을 수행하도록 한다.
+                        isHit_OR_Heal = 1;
+                    }
+                    //오류
+                    else
+                    {
+                    }
+
+                    //StartCoroutine 때문에 PlayerController를 받아와서 이렇게 이상한 형태로 작업함. 후에 다른 방법 알아낸다면 수정 필요
+
+                    //차선책으로 클래스 간 상속 구조를 뜯어고치고 UnitBaseEngine을 각 Object에 직접 추가하여 StartCoroutine함수를 this.StartCoroutine(...)으로 개편하고
+                    //__PLY_Stat은 UnitBaseEngine에 변수를 따로 만들어서 함수 인자로 전달받지 말고 클래스 내에서 직접 가져다 쓸 것 => Enemy와 Player 간의 함수 통합 이슈 자체가 사라짐
+                    StartCoroutine(
+                        _unit_Stat.__Get_HIT__About_Health_FREQ(
+                            whichSkill.__GET_Skill_ING_Time,
+                            1.0f,
+                            (int)(whichSkill.__GET_Skill_Rate),
+                            isHit_OR_Heal
+                            )
+                        );
                 }
-                //플레이어가 HP 도트 딜 스킬에 피격된 거면
-                else if (!(isUnitUsingThis))
-                {
-                    //__Get_HIT__About_Health_FREQ가 HP 도트 딜을 수행하도록 한다.
-                    isHit_OR_Heal = 1;
-                }
-                //오류
+                //이미 체력 버프나 디버프를 받고 있는 중이면
                 else
                 {
+                    Debug.Log("체력 버프, 디버프 중첩 방지");
                 }
 
-
-                //그놈의 StartCoroutine 때문에 PlayerController를 받아와서 이렇게 이상한 형태로 작업함. 후에 다른 방법 알아낸다면 수정 필요
-
-                //차선책으로 클래스 간 상속 구조를 뜯어고치고 UnitBaseEngine을 각 Object에 직접 추가하여 StartCoroutine함수를 this.StartCoroutine(...)으로 개편하고
-                //__PLY_Stat은 UnitBaseEngine에 변수를 따로 만들어서 함수 인자로 전달받지 말고 클래스 내에서 직접 가져다 쓸 것 => Enemy와 Player 간의 함수 통합 이슈 자체가 사라짐
-                StartCoroutine(
-                    _unit_Stat.__Get_HIT__About_Health_FREQ(whichSkill.__GET_Skill_ING_Time,
-                    1.0f,
-                    (int)(whichSkill.__GET_Skill_Rate),
-                    isHit_OR_Heal)
-                    );
             }
             //상대에게 도트 딜을 넣을 스킬
             else if (whichSkill.__GET_Skill_Code_M == _SKILL_CODE_Main.DBF)
@@ -377,31 +407,42 @@ public class UnitBaseEngine : MonoBehaviour {
         //SP(이동속도) 버프 스킬 OR 플레이어가 SP(이동속도) 디버프를 받았을 때
         if (whichSkill.__GET_Skill_Code_M == _SKILL_CODE_Main.BUF || !(isUnitUsingThis))
         {
-            //유닛이 사용한 거면
-            if (isUnitUsingThis)
+
+            //이미 이동속도 버프나 디버프를 받는 중이 아니면
+            if (!(_unit_Stat.__PUB_Stat_Real_Locker[0]))
             {
-                //__GET_BUFF__About_Speed가 SP(이동속도) 버프를 수행한다.
-                isBuFF_OR_DeBuff = 1;
+                //유닛이 사용한 거면
+                if (isUnitUsingThis)
+                {
+                    //__GET_BUFF__About_Speed가 SP(이동속도) 버프를 수행한다.
+                    isBuFF_OR_DeBuff = 1;
+                }
+                //유닛이 SP(이동속도) 디버프 스킬에 피격된 거면
+                else if (!(isUnitUsingThis))
+                {
+                    //__GET_BUFF__About_Speed가 SP(이동속도) 디버프를 수행한다.
+                    isBuFF_OR_DeBuff = -1;
+                }
+                //오류
+                else
+                {
+
+                }
+
+                //이동속도 버프 OR 디버프를 수행한다.
+                _unit_Move_Engine.__GET_BUFF__About_Speed(isBuFF_OR_DeBuff, whichSkill);
             }
-            //유닛이 SP(이동속도) 디버프 스킬에 피격된 거면
-            else if (!(isUnitUsingThis))
-            {
-                //__GET_BUFF__About_Speed가 SP(이동속도) 디버프를 수행한다.
-                isBuFF_OR_DeBuff = -1;
-            }
-            //오류
+            //이미 이동속도 버프나 디버프를 받고 있는 중이면
             else
             {
+                Debug.Log("이동속도 버프, 디버프 중첩 방지");
             }
-
-            //이동속도 버프 OR 디버프를 수행한다.
-            _unit_Move_Engine.__GET_BUFF__About_Speed(isBuFF_OR_DeBuff, whichSkill);
 
         }
         //유닛이 상대에게 SP(이동속도) 디버프를 걸 때 스킬
         else if (whichSkill.__GET_Skill_Code_M == _SKILL_CODE_Main.DBF)
         {
-
+            _unit_Combat_Engine.Default_ATK(ref attacker, whichSkill);
         }
         //오류
         else
@@ -411,26 +452,28 @@ public class UnitBaseEngine : MonoBehaviour {
     }
 
     /** 마나에 관여하는 스킬
-     * @param duringTime 회복 지속시간
-     * @param freqTime 다음 회복까지의 시간
-     * @param Amount 한 번 회복할 때의 회복양
-     * @param isUnitUsingThis Mana increases(true), Mana decreases(false)
+     * @param duringTime 회복 또는 감소 지속시간
+     * @param freqTime 다음 회복 또는 감소까지의 시간
+     * @param Amount 한 번 회복하거나 감소하는 마나량
+     * @param isUnitUsingThis 마나 회복(true), 마나 감소(false)
      */
-    public void _Skill_00000004(float duringTime = 4.0f, float freqTime = 1.0f, int Amount = 2, bool isUnitUsingThis = true)
+    private void _Skill_00000004(Transform attacker, SkillBaseStat whichSkill, bool isUnitUsingThis)
     {
-        int IsHeal;
+        int isHIT_OR_Heal;
 
-        ////도트 힐 OR 도트 딜
-        //if (whichSkill.__GET_Skill_Code_T == _SKILL_CODE_Time.FREQ &&
-        //    whichSkill.__GET_Skill_Code_M == _SKILL_CODE_Main.BUF || !(isUnitUsingThis))
-        {
-                if (isUnitUsingThis) IsHeal = 1;
-                else IsHeal = -1;
+        if (isUnitUsingThis) isHIT_OR_Heal = -1;
+        else isHIT_OR_Heal = 1;
 
-                // 마나가 주기적으로 상승/감소한다.
-                StartCoroutine(_unit_Stat.HealManaRepeat(duringTime, freqTime, Amount, IsHeal)
-                    );
-        }
+        // 마나가 주기적으로 상승/감소한다.
+        // 후에 SkillBaseStat에 _Skill_FREQ_Time 변수를 새로 만들것
+        StartCoroutine(
+            _unit_Stat.__Get_HIT__About_Mana_FREQ(
+                whichSkill.__GET_Skill_ING_Time,
+                1.0f,
+                (int)(whichSkill.__GET_Skill_Rate),
+                isHIT_OR_Heal
+                )
+            );
     }
 
     //산탄(5번, "00000005") 스킬과 속사(6번, "00000006") 스킬을 통합한 것
@@ -496,6 +539,8 @@ public class UnitBaseEngine : MonoBehaviour {
     }
 
     //지형 소환
+    //Enemy의 경우 마우스를 이용한 투사체가 아닌 물체 소환을 수행할 이유가 없으므로 신경쓰지 않는다.
+    //7번 스킬 지형소환처럼 마우스로 투사체가 아닌 물체를 소환하는 스킬
     private void _Skill_00000007(Transform attacker, SkillBaseStat whichSkill, bool isUnitUsingThis)
     {
         //player인 경우
@@ -504,65 +549,69 @@ public class UnitBaseEngine : MonoBehaviour {
             playerController._Set_SPW_MOS_Skill_Activated = true;
         }
 
-        //Enemy의 경우 마우스를 이용한 투사체가 아닌 물체 소환을 수행할 이유가 없으므로 신경쓰지 않는다.
-        //7번 스킬 지형소환처럼 마우스로 투사체가 아닌 물체를 소환하는 스킬
-        if (whichSkill.__GET_Skill_Code_S == _SKILL_CODE_Sub.MOS)
-        {
-            //따로 만들어둔 SampleConstructedOBJ를 소환하도록 한다.
-            GameObject constructedOBJ = Resources.Load(_unit_Combat_Engine.__GET_prefabBulletPath + "SampleConstructedOBJ") as GameObject;
+        //따로 만들어둔 SampleConstructedOBJ를 소환하도록 한다.
+        GameObject constructedOBJ = Resources.Load(_unit_Combat_Engine.__GET_prefabBulletPath + "SampleConstructedOBJ") as GameObject;
 
-            //소환할 오브젝트 소환하고 값 설정
-            GameObject spawned_OBJ;
-            spawned_OBJ = (GameObject)(MonoBehaviour.Instantiate(constructedOBJ, playerController.transform.position, playerController.transform.rotation));
+        //소환할 오브젝트 소환하고 값 설정
+        GameObject spawned_OBJ;
+        spawned_OBJ = (GameObject)(MonoBehaviour.Instantiate(constructedOBJ, playerController.transform.position, playerController.transform.rotation));
 
-            spawned_OBJ.GetComponent<ConstructedOBJ>().__Init_ConstructedOBJ(whichSkill, playerController);
-        }
+        spawned_OBJ.GetComponent<ConstructedOBJ>().__Init_ConstructedOBJ(whichSkill, playerController);
 
-        //8번 스킬 우박처럼 마우스로 투사체가 아닌 것을 소환하는 스킬
-        else if (whichSkill.__GET_Skill_Code_S == _SKILL_CODE_Sub.NULL)
-        {
-
-        }
-        //잘못된 스킬
-        else
-        {
-
-        }
+        //SpawnHailstoneSpawner 내용을 여기로 이식할 것
+        //또는 별도 함수로 독립 시키고 이 함수를 간략화할 것
     }
 
     /** 8. 우박: 하늘에서 우박이 떨어진다.
-     * @param Distance Distance between player and hailstone spawner
-     * @param Height Height of spawn location 
+     * @param Distance Distance 플레이어와 HailStoneSpawner 사이의 거리
+     * @param Height HailStoneSpawner의 높이 
      */
-    public void SpawnHailstoneSpawner(float Distance = 10.0f, float Height = 10.0f)
+    private void _Skill_00000008(Transform attacker, SkillBaseStat whichSkill, bool isUnitUsingThis)
     {
-        // 스포너 프리팹 가져오기
-        GameObject SpawnerPrefab = (GameObject) Resources.Load("Prefabs/SpawnArea/Hailstone Spawner");
+        //distance랑 height 값도 나중엔 whichSkill에서 긁어오거나 PMS_Math에서 긁어올 것
+        float distance = 10.0f;
+        float height = 10.0f;
 
-        Vector3 SpawnPosition = transform.position + transform.forward * Distance + new Vector3(0, Height, 0);
-        Instantiate(SpawnerPrefab, SpawnPosition, GetComponent<Transform>().rotation);
+        bool isPlayerUsing;
+
+        //플레이어면 플레이어가 사용했다는 정보를 전달
+        if (playerController != null) isPlayerUsing = true;
+        //플레이어가 아니면 Enemy가 사용했다는 정보를 전달
+        else isPlayerUsing = false;
+
+     // 스포너 프리팹 가져오기
+     GameObject spawnerPrefab = (GameObject)Resources.Load("Prefabs/SpawnArea/Hailstone Spawner");
+
+        Vector3 spawnPosition = transform.position + transform.forward * distance + new Vector3(0, height, 0);
+
+        GameObject spawned_Area;
+        spawned_Area = (GameObject)(Instantiate(spawnerPrefab, spawnPosition, transform.rotation));
+
+        spawned_Area.GetComponent<HailStoneSpawner>().__Init_HailStoneSpawner(whichSkill, _unit_Stat.__PUB_ATK__Val, isPlayerUsing);
     }
 
     /** 기에 관여하는 스킬
-     * @param duringTime 회복 지속시간
-     * @param freqTime 다음 회복까지의 시간
-     * @param Amount 한 번 회복할 때의 회복양
-     * @param isUnitUsingThis Mana increases(true), Mana decreases(false)
+     * @param duringTime 회복 또는 감소 지속시간
+     * @param freqTime 다음 회복 또는 감소까지의 시간
+     * @param Amount 한 번 회복하거나 감소하는 기의 양
+     * @param isUnitUsingThis 기 회복(true), 기 감소(false)
      */
-    public void _Skill_00000009(float duringTime = 4.0f, float freqTime = 1.0f, int Amount = 2, bool isUnitUsingThis = true)
+    private void _Skill_00000009(Transform attacker, SkillBaseStat whichSkill, bool isUnitUsingThis)
     {
-        int IsHeal;
+        int isHIT_OR_Heal;
 
-        ////도트 힐 OR 도트 딜
-        //if (whichSkill.__GET_Skill_Code_T == _SKILL_CODE_Time.FREQ &&
-        //    whichSkill.__GET_Skill_Code_M == _SKILL_CODE_Main.BUF || !(isUnitUsingThis))
-        {
-            if (isUnitUsingThis) IsHeal = 1;
-            else IsHeal = -1;
+        if (isUnitUsingThis) isHIT_OR_Heal = -1;
+        else isHIT_OR_Heal = 1;
 
-            // 마나가 주기적으로 상승/감소한다.
-            StartCoroutine(_unit_Stat.HealPowerRepeat(duringTime, freqTime, Amount, IsHeal)
+        //기가 주기적으로 상승/감소한다.
+        // 후에 SkillBaseStat에 _Skill_FREQ_Time 변수를 새로 만들것
+        StartCoroutine(
+                _unit_Stat.__Get_HIT__About_Power_FREQ(
+                    whichSkill.__GET_Skill_ING_Time,
+                    1.0f,
+                    (int)(whichSkill.__GET_Skill_Rate),
+                    isHIT_OR_Heal)
                 );
-        }
+
     }
 }
