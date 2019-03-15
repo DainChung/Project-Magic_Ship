@@ -614,4 +614,10 @@ public class UnitBaseEngine : MonoBehaviour
                 );
 
     }
+
+    public void UltimateSkill()
+    {
+        GameObject UltimateSkillPrefab = (GameObject)Resources.Load("Prefabs/UltimateSkill");
+        Instantiate(UltimateSkillPrefab, transform.position, new Quaternion());
+    }
 }

@@ -267,6 +267,9 @@ public class PlayerController : MonoBehaviour {
 
             // 파워 회복
             //__PLY_Engine._Skill_00000009();
+
+            // 궁극기
+            __PLY_Engine.UltimateSkill();
         }
         else
         { }
