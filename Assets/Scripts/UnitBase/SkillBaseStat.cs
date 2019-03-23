@@ -27,6 +27,7 @@ public class SkillBaseStat {
     //스킬 ID
     private string _Skill_ID;
 
+    //Getter
     public float __GET_Skill_Rate
     {
         get { return _Skill_Rate; }
@@ -65,7 +66,13 @@ public class SkillBaseStat {
 
     public string __Get_Skill_ID
     {
-        get {return _Skill_ID; }
+        get { return _Skill_ID; }
+    }
+
+    //Setter
+    public float __SET_Skill_Rate
+    {
+        set { _Skill_Rate = value; }
     }
 
     //20190215 남은 쿨타임에 따른 UI 효과를 보여주기 위해 추가된 변수

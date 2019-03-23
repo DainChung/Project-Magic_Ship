@@ -92,6 +92,9 @@ public class PlayerController : MonoBehaviour {
         get { return _Is_On_CoolTime_Skill; }
     }
 
+    //궁극기 임시 조치
+    SkillBaseStat debugUltimateSkill = new SkillBaseStat();
+
     //나중엔 DB에서 긁어온 값을 여기서 초기화할 것.
     void Awake()
     {
@@ -121,6 +124,9 @@ public class PlayerController : MonoBehaviour {
             Debug.Log("CoolT: " + forDebug.__GET_Skill_Cool_Time + ", IngT: " + forDebug.__GET_Skill_ING_Time + ", UseAmount:" + forDebug.__GET_Skill_Use_Amount);
             Debug.Log("Code_Main: " + forDebug.__GET_Skill_Code_M + ", Code_Sub: " + forDebug.__GET_Skill_Code_S + ", Code_Time:" + forDebug.__GET_Skill_Code_T);
         }
+
+        //궁극기 임시 조치
+        debugUltimateSkill = File_IO.IO_CSV.__Get_Searched_SkillBaseStat("10000000");
 
         _Is_On_CoolTime__Default_ATK = true;
 
@@ -256,20 +262,7 @@ public class PlayerController : MonoBehaviour {
         // for test
         else if (Input.GetKeyDown(KeyCode.Alpha4) && !(_SPW_MOS_Skill_Activated))
         {
-            // 역풍탄
-            // SLoadedBulletName = "Bullet_MakeSlow";
-
-            // 우박
-            //GetComponent<UnitBaseEngine>()._Skill_00000008();
-
-            // 마나 회복
-            //__PLY_Engine._Skill_00000004();
-
-            // 파워 회복
-            //__PLY_Engine._Skill_00000009();
-
-            // 궁극기
-            __PLY_Engine.UltimateSkill();
+            __PLY_Engine._unit_Combat_Engine.Using_Skill(ref playerAttacker, debugUltimateSkill, true);
         }
         else
         { }

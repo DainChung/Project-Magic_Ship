@@ -108,8 +108,12 @@ public class UnitBaseEngine : MonoBehaviour
                 //whichSkill의 _Skill_Rate 값을 곱한만큼으로 이동속도와 회전속도를 증감한다.
                 //(적용될 이동속도) = (유닛의 원래 이동속도) * (스킬 계수)
                 //(적용될 회전속도) = (유닛의 원래 회전속도) * (스킬 계수)
+                Debug.Log("Before: "+_unit_Base_Engine._unit_Stat.__PUB_Move_Speed);
+
                 _unit_Base_Engine._unit_Stat.__PUB_Move_Speed += _unit_Base_Engine._unit_Stat.__GET_FOriginalMoveSpeed * whichSkill.__GET_Skill_Rate * isBuff_OR_DeBuff;
                 _unit_Base_Engine._unit_Stat.__PUB_Rotation_Speed += _unit_Base_Engine._unit_Stat.__GET_FOriginalRotateSpeed * whichSkill.__GET_Skill_Rate * isBuff_OR_DeBuff;
+
+                Debug.Log("After: "+_unit_Base_Engine._unit_Stat.__PUB_Move_Speed);
 
                 //지속시간 계산
                 //player인 경우
@@ -428,14 +432,13 @@ public class UnitBaseEngine : MonoBehaviour
                 {
 
                 }
-
                 //이동속도 버프 OR 디버프를 수행한다.
                 _unit_Move_Engine.__GET_BUFF__About_Speed(isBuFF_OR_DeBuff, whichSkill);
             }
             //이미 이동속도 버프나 디버프를 받고 있는 중이면
             else
             {
-                Debug.Log("이동속도 버프, 디버프 중첩 방지");
+                //Debug.Log("이동속도 버프, 디버프 중첩 방지");
             }
 
         }
@@ -615,9 +618,27 @@ public class UnitBaseEngine : MonoBehaviour
 
     }
 
-    public void UltimateSkill()
+    //궁극기 - 폭풍우 (광범위 이속 디버프)
+    private void _Skill_10000000(Transform attacker, SkillBaseStat whichSkill, bool isUnitUsingThis)
     {
-        GameObject UltimateSkillPrefab = (GameObject)Resources.Load("Prefabs/UltimateSkill");
-        Instantiate(UltimateSkillPrefab, transform.position, new Quaternion());
+        bool isPlayerUsingThis;
+
+        //플레이어면
+        if (playerController != null) { isPlayerUsingThis = true; }
+        //플레이어가 아니면
+        else { isPlayerUsingThis = false; }
+
+        //프리팹을 소환하고 필요한 정보들을 프리팹에 보낸다.
+        GameObject ultimateSkillPrefab = (GameObject)(Resources.Load("Prefabs/SpawnArea/UltimateSkill_Storm"));
+
+        GameObject spawnedUltimateSkill;
+        spawnedUltimateSkill = Instantiate(ultimateSkillPrefab, transform.position, new Quaternion()) as GameObject;
+        spawnedUltimateSkill.GetComponent<UltimateSkillBase>().Initialize_U_Skill(whichSkill, isPlayerUsingThis);
     }
+
+    //public void UltimateSkill()
+    //{
+    //    GameObject UltimateSkillPrefab = (GameObject)Resources.Load("Prefabs/UltimateSkill");
+    //    Instantiate(UltimateSkillPrefab, transform.position, new Quaternion());
+    //}
 }
