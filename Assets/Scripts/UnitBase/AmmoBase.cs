@@ -98,6 +98,7 @@ public class AmmoBase : MonoBehaviour {
         {
             //피격 관련 연산을 하고 (아직 구현 안 함)
             //Debug.Log("Player Get Hit");
+            other.GetComponent<PlayerController>()._Player_Get_Hit(__Ammo_Damage);
 
             //디버프가 딸린 투사체의 경우
             if (whichSkill != null)

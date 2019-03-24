@@ -164,7 +164,7 @@ public class Unit__Base_Stat {
             //최대 체력으로 초기화해준다.
             __Health_Point = __MAX_Health_Point;
         }
-        
+
         ////피격 및 계산 여부를 확실히 알기 위해 작성한 내용
         //if (isHit_OR_Heal == 1)
         //{

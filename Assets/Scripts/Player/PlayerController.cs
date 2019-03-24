@@ -98,6 +98,7 @@ public class PlayerController : MonoBehaviour {
     //나중엔 DB에서 긁어온 값을 여기서 초기화할 것.
     void Awake()
     {
+
         //이속, 회전속도, 체력, 마나, 파워 게이지, 공격력, 크리확률, 크리계수
         __PLY_Stat.SampleInit(10.0f, 30.0f, 10, 10, 10, 1, 0.1f, 2.0f);
 
@@ -322,7 +323,7 @@ public class PlayerController : MonoBehaviour {
             if (__PLY_Stat.__Is_Mana_Enough(__PLY_Selected_Skills[index].__GET_Skill_Use_Amount))
             {
                 //필요한 마나 소모
-                __PLY_Stat.__Get_HIT__About_Mana(__PLY_Selected_Skills[index].__GET_Skill_Use_Amount, -1);
+                __PLY_Stat.__Get_HIT__About_Mana(__PLY_Selected_Skills[index].__GET_Skill_Use_Amount, 1);
 
                 //UnitBaseEngine.Using_Skill에서 스킬 기능 처리
                 __PLY_Engine._unit_Combat_Engine.Using_Skill(ref playerAttacker, __PLY_Selected_Skills[index], true);
@@ -351,5 +352,11 @@ public class PlayerController : MonoBehaviour {
     {
         Debug.Log("================================================================");
         __PLY_Engine._unit_Combat_Engine.Using_Skill(ref playerAttacker, whichDeBuffSkill_Hit_Player, false);
+    }
+
+    //플레이어가 피격 받을 때
+    public void _Player_Get_Hit(int damage)
+    {
+        __PLY_Stat.__GET_HIT__About_Health(damage, 1);
     }
 }
