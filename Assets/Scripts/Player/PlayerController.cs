@@ -118,13 +118,13 @@ public class PlayerController : MonoBehaviour {
         //읽은 Skill ID 값들을 이용하여 해당 Skill들의 정보를 __PLY_Selected_Skills에 추가한다.
         __PLY_Selected_Skills = Player_Info_Manager.Read_Equipped_SkillBaseStat();
 
-        //확인용. 정상적으로 작동함.
-        foreach (SkillBaseStat forDebug in __PLY_Selected_Skills)
-        {
-            Debug.Log("ID: " + forDebug.__Get_Skill_ID + ", Name: " + forDebug.__GET_Skill_Name + ", Rate:" + forDebug.__GET_Skill_Rate);
-            Debug.Log("CoolT: " + forDebug.__GET_Skill_Cool_Time + ", IngT: " + forDebug.__GET_Skill_ING_Time + ", UseAmount:" + forDebug.__GET_Skill_Use_Amount);
-            Debug.Log("Code_Main: " + forDebug.__GET_Skill_Code_M + ", Code_Sub: " + forDebug.__GET_Skill_Code_S + ", Code_Time:" + forDebug.__GET_Skill_Code_T);
-        }
+        ////확인용. 정상적으로 작동함.
+        //foreach (SkillBaseStat forDebug in __PLY_Selected_Skills)
+        //{
+        //    Debug.Log("ID: " + forDebug.__Get_Skill_ID + ", Name: " + forDebug.__GET_Skill_Name + ", Rate:" + forDebug.__GET_Skill_Rate);
+        //    Debug.Log("CoolT: " + forDebug.__GET_Skill_Cool_Time + ", IngT: " + forDebug.__GET_Skill_ING_Time + ", UseAmount:" + forDebug.__GET_Skill_Use_Amount);
+        //    Debug.Log("Code_Main: " + forDebug.__GET_Skill_Code_M + ", Code_Sub: " + forDebug.__GET_Skill_Code_S + ", Code_Time:" + forDebug.__GET_Skill_Code_T);
+        //}
 
         //궁극기 임시 조치
         debugUltimateSkill = File_IO.IO_CSV.__Get_Searched_SkillBaseStat("10000000");

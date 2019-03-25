@@ -110,10 +110,11 @@ public class EnemyAI : MonoBehaviour {
     //가장 단순한 수준의 AI
     public void AI_Simple_Level0()
     {
-
+        
         //체력이 최대 체력의 절반 이하일 때 (도망가야할 때)
         if (enemyController.__ENE_Stat.__PUB__Health_Point <= enemyController.__ENE_Stat.half_HP)
         {
+            
             //플레이어 반대 방향을 보도록 한다.
             __ENE_AI_Engine.Rotate_TO_Direction(enemyController.__ENE_Stat.__PUB_Rotation_Speed, ref enemyController.enemyTransform, enemyController.playerTransform, true);
 
@@ -135,6 +136,7 @@ public class EnemyAI : MonoBehaviour {
         //체력이 최대 체력의 절반을 초과할 때 (공격해야할 때)
         else
         {
+
             //플레이어를 바라보도록 한다.
             __ENE_AI_Engine.Rotate_TO_Direction(__ENE_Stat.__PUB_Rotation_Speed, ref enemyController.enemyTransform, enemyController.playerTransform, false);
 

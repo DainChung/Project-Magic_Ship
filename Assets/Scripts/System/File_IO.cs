@@ -14,6 +14,8 @@ namespace File_IO {
 
     public class IO_CSV {
 
+        //기본 함수 및 변수===================================================================================================
+
         //임시로 지정된 파일들 경로
         //프로토타입 완성 후 경로들 다양하게 바꿀 것
         private static string filePath = Application.persistentDataPath;
@@ -130,6 +132,37 @@ namespace File_IO {
             return foundString;
         }
 
+        //,로 구분된 정보들을 List<string>에 나누어 넣어서 반환하는 1차 가공 함수
+        private static List<string> __Get_pieces_OF_BaseStrings(string baseString)
+        {
+            List<string> pieces_OF_BaseString = new List<string>();
+            string piece = "";
+
+            //작업을 편하게 하기 위한 string 수정
+            baseString += ',';
+
+            //1차 가공
+            while (baseString != "")
+            {
+                //Debug.Log("baseString: " + baseString);
+                //문자열 맨 처음에서부터 가장 가까운 ','까지 piece로 복사한다.
+                piece = baseString.Substring(0, baseString.IndexOf(','));
+                //Debug.Log("piece:" + piece);
+                //복사한 문자열을 pieces_OF_BaseString에 넣는다.
+                pieces_OF_BaseString.Add(piece);
+
+                //pieces_OF_BaseString에 추가된 내용과 ','을 baseString에서 뺸다.
+                baseString = baseString.Remove(0, baseString.IndexOf(',') + 1);
+            }
+
+            return pieces_OF_BaseString;
+        }
+
+        //==================================================================================================================
+
+        //==================================================================================================================
+        //SkillBaseStat 관련 읽기 함수=======================================================================================
+
         //찾은 내용을 게임 내에서 사용할 수 있도록 가공하는 함수(SkillBaseStat한정)
         public static SkillBaseStat __Get_Searched_SkillBaseStat(string wannaSearch)
         {
@@ -140,7 +173,7 @@ namespace File_IO {
             //다른 좋은 생각 있으면 추후 수정 요구
             return Set_ResultStat(SearchString_In_File("/Sample__SkillDataBase.csv", wannaSearch));
         }
-
+        
         //string을 SkillBaseStat으로 가공하는 함수
         private static SkillBaseStat Set_ResultStat(string baseStatString)
         {
@@ -148,24 +181,9 @@ namespace File_IO {
 
             //중간중간의 ','를 제외하고 따로따로 저장한 1차 가공
             List<string> pieces_OF_BaseStatString = new List<string>();
-            string piece = "";
-
-            //작업을 편하게 하기 위한 string 수정
-            baseStatString += ',';
 
             //1차 가공
-            while (baseStatString != "")
-            {
-                //Debug.Log("baseString: " + baseStatString);
-                //문자열 맨 처음에서부터 가장 가까운 ','까지 piece로 복사한다.
-                piece = baseStatString.Substring(0, baseStatString.IndexOf(','));
-                //Debug.Log("piece:" + piece);
-                //복사한 문자열을 pieces_OF_BaseStatString에 넣는다.
-                pieces_OF_BaseStatString.Add(piece);
-
-                //pieces_OF_BaseStatString에 추가된 내용과 ','을 baseStatString에서 뺸다.
-                baseStatString = baseStatString.Remove(0, baseStatString.IndexOf(',') + 1);
-            }
+            pieces_OF_BaseStatString = __Get_pieces_OF_BaseStrings(baseStatString);
 
             //2차 가공
             float rate = float.Parse(pieces_OF_BaseStatString[2]);
@@ -245,6 +263,22 @@ namespace File_IO {
             }
 
             return allSkills;
+        }
+
+        //==================================================================================================================
+
+        //==================================================================================================================
+        //Enemy의 Unit__Base_Stat 관련 읽기 함수=============================================================================
+
+        private static List<string> Set_Result_EnemyStat(string baseEnemyStatString)
+        {
+            return __Get_pieces_OF_BaseStrings(baseEnemyStatString);
+        }
+
+        //외부에서 특정 Enemy의 스탯을 읽어오기 위한 함수, 찾을 Enemy의 ID값을 넣어서 찾는다.
+        public static List<string> __Get_Searched_EnemyBaseStat(string wannaSearch)
+        {
+            return Set_Result_EnemyStat(SearchString_In_File("/Enemy_Stat_DataBase.csv", wannaSearch));
         }
 
     }

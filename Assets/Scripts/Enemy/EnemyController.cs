@@ -6,6 +6,8 @@ using System.Linq;
 
 using PMS_Math;
 
+using File_IO;
+
 public class EnemyStat : Unit__Base_Stat {
 
     public int half_HP;
@@ -16,8 +18,24 @@ public class EnemyStat : Unit__Base_Stat {
         get { return ai_Level;  }
     }
 
+    private string enemyName = "";
+    public string _GET_enemyName
+    {
+        get { return enemyName; }
+    }
+
+    //파일에서 정상적으로 skillID들을 읽어오는지 알아보기 위한 변수
+    //나중에 List<SkillBaseStat>으로 바꾸고 Skill내용들을 읽어와서 저장하도록 할 것
+    private List<string> sampleSkillIDList = new List<string>();
+    public List<string> _GET_sampleSkillIDList
+    {
+        get {return sampleSkillIDList; }
+    }
+
     public void SampleInit(float mSp, float rSp, int hp, int mp, int pp, int atk, float criR, float criP, int ai_Lv)
     {
+
+
         base.__PUB_Move_Speed = mSp;
         base.__PUB_Rotation_Speed = rSp;
 
@@ -40,6 +58,49 @@ public class EnemyStat : Unit__Base_Stat {
         half_HP = (int)(__MAX_Health_Point / 2);
 
         ai_Level = ai_Lv;
+
+        //버프, 디버프 통제용
+        for (int i = 0; i < 5; i++)
+        {
+            __PUB_Stat_IsCoolTimeOn.Add(false);
+            __PUB_Stat_Real_Locker.Add(false);
+        }
+
+        //기본 마나 회복
+        __PUB_Stat_IsCoolTimeOn[2] = true;
+    }
+
+    public void InitialLize_Enemy_Stat(List<string> enemyStatBaseString)
+    {
+        enemyName = enemyStatBaseString[1];
+
+        base.__PUB_Move_Speed = float.Parse(enemyStatBaseString[2]);
+        base.__PUB_Rotation_Speed = float.Parse(enemyStatBaseString[3]);
+
+        base.__MAX_Health_Point = int.Parse(enemyStatBaseString[4]);
+        base.__MAX_Mana_Point = int.Parse(enemyStatBaseString[5]);
+        base.__MAX_Power_Point = int.Parse(enemyStatBaseString[6]);
+
+        base.__PUB__Health_Point = base.__MAX_Health_Point;
+        base.__PUB__Mana_Point = base.__MAX_Mana_Point;
+        base.__PUB__Power_Point = 0;
+
+        base.__PUB_ATK__Val = int.Parse(enemyStatBaseString[7]);
+        base.__PUB_Critical_Rate = float.Parse(enemyStatBaseString[8]);
+        base.__PUB_Critical_P = float.Parse(enemyStatBaseString[9]);
+
+        base.FOriginalMoveSpeed = base._Move_Speed;
+        base.FOriginalRotateSpeed = base._Rotation_Speed;
+
+        //소수점 이하는 내림해서 값이 결정됨.
+        half_HP = (int)(__MAX_Health_Point / 2);
+
+        ai_Level = int.Parse(enemyStatBaseString[10]);
+
+        //스킬 ID
+        sampleSkillIDList.Add(enemyStatBaseString[11]);
+        sampleSkillIDList.Add(enemyStatBaseString[12]);
+        sampleSkillIDList.Add(enemyStatBaseString[13]);
 
         //버프, 디버프 통제용
         for (int i = 0; i < 5; i++)
@@ -149,7 +210,6 @@ public class EnemyAIEngine {
         //목표지점을 바라볼 때까지 회전한다.
         if ( !( (angleComparison < 1.0f) && (angleComparison > - 1.0f) ) )
         {
-            //Debug.Log(angleComparison);
             __ENE_Engine._unit_Move_Engine.Rotate_OBJ(rotate_Speed, ref rotated_OBJ, dir);
         }
 
@@ -213,6 +273,8 @@ public class EnemyController : MonoBehaviour {
     //1이면 0.5 ~ 1.5초 마다 랜덤한 행동을 하는 AI
     public int sample_AI_Level;
 
+    public string sampleUnitID;
+
     //AI 레벨에 따라 완벽하게 다른 행동을 할 수 있도록 밑작업
     private List<System.Action> _AI_FuncList = new List<System.Action>();
 
@@ -221,7 +283,8 @@ public class EnemyController : MonoBehaviour {
 
         //이속, 회전속도, 체력, 마나, 파워 게이지, 공격력, 크리확률, 크리계수, AI레벨
         //__ENE_Stat.SampleInit(10.0f, 30.0f, 10, 10, 10, 1, 0.1f, 2.0f, 0);
-        __ENE_Stat.SampleInit(10.0f, 30.0f, 10, 10, 10, 1, 0.1f, 2.0f, sample_AI_Level);
+        //__ENE_Stat.SampleInit(10.0f, 30.0f, 10, 10, 10, 1, 0.1f, 2.0f, sample_AI_Level);
+        __ENE_Stat.InitialLize_Enemy_Stat(IO_CSV.__Get_Searched_EnemyBaseStat(sampleUnitID));
 
         //UnitBaseEngine에 Enemy라고 알려준다.
         __ENE_AI_Engine.__ENE_Engine = transform.GetComponent<UnitBaseEngine>();
