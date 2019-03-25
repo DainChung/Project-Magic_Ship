@@ -1,0 +1,7 @@
+## Image Source ##
+# This file marks the source of images
+# Each name & source of image is marked as follows
+# [Usage - Name of image] Source -> Author
+
+[Player Healthbar - UI Pieces] https://opengameart.org  -> Buch
+[Enemy Healthbar - Sleekbars] https://opengameart.org -> Jannax
