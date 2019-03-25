@@ -7,11 +7,12 @@ public class EnemyUI : MonoBehaviour {
     private PlayerController sPlayerController; // Player Informtaion
     public UnitCoolTimer sCoolTimer; // Cool Timer
 
+    public Image iSleekBar; // Health Bar Frame Image Sprite
     public Image iHealthBar; // Health Bar Image Sprite
     public TextMesh t3dDamage; // What show Damage
 
-    bool bCoolTime;
-    bool bTriggered;
+    private bool bCoolTime;
+    private bool bTriggered;
 
     private bool isItCritical;
     public bool _SET_isItCritical
@@ -45,8 +46,14 @@ public class EnemyUI : MonoBehaviour {
         {
             GameObject oMainCamera = GameObject.Find("Main Camera");
 
-            iHealthBar.transform.rotation = oMainCamera.GetComponent<Transform>().rotation;
-            t3dDamage.transform.rotation = oMainCamera.GetComponent<Transform>().rotation;
+            if (iHealthBar) iHealthBar.transform.rotation = oMainCamera.GetComponent<Transform>().rotation;
+            if (iSleekBar) iSleekBar.transform.rotation = oMainCamera.GetComponent<Transform>().rotation;
+            if (t3dDamage) t3dDamage.transform.rotation = oMainCamera.GetComponent<Transform>().rotation;
+
+            // 체력바 프레임과 체력바의 이미지 z-index 이슈 해결
+            Vector3 CorrectionValue = new Vector3(0.01f, 0.01f, 0.01f);
+            CorrectionValue.Scale(oMainCamera.transform.forward);
+            if (iSleekBar) iSleekBar.transform.position = iHealthBar.transform.position + CorrectionValue;
         }
         catch(System.Exception e)
         {
@@ -67,16 +74,16 @@ public class EnemyUI : MonoBehaviour {
         if (isItCritical)
         {
             //데미지 표시 Text의 사이즈, 색깔, 내용을 정한다.
-            t3dDamage.characterSize = 0.4f;
-            t3dDamage.color = Color.red;
+            t3dDamage.characterSize = 0.35f;
+            t3dDamage.color = Color.yellow;
             t3dDamage.text = damage.ToString();
             //특정 시간동안만 표시되도록 Timer를 작동한다.
             StartCoroutine(sCoolTimer.Timer_Do_Once(1.5f, (input) => { bCoolTime = input; bTriggered = true; }, true));
         }
         else // 크리티컬이 아닌 경우
         {
-            t3dDamage.characterSize = 0.25f;
-            t3dDamage.color = Color.blue;
+            t3dDamage.characterSize = 0.3f;
+            t3dDamage.color = Color.black;
             t3dDamage.text = damage.ToString();
             StartCoroutine(sCoolTimer.Timer_Do_Once(1f, (input) => { bCoolTime = input; bTriggered = true; }, true));
         }
