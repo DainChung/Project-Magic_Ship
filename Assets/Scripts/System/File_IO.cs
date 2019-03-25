@@ -133,7 +133,7 @@ namespace File_IO {
         }
 
         //,로 구분된 정보들을 List<string>에 나누어 넣어서 반환하는 1차 가공 함수
-        private static List<string> __Get_pieces_OF_BaseStrings(string baseString)
+        public static List<string> __Get_pieces_OF_BaseStrings(string baseString)
         {
             List<string> pieces_OF_BaseString = new List<string>();
             string piece = "";
@@ -270,16 +270,13 @@ namespace File_IO {
         //==================================================================================================================
         //Enemy의 Unit__Base_Stat 관련 읽기 함수=============================================================================
 
-        private static List<string> Set_Result_EnemyStat(string baseEnemyStatString)
-        {
-            return __Get_pieces_OF_BaseStrings(baseEnemyStatString);
-        }
-
         //외부에서 특정 Enemy의 스탯을 읽어오기 위한 함수, 찾을 Enemy의 ID값을 넣어서 찾는다.
+        //읽은 정보를 가공하는 건 EnemyStat에서 직접 수행한다.
         public static List<string> __Get_Searched_EnemyBaseStat(string wannaSearch)
         {
-            return Set_Result_EnemyStat(SearchString_In_File("/Enemy_Stat_DataBase.csv", wannaSearch));
+            return __Get_pieces_OF_BaseStrings(SearchString_In_File("/Enemy_Stat_DataBase.csv", wannaSearch));
         }
 
+        //==================================================================================================================
     }
 }

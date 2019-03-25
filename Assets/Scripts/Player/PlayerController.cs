@@ -40,6 +40,41 @@ public class PlayerStat : Unit__Base_Stat {
         //기본 마나 회복 작동을 위해 이것만 true로 초기화 한다.
         __PUB_Stat_IsCoolTimeOn[2] = true;
     }
+
+    public void Initialize_Player_Stat(List<string> playerStatBaseString)
+    {
+        base.__PUB_Move_Speed = float.Parse(playerStatBaseString[2]);
+        base.__PUB_Rotation_Speed = float.Parse(playerStatBaseString[3]);
+
+        base.__MAX_Health_Point = int.Parse(playerStatBaseString[4]);
+        base.__MAX_Mana_Point = int.Parse(playerStatBaseString[5]);
+        base.__MAX_Power_Point = int.Parse(playerStatBaseString[6]);
+
+        base.__PUB__Health_Point = base.__MAX_Health_Point;
+        base.__PUB__Mana_Point = base.__MAX_Mana_Point;
+        //파워 포인트는 0에서부터 시작한다
+        base.__PUB__Power_Point = 0;
+
+        base.__PUB_ATK__Val = int.Parse(playerStatBaseString[7]);
+        base.__PUB_Critical_Rate = float.Parse(playerStatBaseString[8]);
+        base.__PUB_Critical_P = float.Parse(playerStatBaseString[9]);
+
+        base.FOriginalMoveSpeed = base._Move_Speed;
+        base.FOriginalRotateSpeed = base._Rotation_Speed;
+
+        //일단 상수 5를 이용하도록 할 것
+        //나중에 그냥 Array로 바꾸거나 말거나 아무튼 더 생각할 것
+        for (int i = 0; i < 5; i++)
+        {
+            //시작하자마자 버프나 디버프 받는 일은 아직 상정하지 않았으므로
+            //일단 다 false로 초기화.
+            base.__PUB_Stat_IsCoolTimeOn.Add(false);
+            base.__PUB_Stat_Real_Locker.Add(false);
+        }
+
+        //기본 마나 회복 작동을 위해 이것만 true로 초기화 한다.
+        __PUB_Stat_IsCoolTimeOn[2] = true;
+    }
 }
 
 public class PlayerController : MonoBehaviour {
@@ -100,7 +135,7 @@ public class PlayerController : MonoBehaviour {
     {
 
         //이속, 회전속도, 체력, 마나, 파워 게이지, 공격력, 크리확률, 크리계수
-        __PLY_Stat.SampleInit(10.0f, 30.0f, 10, 10, 10, 1, 0.1f, 2.0f);
+        //__PLY_Stat.SampleInit(10.0f, 30.0f, 10, 10, 10, 1, 0.1f, 2.0f);
 
         //UnitBaseEngine에 Player라고 알려준다.
         __PLY_Engine = transform.GetComponent<UnitBaseEngine>();

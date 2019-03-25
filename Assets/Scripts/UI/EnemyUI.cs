@@ -76,7 +76,7 @@ public class EnemyUI : MonoBehaviour {
         else // 크리티컬이 아닌 경우
         {
             t3dDamage.characterSize = 0.25f;
-            t3dDamage.color = Color.blue;
+            t3dDamage.color = Color.white;
             t3dDamage.text = damage.ToString();
             StartCoroutine(sCoolTimer.Timer_Do_Once(1f, (input) => { bCoolTime = input; bTriggered = true; }, true));
         }

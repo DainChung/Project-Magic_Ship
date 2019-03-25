@@ -74,6 +74,7 @@ public class EnemyStat : Unit__Base_Stat {
     {
         enemyName = enemyStatBaseString[1];
 
+        //base.__PUB_Move_Speed = 0.0f;
         base.__PUB_Move_Speed = float.Parse(enemyStatBaseString[2]);
         base.__PUB_Rotation_Speed = float.Parse(enemyStatBaseString[3]);
 
