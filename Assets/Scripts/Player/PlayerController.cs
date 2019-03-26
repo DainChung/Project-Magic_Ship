@@ -8,6 +8,7 @@ public class PlayerStat : Unit__Base_Stat {
 
     public void SampleInit(float mSp, float rSp, int hp, int mp, int pp, int atk, float criR, float criP)
     {
+
         base.__PUB_Move_Speed = mSp;
         base.__PUB_Rotation_Speed = rSp;
 
