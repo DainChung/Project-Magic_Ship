@@ -9,3 +9,5 @@ EditorBuildSettings:
     path: Assets/Scenes/__Sample_SkillEquip_Scene.unity
   - enabled: 1
     path: Assets/Scenes/ProtoType.unity
+  - enabled: 1
+    path: Assets/Scenes/StandardStage.unity
