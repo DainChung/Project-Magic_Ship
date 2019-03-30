@@ -27,44 +27,55 @@ namespace File_IO {
             //읽은 내용 중 쓸모없는 내용을 제거하기 위해 필요한 변수들
             string dummyString = ",,,,,,,,,,,,,,,";
 
+            List<string> readList = new List<string>();
+
             //filePath뒤에 읽을 파일이름을 더한다.
             fileName = filePath + fileName;
 
-            //CSV파일 읽기
-            var reader = new StreamReader(File.OpenRead(fileName), System.Text.Encoding.Default);
-            List<string> readList = new List<string>();
-
-            while (!reader.EndOfStream)
+            try
             {
-                var line = reader.ReadLine();
-                readList.Add(line);
+                //CSV파일 읽기
+                var reader = new StreamReader(File.OpenRead(fileName), System.Text.Encoding.Default);
+                
+
+                while (!reader.EndOfStream)
+                {
+                    var line = reader.ReadLine();
+                    readList.Add(line);
+                }
+
+                //CSV 파일 줄이 바뀌기 전에 있는 ','가 여러 개 찍혀있는 지점을 제거하거나
+                //NULL_ID를 readList에서 완전히 제외하는 반복문
+
+                //foreach문에서는 List.Remove()가 InvalidOperationException을 발생시키므로 for문에서 작동해야함.
+                for (int index = readList.Count - 1; index > 0; index--)
+                {
+                    //각 searchList마다 dummyString과 같은 내용들을 모두 제거하고 덮어씌운다.
+                    try
+                    {
+                        readList[index] = readList[index].Remove(readList[index].IndexOf(dummyString), dummyString.Length);
+                    }
+                    //ArgumentOutOfRangeException이 발생하면 dummyString과 같은 내용이 없다는 것이므로 아무것도 하지 않는다.
+                    //File_IO에 의해 새로 쓰여진 CSV 파일의 경우 dummyString이 발견되지 않는다.
+                    catch (ArgumentOutOfRangeException)
+                    { }
+
+                    //읽은 값이 NULL_ID인 경우 아예 readList에 반영하지 않는다.
+                    if (readList[index] == "NULL_ID")
+                    {
+                        readList.Remove(readList[index]);
+                    }
+                }
+
+                //CSV 파일 맨 첫번째 줄 제거
+                readList.Remove(readList[0]);
+
             }
-
-            //CSV 파일 줄이 바뀌기 전에 있는 ','가 여러 개 찍혀있는 지점을 제거하거나
-            //NULL_ID를 readList에서 완전히 제외하는 반복문
-
-            //foreach문에서는 List.Remove()가 InvalidOperationException을 발생시키므로 for문에서 작동해야함.
-            for (int index = readList.Count - 1; index > 0; index--)
+            catch (FileNotFoundException)
             {
-                //각 searchList마다 dummyString과 같은 내용들을 모두 제거하고 덮어씌운다.
-                try
-                {
-                    readList[index] = readList[index].Remove(readList[index].IndexOf(dummyString), dummyString.Length);
-                }
-                //ArgumentOutOfRangeException이 발생하면 dummyString과 같은 내용이 없다는 것이므로 아무것도 하지 않는다.
-                //File_IO에 의해 새로 쓰여진 CSV 파일의 경우 dummyString이 발견되지 않는다.
-                catch (ArgumentOutOfRangeException)
-                { }
-
-                //읽은 값이 NULL_ID인 경우 아예 readList에 반영하지 않는다.
-                if (readList[index] == "NULL_ID")
-                {
-                    readList.Remove(readList[index]);
-                }
+                Debug.Log("FileNotFoundException: You Need " + fileName);
+                readList[0] = "FileNotFoundException";
             }
-
-            //CSV 파일 맨 첫번째 줄 제거
-            readList.Remove(readList[0]);
 
             return readList;
         }

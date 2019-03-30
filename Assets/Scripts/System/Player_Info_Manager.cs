@@ -162,6 +162,9 @@ public class Player_Info_Manager : MonoBehaviour {
         List<SkillBaseStat> resultSkills = new List<SkillBaseStat>();
         List<string> equippedSkills = IO_CSV.Reader_CSV("/Sample__PlayerEquippedInfo.csv");
 
+        //나중에 Exception 처리할 것
+        if (equippedSkills[0] == "FileNotFoundException") Debug.Log("Read_Equipped_SkillBaseStat: " + equippedSkills[0]+ ", Sample__PlayerEquippedInfo.csv");
+
         //필요없는 정보는 지운다. Reader_CSV에서 직접 지우도록 변경됨
         //equippedSkills.Remove("Skill_ID");
 
