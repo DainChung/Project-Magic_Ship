@@ -593,7 +593,7 @@ Light:
   serializedVersion: 7
   m_Type: 1
   m_Color: {r: 1, g: 0.95686275, b: 0.8392157, a: 1}
-  m_Intensity: 2.6
+  m_Intensity: 1
   m_Range: 10
   m_SpotAngle: 30
   m_CookieSize: 10
@@ -2779,19 +2779,14 @@ Prefab:
       propertyPath: m_RootOrder
       value: 7
       objectReference: {fileID: 0}
-    - target: {fileID: 1000013712111618, guid: 1c2791005207f824fbff3caab6f260f2, type: 2}
-      propertyPath: m_Name
-      value: SampleEnemy_Sample_Model_Added (2)
-      objectReference: {fileID: 0}
     - target: {fileID: 114000013113807130, guid: 1c2791005207f824fbff3caab6f260f2,
         type: 2}
       propertyPath: playerTransform
       value: 
       objectReference: {fileID: 1653395943}
-    - target: {fileID: 114000013113807130, guid: 1c2791005207f824fbff3caab6f260f2,
-        type: 2}
-      propertyPath: sampleUnitID
-      value: Stage_0_NORMAL_Normal
+    - target: {fileID: 1000013712111618, guid: 1c2791005207f824fbff3caab6f260f2, type: 2}
+      propertyPath: m_Name
+      value: SampleEnemy_Sample_Model_Added (2)
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 1c2791005207f824fbff3caab6f260f2, type: 2}
@@ -3720,6 +3715,18 @@ Prefab:
     - target: {fileID: 4000011885214964, guid: fc9e44f7e589d7d4899ba0d52c5fb449, type: 2}
       propertyPath: m_RootOrder
       value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 1000014108122680, guid: fc9e44f7e589d7d4899ba0d52c5fb449, type: 2}
+      propertyPath: m_TagString
+      value: PlayerAttack
+      objectReference: {fileID: 0}
+    - target: {fileID: 1000012246347514, guid: fc9e44f7e589d7d4899ba0d52c5fb449, type: 2}
+      propertyPath: m_TagString
+      value: PlayerAttack
+      objectReference: {fileID: 0}
+    - target: {fileID: 1000013500897184, guid: fc9e44f7e589d7d4899ba0d52c5fb449, type: 2}
+      propertyPath: m_TagString
+      value: PlayerAttack
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: fc9e44f7e589d7d4899ba0d52c5fb449, type: 2}
@@ -5386,19 +5393,14 @@ Prefab:
       propertyPath: m_RootOrder
       value: 6
       objectReference: {fileID: 0}
-    - target: {fileID: 1000013712111618, guid: 1c2791005207f824fbff3caab6f260f2, type: 2}
-      propertyPath: m_Name
-      value: SampleEnemy_Sample_Model_Added (1)
-      objectReference: {fileID: 0}
     - target: {fileID: 114000013113807130, guid: 1c2791005207f824fbff3caab6f260f2,
         type: 2}
       propertyPath: playerTransform
       value: 
       objectReference: {fileID: 1653395943}
-    - target: {fileID: 114000013113807130, guid: 1c2791005207f824fbff3caab6f260f2,
-        type: 2}
-      propertyPath: sampleUnitID
-      value: Stage_0_NORMAL_Normal
+    - target: {fileID: 1000013712111618, guid: 1c2791005207f824fbff3caab6f260f2, type: 2}
+      propertyPath: m_Name
+      value: SampleEnemy_Sample_Model_Added (1)
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 1c2791005207f824fbff3caab6f260f2, type: 2}

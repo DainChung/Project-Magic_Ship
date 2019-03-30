@@ -71,7 +71,7 @@ public class AmmoBase : MonoBehaviour {
         }
 
         //쏜 애가 Player고 맞은 애가 Enemy면
-        if (__Who_Shot == "Player" && other.transform.tag == "SampleEnemy")
+        if (__Who_Shot == "PlayerAttack" && other.transform.tag == "SampleEnemy")
         {
             //피격 관련 연산을 하고
             other.GetComponent<EnemyController>()._Enemy_Get_Hit(__Ammo_Damage, isItCritical);
@@ -94,7 +94,7 @@ public class AmmoBase : MonoBehaviour {
         }
 
         //쏜 애가 Enemy고 맞은 애가 Player면
-        if (__Who_Shot == "SampleEnemy" && other.transform.tag == "Player")
+        if (__Who_Shot == "EnemyAttack" && other.transform.tag == "Player")
         {
             //피격 관련 연산을 하고 (아직 구현 안 함)
             //Debug.Log("Player Get Hit");

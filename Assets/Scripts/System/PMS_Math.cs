@@ -52,6 +52,5 @@ namespace PMS_Math {
 
             return angle;
         }
-    }
-    
+    } 
 }

@@ -2,6 +2,8 @@
 using UnityEngine.UI;
 using System.Collections;
 
+using System.Collections.Generic;
+
 public class PlayerUI : MonoBehaviour {
     private PlayerController sPlayerController; // 플레이어의 정보
 
@@ -15,6 +17,7 @@ public class PlayerUI : MonoBehaviour {
 
     private void Start()
     {
+
         // 플레이어 정보 가져오기
         try
         {

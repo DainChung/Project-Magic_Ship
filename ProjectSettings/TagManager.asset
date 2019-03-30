@@ -9,6 +9,8 @@ TagManager:
   - SampleBullet
   - SampleObstacle
   - Boundary
+  - PlayerAttack
+  - EnemyAttack
   layers:
   - Default
   - TransparentFX
