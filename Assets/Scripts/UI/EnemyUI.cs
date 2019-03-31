@@ -12,6 +12,8 @@ public class EnemyUI : MonoBehaviour {
     public TextMesh t3dDamage; // What show Damage
 
     public Image enemyIndicator; //enemy가 어떤 방향에 있는지 알려주는 UI
+    private Transform middle_OF_EnemyIndicator;
+    private Vector3 enemyIndicatorDestiVector;
     private bool isEnemyScreenOut;
     private Vector2 screenPos;
 
@@ -28,6 +30,9 @@ public class EnemyUI : MonoBehaviour {
 
     // Use this for initialization
     void Start () {
+        enemyIndicatorDestiVector = new Vector3();
+        middle_OF_EnemyIndicator = GameObject.Find("Middle_OF_EnemyIndicator").transform;
+
         //OnGUI에서 하지 않고도 같은 효과를 기대할 수 있다.
         oMainCamera = GameObject.Find("Main Camera");
 
@@ -50,6 +55,10 @@ public class EnemyUI : MonoBehaviour {
 
     void Update()
     {
+        //20190331 enemyIndicator 자체를 폐기하고 다른 방법을 고려해야 될 수도 있음. (카메라 줌인 & 줌아웃 아니면 적이 공격할 때 위험지역이 표시됨)
+        //기본 AI의 적들의 방향은 거의 알 수 있음. 하지만 랜덤행동 AI의 경우 매우 잘못된 방향을 가리킬 때가 있음. 우선 이 기능은 보류하고 진행할 것
+        //4월 첫쨰 주 이내로 존속 여부 결정 후 대체 방안을 개발완료할 것
+
         //적의 화면 상 위치를 파악한다.
         screenPos = Camera.main.WorldToScreenPoint(transform.position);
 
@@ -59,19 +68,27 @@ public class EnemyUI : MonoBehaviour {
             //enemyIndicator가 보이도록 한다.
             if (!enemyIndicator.GetComponent<Image>().enabled) enemyIndicator.GetComponent<Image>().enabled = true;
 
-            //Rotation을 업데이트 해준다. (Enemy의 방향을 가리키는 것은 아님)
-            enemyIndicator.transform.rotation = oMainCamera.GetComponent<Transform>().rotation;
+            //enemyIndicator 위치 값 1차 보정
+            enemyIndicatorDestiVector = oMainCamera.transform.GetChild(0).position - Vector3.Normalize(sPlayerController.transform.position - sEnemyController.transform.position) * 0.2f;
+            screenPos = Camera.main.WorldToScreenPoint(enemyIndicatorDestiVector);
+
+            //플레이어 주변 말고 MainCamera에 달려있는 Canvas를 중심으로 나타나도록 하기 위한 2차 보정
+            enemyIndicatorDestiVector.Set(screenPos.x, screenPos.y, 15f);
+            enemyIndicatorDestiVector = Camera.main.ScreenToWorldPoint(enemyIndicatorDestiVector);
+
+            if (Vector3.Distance(enemyIndicatorDestiVector, middle_OF_EnemyIndicator.position) != 2.90f)
+                enemyIndicatorDestiVector = middle_OF_EnemyIndicator.position - Vector3.Normalize(middle_OF_EnemyIndicator.position - enemyIndicatorDestiVector) * 2.90f;
 
             //enemyIndicator의 위치를 업데이트 해준다.
-            //하지만 이 방식은 섬 같은 지형이 주변에 있면 enemyIndicator가 지형에 의해 가려질 수 있다.
-            //추가적인 연구와 보강이 필요함. 경우에 따라 이 상태로 남겨두고 Enemy 방향을 가리키도록 바꾸기만 하고 넘어갈 수도 있음.
             enemyIndicator.transform.position = Vector3.Lerp(enemyIndicator.transform.position,
-                        sPlayerController.transform.position - Vector3.Normalize(sPlayerController.transform.position - sEnemyController.transform.position) * 10.0f,
-                        Time.deltaTime * sPlayerController.__PLY_Stat.__PUB_Move_Speed);
+                        enemyIndicatorDestiVector,
+                        Time.deltaTime * sPlayerController.__PLY_Stat.__PUB_Move_Speed * 1.5f);
 
-            //screenPos = Camera.main.WorldToScreenPoint(enemyIndicator.transform.position);
+            //1초 마다 방향을 알려준다.
+            Debug.Log(Vector3.Distance(enemyIndicatorDestiVector, middle_OF_EnemyIndicator.position));
 
-
+            //Rotation을 업데이트 해준다. (Enemy의 방향을 가리키는 것은 아님)
+            enemyIndicator.transform.rotation = oMainCamera.GetComponent<Transform>().rotation;
         }
         //적이 플레이어 시야 안 쪽에 있으면
         else

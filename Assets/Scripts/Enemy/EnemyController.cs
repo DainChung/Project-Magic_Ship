@@ -98,6 +98,8 @@ public class EnemyStat : Unit__Base_Stat {
 
         ai_Level = int.Parse(enemyStatBaseString[10]);
 
+        //ai_Level = 1;
+
         //스킬 ID
         sampleSkillIDList.Add(enemyStatBaseString[11]);
         sampleSkillIDList.Add(enemyStatBaseString[12]);
@@ -311,17 +313,19 @@ public class EnemyController : MonoBehaviour {
         }
 
         _AI_FuncList.Add(() => __ENE_AI.AI_Simple_Level0());
-        _AI_FuncList.Add(() => __ENE_AI.AI_DeapLearning__Random_Ver());
+        _AI_FuncList.Add(() => __ENE_AI.AI_DeapLearning__Random_Ver());    
     }
 
 	// Use this for initialization
 	void Start () {
         sEnemyUI = GetComponent<EnemyUI>();
-	}
+
+        //생성된 후 자동으로 플레이어를 추적
+        playerTransform = GameObject.FindGameObjectWithTag("Player").transform;
+    }
 	
 	// Update is called once per frame
 	void Update () {
-
         //나중에 EnemyAI 클래스를 따로 만들어서 이하 내용과 같은 기능을 하도록 넣을 것.
         _AI_FuncList[__ENE_Stat._GET_ai_Level]();
 

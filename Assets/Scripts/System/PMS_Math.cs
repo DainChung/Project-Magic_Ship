@@ -52,5 +52,11 @@ namespace PMS_Math {
 
             return angle;
         }
-    } 
+    }
+
+    //Vector3, Vector2에 관련된 수학적 보정
+    public class Position_Math {
+
+
+    }
 }
