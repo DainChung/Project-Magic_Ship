@@ -127,7 +127,7 @@ public class EnemyAIEngine {
 
     //destiTrn을 바라보는 방향 또는 그 반대 방향
     private Quaternion destiQT;
-    private bool[] enemy_is_ON_CoolTime = new bool[4];
+    private bool[] enemy_is_ON_CoolTime = new bool[5];
 
     public bool[] _PUB_enemy_Is_ON_CoolTime
     {

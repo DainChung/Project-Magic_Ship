@@ -84,8 +84,7 @@ public class EnemyUI : MonoBehaviour {
                         enemyIndicatorDestiVector,
                         Time.deltaTime * sPlayerController.__PLY_Stat.__PUB_Move_Speed * 1.5f);
 
-            //1초 마다 방향을 알려준다.
-            Debug.Log(Vector3.Distance(enemyIndicatorDestiVector, middle_OF_EnemyIndicator.position));
+            //Debug.Log(Vector3.Distance(enemyIndicatorDestiVector, middle_OF_EnemyIndicator.position));
 
             //Rotation을 업데이트 해준다. (Enemy의 방향을 가리키는 것은 아님)
             enemyIndicator.transform.rotation = oMainCamera.GetComponent<Transform>().rotation;

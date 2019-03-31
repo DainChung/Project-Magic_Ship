@@ -52,6 +52,39 @@ public class UnitCoolTimer : MonoBehaviour {
         yield break;
     }
 
+    public IEnumerator Timer(float timeVal, Action<bool> timeLocker, bool beforeVal)
+    {
+        //이 코루틴이 시작되기 전의 bool 값에 따라 결과를 다르게 하도록 출력한다.
+        if (beforeVal)
+        {
+            //locker 값을 false로 설정
+            timeLocker(false);
+        }
+        else
+        {
+            //locker 값을 true로 설정
+            timeLocker(true);
+        }
+
+        //시간 계산
+        //yield return new WaitForSeconds(timeVal);
+
+        //시간이 다 지나면
+        if (beforeVal)
+        {
+            //locker 값을 false로 설정
+            timeLocker(true);
+        }
+        else
+        {
+            //locker 값을 true로 설정
+            timeLocker(false);
+        }
+
+        //해당 코루틴 자동 종료
+        yield break;
+    }
+
     public IEnumerator Timer_Do_Once(float timeVal, Action<bool> timeLocker, bool beforeVal)
     {
         //시간 계산
