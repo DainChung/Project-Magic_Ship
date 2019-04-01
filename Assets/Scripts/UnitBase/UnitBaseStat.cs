@@ -106,7 +106,21 @@ public class Unit__Base_Stat {
     public float __GET_FOriginalRotateSpeed
     {
         get { return FOriginalRotateSpeed; }
-    } 
+    }
+
+
+    public int __SET_Max_HP
+    {
+        set { __MAX_Health_Point = value; }
+    }
+    public int __SET_Max_MP
+    {
+        set { __MAX_Mana_Point = value; }
+    }
+    public int __SET_Max_PP
+    {
+        set { __MAX_Power_Point = value; }
+    }
 
 
     /** Health 가감 연산

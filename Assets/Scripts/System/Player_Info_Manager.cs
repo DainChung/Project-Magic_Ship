@@ -66,6 +66,7 @@ public class Player_Info_Manager : MonoBehaviour {
     }
 
     private Player_Infomation playerInfo = new Player_Infomation();
+    public Player_Infomation __GET_playerInfo { get { return playerInfo; } }
     private PlayerController playerController;
 
     void Awake()
