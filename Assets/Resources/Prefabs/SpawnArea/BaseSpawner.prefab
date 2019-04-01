@@ -9,19 +9,19 @@ Prefab:
     m_Modifications: []
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 0}
-  m_RootGameObject: {fileID: 1000013061452842}
+  m_RootGameObject: {fileID: 1000013363739426}
   m_IsPrefabParent: 1
---- !u!1 &1000013061452842
+--- !u!1 &1000013363739426
 GameObject:
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   serializedVersion: 4
   m_Component:
-  - 4: {fileID: 4000012586523678}
-  - 54: {fileID: 54000010549949516}
-  - 114: {fileID: 114000011846684302}
-  - 65: {fileID: 65000011822713370}
+  - 4: {fileID: 4000010749845920}
+  - 54: {fileID: 54000013308700672}
+  - 65: {fileID: 65000014193698376}
+  - 114: {fileID: 114000011795380390}
   m_Layer: 0
   m_Name: BaseSpawner
   m_TagString: Untagged
@@ -29,25 +29,25 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &4000012586523678
+--- !u!4 &4000010749845920
 Transform:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1000013061452842}
+  m_GameObject: {fileID: 1000013363739426}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 10, y: 0.6, z: 10}
+  m_LocalPosition: {x: 35.253227, y: 1, z: 49.379883}
+  m_LocalScale: {x: 10, y: 5, z: 10}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 0
---- !u!54 &54000010549949516
+--- !u!54 &54000013308700672
 Rigidbody:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1000013061452842}
+  m_GameObject: {fileID: 1000013363739426}
   serializedVersion: 2
   m_Mass: 100
   m_Drag: 0
@@ -57,27 +57,27 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 126
   m_CollisionDetection: 0
---- !u!65 &65000011822713370
+--- !u!65 &65000014193698376
 BoxCollider:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1000013061452842}
+  m_GameObject: {fileID: 1000013363739426}
   m_Material: {fileID: 0}
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_Enabled: 1
   serializedVersion: 2
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &114000011846684302
+--- !u!114 &114000011795380390
 MonoBehaviour:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1000013061452842}
+  m_GameObject: {fileID: 1000013363739426}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7ffeca57e19b8de4385919e2ea78c813, type: 3}
+  m_Script: {fileID: 11500000, guid: eeb7577192cab214aa7ba7b84ea0c357, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   WhatToSpawn: {fileID: 1000013712111618, guid: 1c2791005207f824fbff3caab6f260f2,

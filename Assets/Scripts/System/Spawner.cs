@@ -1,27 +1,14 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class Spawner : MonoBehaviour {
-
-    public GameObject WhatToSpawn; // Spawner instantiate this
-    public float SpawningDelay; // Spawn instances after 'SpawningDelay' seconds
-
+public class Spawner : SpawnerBase {
 	// Use this for initialization
-	void Start () {
-        // destroy spawner if there is no what to spawn 
-	    if(!WhatToSpawn)
-        {
-            Debug.Log("[Spawner] There is no what to spawn: spawner is destroyed - " + gameObject.name);
-            Destroy(gameObject);
-        }
+	protected void Start () {
+        base.Start();
 	}
     
-	// Update is called once per frame
-	void Update () {
-	    
-	}
 
-    private void OnTriggerEnter(Collider other)
+    protected void OnTriggerEnter(Collider other)
     {
         if(other.tag == "Player") StartCoroutine(SpawnInstances(5, 10.0f));
     }
