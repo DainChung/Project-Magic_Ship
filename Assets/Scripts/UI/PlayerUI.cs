@@ -15,9 +15,11 @@ public class PlayerUI : MonoBehaviour {
     public Image iSkill2;       // 두번째 스킬
     public Image iSkill3;       // 세번째 스킬
 
+    private GameObject[] enemys;
+    private List<GameObject> enemyIndicators = new List<GameObject>();
+
     private void Start()
     {
-
         // 플레이어 정보 가져오기
         try
         {
@@ -27,6 +29,8 @@ public class PlayerUI : MonoBehaviour {
         {
             Debug.Log("[PlayerUI] " + e.Message);
         }
+
+        SearchEnemys();
     }
 
     private void OnGUI()
@@ -40,5 +44,40 @@ public class PlayerUI : MonoBehaviour {
         iSkill1.fillAmount = 1 - sPlayerController.__PLY_Selected_Skills[0].time / sPlayerController.__PLY_Selected_Skills[0].__GET_Skill_Cool_Time;
         iSkill2.fillAmount = 1 - sPlayerController.__PLY_Selected_Skills[1].time / sPlayerController.__PLY_Selected_Skills[1].__GET_Skill_Cool_Time;
         iSkill3.fillAmount = 1 - sPlayerController.__PLY_Selected_Skills[2].time / sPlayerController.__PLY_Selected_Skills[2].__GET_Skill_Cool_Time;
+    }
+
+    //함수 호출할 때마다 Scene 상의 모든 Enemy를 추적한다.
+    //Enemy가 죽거나, 새로 생성될 때 마다 호출해야 한다.
+    public void SearchEnemys()
+    {
+        int index = 0;
+
+        if (enemyIndicators != null)
+        {
+            //모두 삭제하고 다시 만든다.
+            for (index = 0; index < enemyIndicators.Count; index++)
+            {
+                Destroy(enemyIndicators[index]);
+            }
+
+            enemyIndicators.Clear();
+        }
+
+        GameObject newIndicator;
+
+        enemys = GameObject.FindGameObjectsWithTag("SampleEnemy");
+
+        index = 0;
+
+        do
+        {
+            newIndicator = Instantiate(Resources.Load("UI/EnemyIndicator"), Camera.main.transform.GetChild(0)) as GameObject;
+            newIndicator.GetComponent<EnemyIndicator>().InitializeEnemyIndicator(enemys[index].transform, sPlayerController.transform);
+
+            enemyIndicators.Add(newIndicator);
+
+            index++;
+        } while (index < enemys.Length);
+
     }
 }
