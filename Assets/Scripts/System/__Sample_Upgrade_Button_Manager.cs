@@ -10,9 +10,13 @@ public class __Sample_Upgrade_Button_Manager : MonoBehaviour {
     //임시 배열, 나중에 이런 과정을 거치지 않고도 기능을 수행할 수 있도록 할 것.
     private string[] statNameArray = new string[8];
     private float[] statValue = new float[8];
+    private float[] statMinValue = new float[8];
+    private float[] statMaxValue = new float[8];
+    private int[] statPrice = new int[8];
 
     //임시로 업그레이드, 다운그레이드 결과를 저장하는 배열
     private float[] statBeforeSave = new float[8];
+    private int goldBeforeSave = -1;
 
     public Transform exitButton;
     public Transform saveButton;
@@ -38,6 +42,7 @@ public class __Sample_Upgrade_Button_Manager : MonoBehaviour {
 
     void Awake()
     {
+        //--------------------------------------------
         statNameArray[0] = "이동속도";
         statNameArray[1] = "회전속도";
 
@@ -48,7 +53,7 @@ public class __Sample_Upgrade_Button_Manager : MonoBehaviour {
         statNameArray[5] = "공격력";
         statNameArray[6] = "치명타 확률";
         statNameArray[7] = "치명타 계수";
-
+        //--------------------------------------------
         statValue[0] = 5f;
         statValue[1] = 5f;
 
@@ -59,7 +64,40 @@ public class __Sample_Upgrade_Button_Manager : MonoBehaviour {
         statValue[5] = 1f;
         statValue[6] = 1f;
         statValue[7] = 0.1f;
+        //--------------------------------------------
+        statMinValue[0] = 5f;
+        statMinValue[1] = 20f;
 
+        statMinValue[2] = 5f;
+        statMinValue[3] = 6f;
+        statMinValue[4] = 7f;
+
+        statMinValue[5] = 1f;
+        statMinValue[6] = 5f;
+        statMinValue[7] = 1.5f;
+        //--------------------------------------------
+        statMaxValue[0] = 100f;
+        statMaxValue[1] = 90f;
+
+        statMaxValue[2] = 30f;
+        statMaxValue[3] = 25f;
+        statMaxValue[4] = 20f;
+
+        statMaxValue[5] = 10f;
+        statMaxValue[6] = 20f;
+        statMaxValue[7] = 3f;
+        //--------------------------------------------
+        statPrice[0] = 1;
+        statPrice[1] = 2;
+
+        statPrice[2] = 3;
+        statPrice[3] = 4;
+        statPrice[4] = 5;
+
+        statPrice[5] = 6;
+        statPrice[6] = 7;
+        statPrice[7] = 8;
+        //--------------------------------------------
         //수정한 적 없으면 아래와 같이 -1로 초기화 한다.
         for (int index = 0; index < statBeforeSave.Length; index++)
         {
@@ -77,7 +115,8 @@ public class __Sample_Upgrade_Button_Manager : MonoBehaviour {
 
         //소지 골드 표시
         goldInfoText = goldInfo.GetChild(0).GetComponent<Text>();
-        goldInfoText.text = "소지 골드: " + player.GetComponent<Player_Info_Manager>().__GET_playerInfo._GET_Player_Gold;
+        goldBeforeSave = player.GetComponent<Player_Info_Manager>().__GET_playerInfo._GET_Player_Gold;
+        goldInfoText.text = "소지 골드: " + goldBeforeSave;
 
         statInfoText = statInfo.GetChild(0).GetComponent<Text>();
         statInfoText.text = "NULL";
@@ -103,6 +142,11 @@ public class __Sample_Upgrade_Button_Manager : MonoBehaviour {
         upgradeButton.GetComponent<Button>().onClick.AddListener(() => Upgrade_OR_Downgrade_Stat(1f));
         downgradeButton.GetComponent<Button>().onClick.AddListener(() => Upgrade_OR_Downgrade_Stat(-1f));
         back_TO_OriginButtons.GetComponent<Button>().onClick.AddListener(() => Back_TO_Origin_Stat());
+
+        //Debug용
+        getGoldCheat.GetComponent<Button>().onClick.AddListener(() => ___CHEAT___GetGold());
+        loseGoldCheat.GetComponent<Button>().onClick.AddListener(() => ___CHEAT___LoseGold());
+
     }
 
     void Go_TO_ProtoTypeScene()
@@ -132,6 +176,7 @@ public class __Sample_Upgrade_Button_Manager : MonoBehaviour {
         if (statBeforeSave[6] != -1f) player.GetComponent<PlayerController>().__PLY_Stat.__PUB_Critical_Rate = statBeforeSave[6];
         if (statBeforeSave[7] != -1f) player.GetComponent<PlayerController>().__PLY_Stat.__PUB_Critical_P = statBeforeSave[7];
 
+        Debug.Log(player.GetComponent<PlayerController>().__PLY_Stat.__PUB_Move_Speed);
         Debug.Log("저장되었습니다.");
         //저장 기능 수행
         player.GetComponent<Player_Info_Manager>().Write_Player_Info();
@@ -169,37 +214,50 @@ public class __Sample_Upgrade_Button_Manager : MonoBehaviour {
     }
 
     //isUpgrade_OR_Downgrade == 1 || isUpgrade_OR_Downgrade == -1 이 두 가지의 경우에만 작동한다.
-    //일단 노가다로 처리한다.
     void Upgrade_OR_Downgrade_Stat(float isUpgrade_OR_Downgrade)
     {
+        
+
         if (isUpgrade_OR_Downgrade == 1 || isUpgrade_OR_Downgrade == -1)
         {
-            //업그레이드면 증가하고, 다운그레이드면 감소한다.
-            float value_About_Stat = statValue[statNameIndex] * isUpgrade_OR_Downgrade;
+            if (goldBeforeSave >= statPrice[statNameIndex])
+            {
+                //돈 계산을 먼저 한다. 업그레이드하면 돈을 소모해야 한다.
+                goldBeforeSave -= (int)(statPrice[statNameIndex] * isUpgrade_OR_Downgrade);
 
-            if (statNameIndex == 0)
-                statBeforeSave[0] += value_About_Stat;
-            else if (statNameIndex == 1)
-                statBeforeSave[1] += value_About_Stat;
+                //업그레이드면 증가하고, 다운그레이드면 감소한다.
+                float value_About_Stat = statValue[statNameIndex] * isUpgrade_OR_Downgrade;
 
-            else if (statNameIndex == 2)
-                statBeforeSave[2] += value_About_Stat;
-            else if (statNameIndex == 3)
-                statBeforeSave[3] += value_About_Stat;
-            else if (statNameIndex == 4)
-                statBeforeSave[4] += value_About_Stat;
+                statBeforeSave[statNameIndex] += value_About_Stat;
 
-            else if (statNameIndex == 5)
-                statBeforeSave[5] += value_About_Stat;
-            else if (statNameIndex == 6)
-                statBeforeSave[6] += value_About_Stat;
-            else if (statNameIndex == 7)
-                statBeforeSave[7] += value_About_Stat;
-            else { }
+                //최소치 미만일 때
+                if (statBeforeSave[statNameIndex] < statMinValue[statNameIndex])
+                {
+                    //골드 값 다시 회복
+                    goldBeforeSave += (int)(statPrice[statNameIndex] * isUpgrade_OR_Downgrade);
+
+                    Debug.Log(statName + "의 값을 더 낮출 수 없습니다.");
+                    statBeforeSave[statNameIndex] = statMinValue[statNameIndex];
+                }
+                //최대치 초과일 때
+                else if (statBeforeSave[statNameIndex] > statMaxValue[statNameIndex])
+                {
+                    //골드 값 다시 회복
+                    goldBeforeSave += (int)(statPrice[statNameIndex] * isUpgrade_OR_Downgrade);
+
+                    Debug.Log(statName + "의 값을 더 높일 수 없습니다.");
+                    statBeforeSave[statNameIndex] = statMaxValue[statNameIndex];
+                }
+            }
+            else
+            {
+                Debug.Log("돈이 부족합니다.");
+            }
         }
 
         //Text 업데이트
         statInfoText.text = statName + " 값: " + statBeforeSave[statNameIndex].ToString();
+        goldInfoText.text = "소지 골드: " + goldBeforeSave;
     }
 
     void Back_TO_Origin_Stat()
@@ -224,10 +282,25 @@ public class __Sample_Upgrade_Button_Manager : MonoBehaviour {
             statBeforeSave[7] = player.GetComponent<PlayerController>().__PLY_Stat.__PUB_Critical_P;
         else { }
 
+        goldBeforeSave = player.GetComponent<Player_Info_Manager>().__GET_playerInfo._GET_Player_Gold;
+
         //Text 업데이트
         statInfoText.text = statName + " 값: " + statBeforeSave[statNameIndex].ToString();
+        goldInfoText.text = "소지 골드: " + player.GetComponent<Player_Info_Manager>().__GET_playerInfo._GET_Player_Gold;
     }
 
+    //Debug용 함수
+    void ___CHEAT___GetGold()
+    {
+        player.GetComponent<Player_Info_Manager>().__GET_playerInfo.__Buy_OR_Sell__About_Money("Gold", 100);
+        goldInfoText.text = "소지 골드: " + player.GetComponent<Player_Info_Manager>().__GET_playerInfo._GET_Player_Gold;
+    }
+    //Debug용 함수
+    void ___CHEAT___LoseGold()
+    {
+        player.GetComponent<Player_Info_Manager>().__GET_playerInfo.__Buy_OR_Sell__About_Money("Gold", -100);
+        goldInfoText.text = "소지 골드: " + player.GetComponent<Player_Info_Manager>().__GET_playerInfo._GET_Player_Gold;
+    }
 
     //임시로 사용하는 함수 => 특정 버튼들을 화면에 표시하거나 숨긴다.
     private void __Sample_Show_OR_Hide_Buttons(bool youWannaShowThat)

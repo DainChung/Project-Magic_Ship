@@ -134,8 +134,8 @@ public class Player_Info_Manager : MonoBehaviour {
         playerInfoString[1, 0] = playerInfo._GET_Player_ID;
         playerInfoString[1, 1] = playerInfo._GET_Player_Name;
         //이동속도, 회전속도
-        playerInfoString[1, 2] = playerController.__PLY_Stat.__GET_FOriginalMoveSpeed.ToString();
-        playerInfoString[1, 3] = playerController.__PLY_Stat.__GET_FOriginalRotateSpeed.ToString();
+        playerInfoString[1, 2] = playerController.__PLY_Stat.__PUB_Move_Speed.ToString();
+        playerInfoString[1, 3] = playerController.__PLY_Stat.__PUB_Rotation_Speed.ToString();
         //체력, 마나, 파워
         playerInfoString[1, 4] = playerController.__PLY_Stat.__GET_Max_HP.ToString();
         playerInfoString[1, 5] = playerController.__PLY_Stat.__GET_Max_MP.ToString();
