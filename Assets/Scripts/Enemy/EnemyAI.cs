@@ -5,11 +5,13 @@ using System.Collections;
 using System.Collections.Generic;
 
 using File_IO;
+using PMS_Math;
 
 //EnemyAI에 직접적으로 관련된 클래스를 새로 생성함
 public class EnemyAI : MonoBehaviour {
 
     private EnemyController enemyController;
+    private Transform enemyRight;
 
     private EnemyStat __ENE_Stat;
     private EnemyAIEngine __ENE_AI_Engine;
@@ -38,6 +40,8 @@ public class EnemyAI : MonoBehaviour {
     // Use this for initialization
     void Awake () {
         enemyController = transform.GetComponent<EnemyController>();
+        enemyRight = transform.GetChild(1);
+
         __ENE_Stat = enemyController.__ENE_Stat;
         __ENE_AI_Engine = enemyController._GET__ENE_AI_Engine;
 
@@ -191,6 +195,58 @@ public class EnemyAI : MonoBehaviour {
                 //{
                 //    __ENE_Engine.Attack_Default(2.0f, ref default_Ammo, ref enemy_Left, __ENE_Stat.__PUB_ATK__Val, 2);
                 //}
+            }
+        }
+        //스테이지 경계선과 접촉했을 때
+        else
+        {
+            Go_INTO_Stage();
+            //7초 후엔 스테이지 경계선과 접촉하지 않은 것으로 간주한다.
+            StartCoroutine(enemyController.enemyCoolTimer.Timer_Do_Once(7.0f, (input) => { isEnd_OF_Stage = input; }, true));
+        }
+    }
+
+    public void AI_Simple_Level0_BOSS()
+    {
+        //일반적인 상황일 때
+        if (!isEnd_OF_Stage)
+        {
+            //체력이 최대 체력의 절반 초과일 때 (1페이즈)
+            //AI_Simple_Level0 + 측면 
+            if (enemyController.__ENE_Stat.__PUB__Health_Point > enemyController.__ENE_Stat.half_HP)
+            {
+                //플레이어를 바라보도록 한다.
+                __ENE_AI_Engine.Rotate_TO_Direction(__ENE_Stat.__PUB_Rotation_Speed, ref enemyController.enemyTransform, enemyController.playerTransform, false);
+
+                //전방으로 이동한다.
+                __ENE_AI_Engine.Go_TO_Foward_UNTIL_RayHit(__ENE_Stat.__PUB_Move_Speed, ref enemyController.enemyTransform, enemyController.playerTransform);
+
+                //각도 차에 따라 다른 위치로 발사한다. (아직 미구현)
+                if (__ENE_AI_Engine._PUB_enemy_Is_ON_CoolTime[1])
+                {
+                    __ENE_AI_Engine.Attack_Default(2.0f + Random.Range(0.0f, 1.0f), ref enemyController.enemy_Front, __ENE_Stat, 1);
+                }
+            }
+            //체력이 최대 체력의 절반 이하할 때 (2페이즈)
+            else
+            {
+                //플레이어 반대 방향을 보도록 한다.
+                __ENE_AI_Engine.Rotate_TO_Direction(enemyController.__ENE_Stat.__PUB_Rotation_Speed, ref enemyController.enemyTransform, enemyController.playerTransform, true);
+
+                //일정 시간동안 해당 유닛의 전방을 향해 이동한다.
+                if (__ENE_AI_Engine._PUB_enemy_Is_ON_CoolTime[0])
+                {
+                    __ENE_AI_Engine.__ENE_Engine._unit_Move_Engine.Move_OBJ(enemyController.__ENE_Stat.__PUB_Move_Speed, ref enemyController.enemyTransform, 1);
+                    //4초 동안 퇴각
+                    StartCoroutine(enemyController.enemyCoolTimer.Timer_Do_Once(4.0f, (input) => { __ENE_AI_Engine._PUB_enemy_Is_ON_CoolTime[0] = input; }, true));
+                }
+                else
+                {
+                    //16초 동안 정지
+                    StartCoroutine(enemyController.enemyCoolTimer.Timer_Do_Once(16.0f, (input) => { __ENE_AI_Engine._PUB_enemy_Is_ON_CoolTime[0] = input; }, false));
+                    //회복 패턴은 정예 선박만 넣는것이 좋을 것 같다
+                    //StartCoroutine(__ENE_Stat.__Get_HIT__About_Health_FREQ(2.0f, 1.0f, 1, -1));
+                }
             }
         }
         //스테이지 경계선과 접촉했을 때

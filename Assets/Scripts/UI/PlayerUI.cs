@@ -36,9 +36,9 @@ public class PlayerUI : MonoBehaviour {
     private void OnGUI()
     {
         // 스탯 업데이트 (체력, 마나, 파워)
-        iBar_Health.fillAmount = (float)sPlayerController.__PLY_Stat.__PUB__Health_Point / 10f;
-        iBar_Mana.fillAmount = (float)sPlayerController.__PLY_Stat.__PUB__Mana_Point / 10f;
-        iBar_Power.fillAmount = (float)sPlayerController.__PLY_Stat.__PUB__Power_Point / 10f;
+        iBar_Health.fillAmount = (float)sPlayerController.__PLY_Stat.__PUB__Health_Point / (float)sPlayerController.__PLY_Stat.__GET_Max_HP;
+        iBar_Mana.fillAmount = (float)sPlayerController.__PLY_Stat.__PUB__Mana_Point / (float)sPlayerController.__PLY_Stat.__GET_Max_MP;
+        iBar_Power.fillAmount = (float)sPlayerController.__PLY_Stat.__PUB__Power_Point / (float)sPlayerController.__PLY_Stat.__GET_Max_PP;
 
         // 스킬 상태 업데이트
         iSkill1.fillAmount = 1 - sPlayerController.__PLY_Selected_Skills[0].time / sPlayerController.__PLY_Selected_Skills[0].__GET_Skill_Cool_Time;

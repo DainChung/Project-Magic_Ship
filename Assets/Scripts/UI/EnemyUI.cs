@@ -116,7 +116,7 @@ public class EnemyUI : MonoBehaviour {
     private void OnGUI()
     {
         
-        iHealthBar.fillAmount = (float)sEnemyController.__ENE_Stat.__PUB__Health_Point / 10; // status image udpate
+        iHealthBar.fillAmount = (float)sEnemyController.__ENE_Stat.__PUB__Health_Point / (float)sEnemyController.__ENE_Stat.__GET_Max_HP; // status image udpate
         // 체력바와 데미지가 잘 보이도록 체력바의 Rotation 업데이트
         try
         {
