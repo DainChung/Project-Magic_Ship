@@ -2820,6 +2820,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   seaObject_DEEP: {fileID: 1000014186946796, guid: 9bea4527962874a4ba28f68547495ba4,
     type: 2}
+  mapWidth: 80
+  mapHeight: 80
 --- !u!4 &684319863 stripped
 Transform:
   m_PrefabParentObject: {fileID: 4000010407689320, guid: 64a133a3f03ca6744813a649fb32505b,

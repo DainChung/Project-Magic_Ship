@@ -5,10 +5,19 @@ public class MapManager : MonoBehaviour {
 
     public GameObject seaObject_DEEP;
 
-    private const int mapMax_X = 80;
-    private const int mapMax_Z = 80;
+    public int mapWidth;
+    public int mapHeight;
+
+    private int mapMax_X = 80;
+    private int mapMax_Z = 80;
 
     private const float dist = 1.6f;
+
+    void Awake()
+    {
+        mapMax_X = mapWidth;
+        mapMax_Z = mapHeight;
+    }
 
 	// Use this for initialization
 	void Start()
