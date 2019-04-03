@@ -5,6 +5,7 @@ using System.Collections;
 public class SpawnerBase : MonoBehaviour {
     public GameObject WhatToSpawn; // Spawner instantiate this
     public float SpawningDelay; // Spawn instances after 'SpawningDelay' seconds
+    public bool SpawnAfterColliding; // Spawn instance after colliding with player(true)
 
     private PlayerUI playerUI;
 
@@ -20,6 +21,9 @@ public class SpawnerBase : MonoBehaviour {
             Debug.Log("[Spawner] There is no what to spawn: spawner is destroyed - " + gameObject.name);
             Destroy(gameObject);
         }
+
+        if (!SpawnAfterColliding)
+            StartCoroutine(SpawnInstanceOnce());
 	}
 
     // 에디터에서만 보이는 표시
@@ -31,7 +35,7 @@ public class SpawnerBase : MonoBehaviour {
 
     protected void OnTriggerEnter(Collider other)
     {
-        if (other.tag == "Player") StartCoroutine(SpawnInstanceOnce());
+        if (SpawnAfterColliding && other.tag == "Player") StartCoroutine(SpawnInstanceOnce());
     }
 
     /** Spawn Instance after 'SpawningDelay' seconds */
