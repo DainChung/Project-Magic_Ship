@@ -24,14 +24,21 @@ public class EnemyIndicator : MonoBehaviour {
 
     public void InitializeEnemyIndicator(Transform enemyTr, Transform playerTr)
     {
-        enemy = enemyTr;
-        player = playerTr;
+        try
+        {
+            enemy = enemyTr;
+            player = playerTr;
 
-        enemyUI = enemy.GetComponent<EnemyUI>();
-        mainCamera = GameObject.FindGameObjectWithTag("MainCamera").transform;
-        mainCanvas = mainCamera.GetChild(0);
+            enemyUI = enemy.GetComponent<EnemyUI>();
+            mainCamera = GameObject.FindGameObjectWithTag("MainCamera").transform;
+            mainCanvas = mainCamera.GetChild(0);
 
-        FOriginalLocalScale = transform.localScale;
+            FOriginalLocalScale = transform.localScale;
+        }
+        catch (System.NullReferenceException)
+        {
+            Destroy(gameObject);
+        }
     }
 
 	// Update is called once per frame

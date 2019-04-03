@@ -52,32 +52,40 @@ public class PlayerUI : MonoBehaviour {
     {
         int index = 0;
 
-        if (enemyIndicators != null)
+        try
         {
-            //모두 삭제하고 다시 만든다.
-            for (index = 0; index < enemyIndicators.Count; index++)
+            if (enemyIndicators != null)
             {
-                Destroy(enemyIndicators[index]);
+                //모두 삭제하고 다시 만든다.
+                for (index = 0; index < enemyIndicators.Count; index++)
+                {
+                    Destroy(enemyIndicators[index]);
+                }
+
+                enemyIndicators.Clear();
             }
 
-            enemyIndicators.Clear();
+            GameObject newIndicator;
+
+            enemys = GameObject.FindGameObjectsWithTag("SampleEnemy");
+
+            if (enemys[0] != null)
+            {
+                index = 0;
+
+                do
+                {
+                    newIndicator = Instantiate(Resources.Load("UI/EnemyIndicator"), Camera.main.transform.GetChild(0)) as GameObject;
+                    newIndicator.GetComponent<EnemyIndicator>().InitializeEnemyIndicator(enemys[index].transform, sPlayerController.transform);
+
+                    enemyIndicators.Add(newIndicator);
+
+                    index++;
+                } while (index < enemys.Length);
+            }
         }
-
-        GameObject newIndicator;
-
-        enemys = GameObject.FindGameObjectsWithTag("SampleEnemy");
-
-        index = 0;
-
-        do
-        {
-            newIndicator = Instantiate(Resources.Load("UI/EnemyIndicator"), Camera.main.transform.GetChild(0)) as GameObject;
-            newIndicator.GetComponent<EnemyIndicator>().InitializeEnemyIndicator(enemys[index].transform, sPlayerController.transform);
-
-            enemyIndicators.Add(newIndicator);
-
-            index++;
-        } while (index < enemys.Length);
+        catch (System.NullReferenceException){ }
+        catch (System.IndexOutOfRangeException){ }
 
     }
 }
