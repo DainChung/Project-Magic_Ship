@@ -126,7 +126,8 @@ public class EnemyAIEngine {
 
     //destiTrn을 바라보는 방향 또는 그 반대 방향
     private Quaternion destiQT;
-    private bool[] enemy_is_ON_CoolTime = new bool[5];
+    //쿨타임 여부에 따른 행동 관리
+    private bool[] enemy_is_ON_CoolTime = new bool[9];
 
     public bool[] _PUB_enemy_Is_ON_CoolTime
     {
@@ -271,7 +272,7 @@ public class EnemyAIEngine {
         //rotated_OBJ.rotation = destiQT;
 
         //호출될 때마다 목표 각도와 현재 각도 차 구하기
-        float angleComparison = Quaternion.Angle(rotated_OBJ.rotation, destiQT);
+        float angleComparison = Quaternion.Angle(right_Side.rotation, destiQT);
 
         //약간의 오차를 허용한다.
         //목표지점을 바라볼 때까지 회전한다.
@@ -305,7 +306,7 @@ public class EnemyAIEngine {
     public void Attack_Default(float coolTime, ref Transform attacker, Unit__Base_Stat unitStat, int boolIndex)
     {
         //공격
-        __ENE_Engine._unit_Combat_Engine.Default_ATK(ref attacker, (SkillBaseStat) null);
+        __ENE_Engine._unit_Combat_Engine.Default_ATK(ref attacker, (SkillBaseStat)null);
 
         //딜레이
         enemyCoolTimer.StartCoroutine(enemyCoolTimer.Timer(coolTime, (input) => { enemy_is_ON_CoolTime[boolIndex] = input; }, true, (input) => { dummyFloatTime[0] = input; }));

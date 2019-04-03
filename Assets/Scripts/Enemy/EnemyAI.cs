@@ -24,6 +24,9 @@ public class EnemyAI : MonoBehaviour {
         get { return behaveList; }
     }
 
+    //페이즈 구분 용
+    private int behaveIndex;
+
     //AI_DeapLearning__Random_Ver에서 사용할 변수들
     private bool isbehaveCoolTimeOn = true;
     private int realIndex = 3;
@@ -46,6 +49,9 @@ public class EnemyAI : MonoBehaviour {
         __ENE_AI_Engine = enemyController._GET__ENE_AI_Engine;
 
         middle_OF_Stage = GameObject.Find("Middle_OF_Stage").transform;
+
+
+        behaveIndex = 0;
 
         ////이속 디버프 스킬을 기본으로 사용하도록 임시로 지정한다.
         //sampleSkillTest = IO_CSV.__Get_Searched_SkillBaseStat("00000003");
@@ -143,6 +149,7 @@ public class EnemyAI : MonoBehaviour {
                     //회복 패턴은 정예 선박만 넣는것이 좋을 것 같다
                     //StartCoroutine(__ENE_Stat.__Get_HIT__About_Health_FREQ(2.0f, 1.0f, 1, -1));
                 }
+
             }
             //체력이 최대 체력의 절반을 초과할 때 (공격해야할 때)
             else
@@ -215,19 +222,56 @@ public class EnemyAI : MonoBehaviour {
             //AI_Simple_Level0 + 측면 
             if (enemyController.__ENE_Stat.__PUB__Health_Point > enemyController.__ENE_Stat.half_HP)
             {
-                //플레이어를 바라보도록 한다.
-                __ENE_AI_Engine.Rotate_TO_Direction(__ENE_Stat.__PUB_Rotation_Speed, ref enemyController.enemyTransform, enemyController.playerTransform, false);
-
-                //전방으로 이동한다.
-                __ENE_AI_Engine.Go_TO_Foward_UNTIL_RayHit(__ENE_Stat.__PUB_Move_Speed, ref enemyController.enemyTransform, enemyController.playerTransform);
-
-                //각도 차에 따라 다른 위치로 발사한다. (아직 미구현)
-                if (__ENE_AI_Engine._PUB_enemy_Is_ON_CoolTime[1])
+                //플레이어에게 접근 후 정면 공격
+                if (behaveIndex == 0)
                 {
-                    __ENE_AI_Engine.Attack_Default(2.0f + Random.Range(0.0f, 1.0f), ref enemyController.enemy_Front, __ENE_Stat, 1);
+                    //플레이어를 바라보도록 한다.
+                    __ENE_AI_Engine.Rotate_TO_Direction(__ENE_Stat.__PUB_Rotation_Speed, ref enemyController.enemyTransform, enemyController.playerTransform, false);
+
+                    //전방으로 이동한다.
+                    __ENE_AI_Engine.Go_TO_Foward_UNTIL_RayHit(__ENE_Stat.__PUB_Move_Speed, ref enemyController.enemyTransform, enemyController.playerTransform);
+
+                    //정면 공격
+                    if (__ENE_AI_Engine._PUB_enemy_Is_ON_CoolTime[2])
+                    {
+                        __ENE_AI_Engine.Attack_Default(2.0f + Random.Range(0.0f, 1.0f), ref enemyController.enemy_Front, __ENE_Stat, 2);
+                        behaveIndex = 1;
+                    }
+                }
+                //전방으로 3초 동안 이동 후 우현으로 플레이어 측면 공격
+                else if (behaveIndex == 1)
+                {
+                    if (__ENE_AI_Engine._PUB_enemy_Is_ON_CoolTime[1])
+                    {
+                        __ENE_AI_Engine.__ENE_Engine._unit_Move_Engine.Move_OBJ(__ENE_Stat.__PUB_Move_Speed, ref enemyController.enemyTransform, 1);
+                        StartCoroutine(transform.GetComponent<UnitCoolTimer>().Timer_Do_Once(3.0f, (input) => { __ENE_AI_Engine._PUB_enemy_Is_ON_CoolTime[1] = input; }, true));
+                    }
+                    else
+                    {
+                        //플레이어를 바라보도록 한다.
+                        __ENE_AI_Engine.Rotate_TO_Direction(__ENE_Stat.__PUB_Rotation_Speed, ref enemyController.enemyTransform, enemyController.playerTransform, false, enemyRight);
+
+                        //느리게 전방으로 이동한다.
+                        __ENE_AI_Engine.Go_TO_Foward_UNTIL_RayHit(__ENE_Stat.__PUB_Move_Speed * 0.3f, ref enemyController.enemyTransform, enemyController.playerTransform);
+
+                        //우현 공격
+                        if (__ENE_AI_Engine._PUB_enemy_Is_ON_CoolTime[2])
+                        {
+                            __ENE_AI_Engine.Attack_Default(2.0f + Random.Range(0.0f, 1.0f), ref enemyController.enemy_Right, __ENE_Stat, 2);
+                        }
+                    }
+                }
+                else if (behaveIndex == 2)
+                {
+
+                }
+                else
+                {
+
                 }
             }
             //체력이 최대 체력의 절반 이하할 때 (2페이즈)
+            //기모으기 + 폭풍우
             else
             {
                 //플레이어 반대 방향을 보도록 한다.
