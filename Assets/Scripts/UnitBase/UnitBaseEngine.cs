@@ -106,14 +106,11 @@ public class UnitBaseEngine : MonoBehaviour
             try
             {
                 //whichSkill의 _Skill_Rate 값을 곱한만큼으로 이동속도와 회전속도를 증감한다.
-                //(적용될 이동속도) = (유닛의 원래 이동속도) * (스킬 계수)
-                //(적용될 회전속도) = (유닛의 원래 회전속도) * (스킬 계수)
-                Debug.Log("Before: "+_unit_Base_Engine._unit_Stat.__PUB_Move_Speed);
+                //(적용될 이동속도) += (유닛의 원래 이동속도) * (스킬 계수)
+                //(적용될 회전속도) += (유닛의 원래 회전속도) * (스킬 계수)
 
                 _unit_Base_Engine._unit_Stat.__PUB_Move_Speed += _unit_Base_Engine._unit_Stat.__GET_FOriginalMoveSpeed * whichSkill.__GET_Skill_Rate * isBuff_OR_DeBuff;
                 _unit_Base_Engine._unit_Stat.__PUB_Rotation_Speed += _unit_Base_Engine._unit_Stat.__GET_FOriginalRotateSpeed * whichSkill.__GET_Skill_Rate * isBuff_OR_DeBuff;
-
-                Debug.Log("After: "+_unit_Base_Engine._unit_Stat.__PUB_Move_Speed);
 
                 //지속시간 계산
                 //player인 경우
@@ -488,7 +485,7 @@ public class UnitBaseEngine : MonoBehaviour
         float posZ = attacker.position.z;
 
         //나중엔 int indexMax = whichSkill.ammoAmount;
-        int indexMax = 3;
+        int indexMax = (int)(whichSkill.__GET_Skill_Rate);
         int posHelper = -1;
 
         //산탄 스킬이면 1, 속사스킬이면 -1

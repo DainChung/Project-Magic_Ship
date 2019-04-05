@@ -92,6 +92,9 @@ public class PlayerController : MonoBehaviour {
     //조작을 막아야 되는 상황이나 Scene에서 사용하기 위한 변수
     public bool playerMustBeFreeze;
 
+    private bool isPlayerHitUltimateSkill = false;
+    public bool _GET_isPlayerHitUltimateSkill { get { return isPlayerHitUltimateSkill; } }
+
     //그냥 쿨타임
     [HideInInspector]
     public UnitCoolTimer __PLY_CoolTimer;
@@ -334,9 +337,9 @@ public class PlayerController : MonoBehaviour {
                 //다음 기본 마나 회복 시간까지 대기 
                 __PLY_Stat.__PUB_Stat_IsCoolTimeOn[2] = false;
 
-                //일단 10초마다 마나를 회복하도록 결정
+                //일단 8초마다 마나를 회복하도록 결정
                 __PLY_CoolTimer.StartCoroutine(
-                    __PLY_CoolTimer.Timer_Do_Once(10.0f,
+                    __PLY_CoolTimer.Timer_Do_Once(8.0f,
                     (input) => { __PLY_Stat.__PUB_Stat_IsCoolTimeOn[2] = input; },
                     false)
                     );
@@ -362,7 +365,7 @@ public class PlayerController : MonoBehaviour {
         if (_Is_On_CoolTime_Skill[index])
         {
             //마나가 충분할 때
-            if (__PLY_Stat.__Is_Mana_Enough(__PLY_Selected_Skills[index].__GET_Skill_Use_Amount))
+            if (__PLY_Stat.__Is_Mana_Enough(__PLY_Selected_Skills[index]))
             {
                 //필요한 마나 소모
                 __PLY_Stat.__Get_HIT__About_Mana(__PLY_Selected_Skills[index].__GET_Skill_Use_Amount, 1);
@@ -392,8 +395,14 @@ public class PlayerController : MonoBehaviour {
     //플레이어가 디버프 스킬에 피격받았을 때의 함수
     public void _Player_GET_DeBuff(SkillBaseStat whichDeBuffSkill_Hit_Player)
     {
-        Debug.Log("================================================================");
+        //Debug.Log("================================================================");
         __PLY_Engine._unit_Combat_Engine.Using_Skill(ref playerAttacker, whichDeBuffSkill_Hit_Player, false);
+        isPlayerHitUltimateSkill = true;
+    }
+
+    public void _Player_GetOut_FROM_UltimateSkill()
+    {
+        isPlayerHitUltimateSkill = false;
     }
 
     //플레이어가 피격 받을 때

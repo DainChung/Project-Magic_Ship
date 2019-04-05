@@ -193,19 +193,28 @@ namespace File_IO {
             //중간중간의 ','를 제외하고 따로따로 저장한 1차 가공
             List<string> pieces_OF_BaseStatString = new List<string>();
 
-            //1차 가공
-            pieces_OF_BaseStatString = __Get_pieces_OF_BaseStrings(baseStatString);
+            if (baseStatString != "CANNOT_FIND")
+            {
+                //1차 가공
+                pieces_OF_BaseStatString = __Get_pieces_OF_BaseStrings(baseStatString);
 
-            //2차 가공
-            float rate = float.Parse(pieces_OF_BaseStatString[2]);
-            float coolTime = float.Parse(pieces_OF_BaseStatString[3]);
-            float ingTime = float.Parse(pieces_OF_BaseStatString[4]);
-            int amount = int.Parse(pieces_OF_BaseStatString[5]);
+                //2차 가공
+                float rate = float.Parse(pieces_OF_BaseStatString[2]);
+                float coolTime = float.Parse(pieces_OF_BaseStatString[3]);
+                float ingTime = float.Parse(pieces_OF_BaseStatString[4]);
+                int amount = int.Parse(pieces_OF_BaseStatString[5]);
 
-            SkillBaseCode.SkillCode skillCode = Get_SkillCode_FROM_String(pieces_OF_BaseStatString[6], pieces_OF_BaseStatString[7], pieces_OF_BaseStatString[8]);
+                SkillBaseCode.SkillCode skillCode = Get_SkillCode_FROM_String(pieces_OF_BaseStatString[6], pieces_OF_BaseStatString[7], pieces_OF_BaseStatString[8]);
 
-            //가공된 내용들을 resultStat에 넣어서 최종 정리한다.
-            resultStat.Initialize_Skill(pieces_OF_BaseStatString[1], rate, coolTime, ingTime, amount, skillCode, pieces_OF_BaseStatString[0]);
+                //가공된 내용들을 resultStat에 넣어서 최종 정리한다.
+                resultStat.Initialize_Skill(pieces_OF_BaseStatString[1], rate, coolTime, ingTime, amount, skillCode, pieces_OF_BaseStatString[0]);
+            }
+            else
+            {
+                SkillBaseCode.SkillCode nullCode = Get_SkillCode_FROM_String("FIN", "NULL", "NULL");
+
+                resultStat.Initialize_Skill("NULL", 0,0,0,0, nullCode, "NULL");
+            }
 
             return resultStat;
         }

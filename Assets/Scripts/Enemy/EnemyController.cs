@@ -26,10 +26,10 @@ public class EnemyStat : Unit__Base_Stat {
 
     //파일에서 정상적으로 skillID들을 읽어오는지 알아보기 위한 변수
     //나중에 List<SkillBaseStat>으로 바꾸고 Skill내용들을 읽어와서 저장하도록 할 것
-    private List<string> sampleSkillIDList = new List<string>();
-    public List<string> _GET_sampleSkillIDList
+    private List<SkillBaseStat> enemySkillList = new List<SkillBaseStat>();
+    public List<SkillBaseStat> _GET_enemySkillList
     {
-        get {return sampleSkillIDList; }
+        get {return enemySkillList; }
     }
 
     public void SampleInit(float mSp, float rSp, int hp, int mp, int pp, int atk, float criR, float criP, int ai_Lv)
@@ -99,10 +99,10 @@ public class EnemyStat : Unit__Base_Stat {
 
         //ai_Level = 1;
 
-        //스킬 ID
-        sampleSkillIDList.Add(enemyStatBaseString[11]);
-        sampleSkillIDList.Add(enemyStatBaseString[12]);
-        sampleSkillIDList.Add(enemyStatBaseString[13]);
+        //Enemy가 장착한 스킬들
+        enemySkillList.Add(IO_CSV.__Get_Searched_SkillBaseStat(enemyStatBaseString[11]));
+        enemySkillList.Add(IO_CSV.__Get_Searched_SkillBaseStat(enemyStatBaseString[12]));
+        enemySkillList.Add(IO_CSV.__Get_Searched_SkillBaseStat(enemyStatBaseString[13]));
 
         //버프, 디버프 통제용
         for (int i = 0; i < 5; i++)
@@ -134,9 +134,6 @@ public class EnemyAIEngine {
         get { return enemy_is_ON_CoolTime; }
         set { enemy_is_ON_CoolTime = value; }
     }
-
-    //Timer가 받는 인자가 늘어났기에 추가하는 dummyFloat
-    public float[] dummyFloatTime = new float[3];
 
     public UnitCoolTimer enemyCoolTimer;
 
@@ -309,7 +306,7 @@ public class EnemyAIEngine {
         __ENE_Engine._unit_Combat_Engine.Default_ATK(ref attacker, (SkillBaseStat)null);
 
         //딜레이
-        enemyCoolTimer.StartCoroutine(enemyCoolTimer.Timer(coolTime, (input) => { enemy_is_ON_CoolTime[boolIndex] = input; }, true, (input) => { dummyFloatTime[0] = input; }));
+        enemyCoolTimer.StartCoroutine(enemyCoolTimer.Timer(coolTime, (input) => { enemy_is_ON_CoolTime[boolIndex] = input; }, true));
     }
 }
 
@@ -335,11 +332,6 @@ public class EnemyController : MonoBehaviour {
     public Transform enemy_Front;
     public Transform enemy_Right;
     public Transform enemy_Left;
-
-    //AI 레벨을 인스펙터창에서 조절하기 위해 넣은 임시 변수
-    //0이면 기존의 기본형 AI
-    //1이면 0.5 ~ 1.5초 마다 랜덤한 행동을 하는 AI
-    public int sample_AI_Level;
 
     public string sampleUnitID;
 
@@ -378,6 +370,7 @@ public class EnemyController : MonoBehaviour {
         }
 
         _AI_FuncList.Add(() => __ENE_AI.AI_Simple_Level0());
+        _AI_FuncList.Add(() => __ENE_AI.AI_Simple_Level0_WITH_BOSS());
         _AI_FuncList.Add(() => __ENE_AI.AI_Simple_Level0_BOSS());
         _AI_FuncList.Add(() => __ENE_AI.AI_DeapLearning__Random_Ver());    
     }

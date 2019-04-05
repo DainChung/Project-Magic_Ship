@@ -56,4 +56,14 @@ public class UltimateSkillBase : MonoBehaviour {
         }
 
     }
+
+    void OnTriggerExit(Collider other)
+    {
+        //Enemy가 사용하고 있고 player가 탈출했다면
+        if (!isPlayerUsingThis && other.transform.tag == "Player")
+        {
+            //player가 탈출했음을 알려준다.
+            other.GetComponent<PlayerController>()._Player_GetOut_FROM_UltimateSkill();
+        }
+    }
 }

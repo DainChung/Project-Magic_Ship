@@ -360,15 +360,27 @@ public class Unit__Base_Stat {
     //    yield break;
     //}
 
-    //마나를 사용할 때, 마나가 충분한지 확인하는 함수
-    public bool __Is_Mana_Enough(int damage)
+    //마나를 사용할 때, 마나가 충분한지 확인하는 함수 OR 궁극기를 사용할 때 궁극기 게이지가 충분한지 확인하는 함수
+    public bool __Is_Mana_Enough(SkillBaseStat whichSkill)
     {
         bool result;
 
-        if (__Mana_Point >= damage)
-            result = true;
+        //궁극기가 아닐 때
+        if (whichSkill.__GET_Skill_Code_M != SkillBaseCode._SKILL_CODE_Main.FIN)
+        {
+            if (__Mana_Point >= whichSkill.__GET_Skill_Use_Amount)
+                result = true;
+            else
+                result = false;
+        }
+        //궁극기일 때
         else
-            result = false;
+        {
+            if (__Power_Point >= whichSkill.__GET_Skill_Use_Amount)
+                result = true;
+            else
+                result = false;
+        }
 
         return result;
     }
