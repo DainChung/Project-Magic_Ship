@@ -90,7 +90,7 @@ public class PlayerUI : MonoBehaviour {
 
             }
         }
-        catch (System.NullReferenceException){ Debug.Log("Hello?"); }
+        catch (System.NullReferenceException){}
         catch (System.IndexOutOfRangeException) { }
         catch (System.ArgumentException) { }
 

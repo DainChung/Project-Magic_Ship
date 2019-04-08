@@ -55,6 +55,28 @@ public class Player_Info_Manager : MonoBehaviour {
             //Debug.Log("playerSkinID: " + playerSkinID);
         }
 
+        public void Set_Player_Infomation_(List<string> playerInfomation)
+        {
+            _ID = playerInfomation[0];
+            name = playerInfomation[1];
+
+            level = int.Parse(playerInfomation[2]);
+            exp = float.Parse(playerInfomation[3]);
+
+            gold = int.Parse(playerInfomation[4]);
+            cash = int.Parse(playerInfomation[5]);
+
+            playerSkinID = playerInfomation[6];
+
+            ////모두 정상적으로 작동함
+            //Debug.Log("name: " + name);
+            //Debug.Log("level: " + level);
+            //Debug.Log("exp: " + exp);
+            //Debug.Log("gold: " + gold);
+            //Debug.Log("cash: " + cash);
+            //Debug.Log("playerSkinID: " + playerSkinID);
+        }
+
         //gold 또는 cash로 거래가 이루어질 때 gold 또는 cash값을 변화시키는 함수
         public void __Buy_OR_Sell__About_Money(string whichMoney, int amount)
         {
@@ -74,7 +96,6 @@ public class Player_Info_Manager : MonoBehaviour {
         playerController = GameObject.Find("SamplePlayer").GetComponent<PlayerController>();
 
         Read_Player_Info();
-        
     }
 
     //File_IO를 실험하기 위한 임시 코드만 작성
@@ -108,6 +129,11 @@ public class Player_Info_Manager : MonoBehaviour {
         //{
         //    Debug.Log("output: " + outstring);
         //}
+    }
+
+    public void __SET_Player_Info(List<string> playerInfomation)
+    {
+        playerInfo.Set_Player_Infomation_(playerInfomation);
     }
 
     //플레이어 스탯과 각종 정보들을 불러오는 함수

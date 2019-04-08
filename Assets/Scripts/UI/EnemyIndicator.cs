@@ -43,36 +43,43 @@ public class EnemyIndicator : MonoBehaviour {
 
 	// Update is called once per frame
 	void Update () {
-        if (enemyUI._GET_isEnemyScreenOut)
+
+        try
         {
-            if(!(transform.GetComponent<Image>().enabled))    transform.GetComponent<Image>().enabled = true;
+            if (enemyUI._GET_isEnemyScreenOut)
+            {
+                if (!(transform.GetComponent<Image>().enabled)) transform.GetComponent<Image>().enabled = true;
 
-            //일단 MainCamera를 바라보도록 한다.
-            transform.rotation = mainCamera.rotation;
+                //일단 MainCamera를 바라보도록 한다.
+                transform.rotation = mainCamera.rotation;
 
-            //enemyIndicator의 화면 상 위치에 대해 보정
-            scrPos = Camera.main.WorldToScreenPoint(mainCanvas.position - Vector3.Normalize(mainCanvas.position - enemy.position) * 10f);
+                //enemyIndicator의 화면 상 위치에 대해 보정
+                scrPos = Camera.main.WorldToScreenPoint(mainCanvas.position - Vector3.Normalize(mainCanvas.position - enemy.position) * 10f);
 
-            if (scrPos.x <= indicatorDist + 5f) { scrPos.x = indicatorDist + 5f; }
-            else if(scrPos.x >= Screen.width - indicatorDist - 5f) { scrPos.x = Screen.width - indicatorDist - 5f; }
-            if (scrPos.y <= 20f) { scrPos.y = indicatorDist; }
-            else if(scrPos.y >= Screen.height - indicatorDist) { scrPos.y = Screen.height - indicatorDist; }
+                if (scrPos.x <= indicatorDist + 5f) { scrPos.x = indicatorDist + 5f; }
+                else if (scrPos.x >= Screen.width - indicatorDist - 5f) { scrPos.x = Screen.width - indicatorDist - 5f; }
+                if (scrPos.y <= 20f) { scrPos.y = indicatorDist; }
+                else if (scrPos.y >= Screen.height - indicatorDist) { scrPos.y = Screen.height - indicatorDist; }
 
-            //enemyIndicator 위치 마지막 보정
-            destiVector3.Set(scrPos.x, scrPos.y, 10f);
+                //enemyIndicator 위치 마지막 보정
+                destiVector3.Set(scrPos.x, scrPos.y, 10f);
 
-            //enemyIndicator가 Enemy 방향을 가리키기 위한 보정
-            newDegree = (Quaternion.LookRotation(enemy.position - player.position, Vector3.up)).eulerAngles.y * (-1) + 45f;
-            //MainCamera를 바라보면서 Enemy 방향을 가리키기 위해 localRotation을 사용한다.
-            transform.localRotation = Quaternion.Euler(0,0, newDegree);
-            transform.localScale = (0.3f * FOriginalLocalScale) / (Vector3.Distance(player.position, enemy.position) * 0.02f);
+                //enemyIndicator가 Enemy 방향을 가리키기 위한 보정
+                newDegree = (Quaternion.LookRotation(enemy.position - player.position, Vector3.up)).eulerAngles.y * (-1) + 45f;
+                //MainCamera를 바라보면서 Enemy 방향을 가리키기 위해 localRotation을 사용한다.
+                transform.localRotation = Quaternion.Euler(0, 0, newDegree);
+                transform.localScale = (0.3f * FOriginalLocalScale) / (Vector3.Distance(player.position, enemy.position) * 0.02f);
 
-            //보정된 위치 값 적용
-            transform.position = Camera.main.ScreenToWorldPoint(destiVector3);
+                //보정된 위치 값 적용
+                transform.position = Camera.main.ScreenToWorldPoint(destiVector3);
+            }
+            else
+            {
+                transform.GetComponent<Image>().enabled = false;
+            }
         }
-        else
-        {
-            transform.GetComponent<Image>().enabled = false;
-        }
+        //과잉 생성되는 경우 자동 파괴
+        catch (System.NullReferenceException)
+        { Destroy(gameObject); }
 	}
 }

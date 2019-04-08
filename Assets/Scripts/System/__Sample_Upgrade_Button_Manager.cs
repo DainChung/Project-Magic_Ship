@@ -176,7 +176,25 @@ public class __Sample_Upgrade_Button_Manager : MonoBehaviour {
         if (statBeforeSave[6] != -1f) player.GetComponent<PlayerController>().__PLY_Stat.__PUB_Critical_Rate = statBeforeSave[6];
         if (statBeforeSave[7] != -1f) player.GetComponent<PlayerController>().__PLY_Stat.__PUB_Critical_P = statBeforeSave[7];
 
-        Debug.Log(player.GetComponent<PlayerController>().__PLY_Stat.__PUB_Move_Speed);
+        List<string> newPlayerInfo = new List<string>();
+
+        newPlayerInfo.Add(player.GetComponent<Player_Info_Manager>().__GET_playerInfo._GET_Player_ID);
+        newPlayerInfo.Add(player.GetComponent<Player_Info_Manager>().__GET_playerInfo._GET_Player_Name);
+
+        newPlayerInfo.Add(player.GetComponent<Player_Info_Manager>().__GET_playerInfo._GET_Player_Level.ToString());
+        newPlayerInfo.Add(player.GetComponent<Player_Info_Manager>().__GET_playerInfo._GET_Player_Exp.ToString());
+
+        if (goldBeforeSave != -1) newPlayerInfo.Add(goldBeforeSave.ToString());
+        else newPlayerInfo.Add(player.GetComponent<Player_Info_Manager>().__GET_playerInfo._GET_Player_Gold.ToString());
+
+        newPlayerInfo.Add(player.GetComponent<Player_Info_Manager>().__GET_playerInfo._GET_Player_Cash.ToString());
+
+        newPlayerInfo.Add(player.GetComponent<Player_Info_Manager>().__GET_playerInfo._GET_Player_SkinID);
+
+
+        player.GetComponent<Player_Info_Manager>().__SET_Player_Info(newPlayerInfo);
+
+
         Debug.Log("저장되었습니다.");
         //저장 기능 수행
         player.GetComponent<Player_Info_Manager>().Write_Player_Info();
@@ -293,12 +311,14 @@ public class __Sample_Upgrade_Button_Manager : MonoBehaviour {
     void ___CHEAT___GetGold()
     {
         player.GetComponent<Player_Info_Manager>().__GET_playerInfo.__Buy_OR_Sell__About_Money("Gold", 100);
+        goldBeforeSave += 100;
         goldInfoText.text = "소지 골드: " + player.GetComponent<Player_Info_Manager>().__GET_playerInfo._GET_Player_Gold;
     }
     //Debug용 함수
     void ___CHEAT___LoseGold()
     {
         player.GetComponent<Player_Info_Manager>().__GET_playerInfo.__Buy_OR_Sell__About_Money("Gold", -100);
+        goldBeforeSave -= 100;
         goldInfoText.text = "소지 골드: " + player.GetComponent<Player_Info_Manager>().__GET_playerInfo._GET_Player_Gold;
     }
 
