@@ -196,165 +196,175 @@ public class PlayerController : MonoBehaviour {
         //플레이어가 조작을 해도 되는 상황일 때
         if (!playerMustBeFreeze)
         {
-            //투사체를 발사하는 위치 변경, Q키를 눌러 전환한다.
-            //4~5차 단계에서 UI를 추가할 것
-            if (Input.GetKeyDown(KeyCode.Q))
+            if (__PLY_Stat.__PUB__Health_Point > 0)
             {
-                //플레이어가 투사체를 발사할 위치가 앞 또는 우측인 경우
-                if (index_OF_playerAttackerTransforms < 2 && index_OF_playerAttackerTransforms >= 0)
+                //투사체를 발사하는 위치 변경, Q키를 눌러 전환한다.
+                //4~5차 단계에서 UI를 추가할 것
+                if (Input.GetKeyDown(KeyCode.Q))
                 {
-                    //인덱스 값을 더해서 다음 위치로 바꾼다.
-                    index_OF_playerAttackerTransforms++;
+                    //플레이어가 투사체를 발사할 위치가 앞 또는 우측인 경우
+                    if (index_OF_playerAttackerTransforms < 2 && index_OF_playerAttackerTransforms >= 0)
+                    {
+                        //인덱스 값을 더해서 다음 위치로 바꾼다.
+                        index_OF_playerAttackerTransforms++;
+                    }
+                    //플레이어가 투사체를 발사할 위치가 좌측인 경우
+                    else
+                    {
+                        //다시 앞쪽으로 돌아간다.
+                        index_OF_playerAttackerTransforms = 0;
+                    }
+
+                    //설정된 투사체 발사 위치를 적용한다.
+                    playerAttacker = playerAttackerTransforms[index_OF_playerAttackerTransforms];
                 }
-                //플레이어가 투사체를 발사할 위치가 좌측인 경우
+
+                if (transform.position.y >= 5.0f)
+                {
+                    transform.position.Set(transform.position.x, 5.0f, transform.position.z);
+                }
+
+                //기본 이동
+                if (Input.GetKey(KeyCode.W))
+                {
+                    __PLY_Engine._unit_Move_Engine.Move_OBJ(__PLY_Stat.__PUB_Move_Speed, ref playerTransform, 1);
+                }
+                else if (Input.GetKey(KeyCode.S))
+                {
+                    __PLY_Engine._unit_Move_Engine.Move_OBJ(__PLY_Stat.__PUB_Move_Speed, ref playerTransform, -1f);
+                }
                 else
+                { }
+
+                if (Input.GetKey(KeyCode.A))
                 {
-                    //다시 앞쪽으로 돌아간다.
-                    index_OF_playerAttackerTransforms = 0;
+                    __PLY_Engine._unit_Move_Engine.Rotate_OBJ(__PLY_Stat.__PUB_Rotation_Speed, ref playerTransform, -1);
+                }
+                else if (Input.GetKey(KeyCode.D))
+                {
+                    __PLY_Engine._unit_Move_Engine.Rotate_OBJ(__PLY_Stat.__PUB_Rotation_Speed, ref playerTransform, 1);
+                }
+                else
+                { }
+
+                if (Input.GetMouseButtonDown(1))
+                {
+                    //임시코드(GUI - CH)
+                    __PLY_Stat.__PUB__Health_Point -= 1;
+                    __PLY_Stat.__PUB__Mana_Point -= 1;
+                    __PLY_Stat.__PUB__Power_Point -= 1;
+                    Debug.Log("Click Right");
+                    //임시코드(GUI - CH)
                 }
 
-                //설정된 투사체 발사 위치를 적용한다.
-                playerAttacker = playerAttackerTransforms[index_OF_playerAttackerTransforms];
-            }
+                if (Input.GetMouseButtonUp(1))
+                {
+                    Debug.Log("Mouse Up!");
+                }
 
-            if (transform.position.y >= 5.0f)
-            {
-                transform.position.Set(transform.position.x, 5.0f, transform.position.z);
-            }
+                //기본 공격
+                //마우스 좌클릭 -> 전면 공격
+                //마우스 좌클릭 && 기본 공격 쿨타임 끝남 && 마우스로 구조물 설치하는 스킬을 사용하고 있지 않을 때
+                if (Input.GetMouseButtonDown(0) && _Is_On_CoolTime__Default_ATK && !(_SPW_MOS_Skill_Activated))
+                {
 
-            //기본 이동
-            if (Input.GetKey(KeyCode.W))
-            {
-                __PLY_Engine._unit_Move_Engine.Move_OBJ(__PLY_Stat.__PUB_Move_Speed, ref playerTransform, 1);
+                    __PLY_Engine._unit_Combat_Engine.Default_ATK(ref playerAttacker, (SkillBaseStat)null);
+
+                    //쿨타임을 사용하기 위한 코루틴. 따로 외부 클래스 제작함. 상세 항목은 해당 클래스 참조
+                    //나중에 쿨타임 값 같은 것도 따로 관리할 것
+                    __PLY_CoolTimer.StartCoroutine(
+                        __PLY_CoolTimer.Timer(
+                            1.0f,
+                            (input) => { _Is_On_CoolTime__Default_ATK = input; },
+                            _Is_On_CoolTime__Default_ATK,
+                            (input) => { default_ATK_Remained_Time = input; }
+                            )
+                        );
+                }
+                //마우스 우클릭 -> 측면 공격
+                //나중에 구현하자
+                if (Input.GetMouseButtonDown(1))
+                {
+
+                }
+
+                //Debug.Log(__PLY_Selected_Skills[0].time);
+
+                //마우스로 무언가를 설치해야 되는 스킬을 사용했고 아직 설치가 안 됬다면 모든 스킬을 사용할 수 없음
+                //1번 스킬
+                if (Input.GetKeyDown(KeyCode.Alpha1) && !(_SPW_MOS_Skill_Activated))
+                {
+                    PLY_Controller_Using_Skill(0);
+                }
+                //2번 스킬
+                else if (Input.GetKeyDown(KeyCode.Alpha2) && !(_SPW_MOS_Skill_Activated))
+                {
+                    PLY_Controller_Using_Skill(1);
+                }
+                //3번 스킬
+                else if (Input.GetKeyDown(KeyCode.Alpha3) && !(_SPW_MOS_Skill_Activated))
+                {
+                    PLY_Controller_Using_Skill(2);
+                }
+                // for test
+                else if (Input.GetKeyDown(KeyCode.Alpha4) && !(_SPW_MOS_Skill_Activated))
+                {
+                    __PLY_Engine._unit_Combat_Engine.Using_Skill(ref playerAttacker, debugUltimateSkill, true);
+                }
+                else
+                { }
+
+                //스피드 버프 OR 디버프 지속시간 종료 여부
+                if (__PLY_Stat.__PUB_Stat_IsCoolTimeOn[0])
+                {
+                    //스피드 버프 OR 디버프 해제
+                    //스킬 넣는 부분은 일단 저런식으로 하는 수 밖에 없음
+                    //나중에 스킬 위치를 마음대로 바꿀 수 있도록 변경할 때 고민이 필요함
+                    __PLY_Engine._unit_Move_Engine.Init_Speed_BUF_Amount();
+                    //스피드 버프 해제로 일단 간주
+                    __PLY_Stat.__PUB_Stat_IsCoolTimeOn[0] = false;
+                }
+
+                //체력 버프 OR 디버프 지속시간 종료 여부
+                if (__PLY_Stat.__PUB_Stat_IsCoolTimeOn[1])
+                {
+
+                }
+
+                //기본 마나 회복 지속시간 종료 여부
+                if (__PLY_Stat.__PUB_Stat_IsCoolTimeOn[2])
+                {
+                    //일단 1씩 회복한다.
+                    __PLY_Stat.__Get_HIT__About_Mana(1, -1);
+                    //다음 기본 마나 회복 시간까지 대기 
+                    __PLY_Stat.__PUB_Stat_IsCoolTimeOn[2] = false;
+
+                    //일단 8초마다 마나를 회복하도록 결정
+                    __PLY_CoolTimer.StartCoroutine(
+                        __PLY_CoolTimer.Timer_Do_Once(8.0f,
+                        (input) => { __PLY_Stat.__PUB_Stat_IsCoolTimeOn[2] = input; },
+                        false)
+                        );
+                }
+
+                //PP 버프 OR 디버프 지속시간 종료 여부
+                if (__PLY_Stat.__PUB_Stat_IsCoolTimeOn[3])
+                {
+
+                }
+
+                //크리티컬 버프 OR 디버프 지속시간 종료 여부
+                if (__PLY_Stat.__PUB_Stat_IsCoolTimeOn[4])
+                {
+
+                }
             }
-            else if (Input.GetKey(KeyCode.S))
-            {
-                __PLY_Engine._unit_Move_Engine.Move_OBJ(__PLY_Stat.__PUB_Move_Speed, ref playerTransform, -1f);
-            }
+            //플레이어 체력이 0이하이면
             else
-            { }
-
-            if (Input.GetKey(KeyCode.A))
             {
-                __PLY_Engine._unit_Move_Engine.Rotate_OBJ(__PLY_Stat.__PUB_Rotation_Speed, ref playerTransform, -1);
-            }
-            else if (Input.GetKey(KeyCode.D))
-            {
-                __PLY_Engine._unit_Move_Engine.Rotate_OBJ(__PLY_Stat.__PUB_Rotation_Speed, ref playerTransform, 1);
-            }
-            else
-            { }
-
-            if (Input.GetMouseButtonDown(1))
-            {
-                //임시코드(GUI - CH)
-                __PLY_Stat.__PUB__Health_Point -= 1;
-                __PLY_Stat.__PUB__Mana_Point -= 1;
-                __PLY_Stat.__PUB__Power_Point -= 1;
-                Debug.Log("Click Right");
-                //임시코드(GUI - CH)
-            }
-
-            if (Input.GetMouseButtonUp(1))
-            {
-                Debug.Log("Mouse Up!");
-            }
-
-            //기본 공격
-            //마우스 좌클릭 -> 전면 공격
-            //마우스 좌클릭 && 기본 공격 쿨타임 끝남 && 마우스로 구조물 설치하는 스킬을 사용하고 있지 않을 때
-            if (Input.GetMouseButtonDown(0) && _Is_On_CoolTime__Default_ATK && !(_SPW_MOS_Skill_Activated))
-            {
-
-                __PLY_Engine._unit_Combat_Engine.Default_ATK(ref playerAttacker, (SkillBaseStat)null);
-
-                //쿨타임을 사용하기 위한 코루틴. 따로 외부 클래스 제작함. 상세 항목은 해당 클래스 참조
-                //나중에 쿨타임 값 같은 것도 따로 관리할 것
-                __PLY_CoolTimer.StartCoroutine(
-                    __PLY_CoolTimer.Timer(
-                        1.0f,
-                        (input) => { _Is_On_CoolTime__Default_ATK = input; },
-                        _Is_On_CoolTime__Default_ATK,
-                        (input) => { default_ATK_Remained_Time = input; }
-                        )
-                    );
-            }
-            //마우스 우클릭 -> 측면 공격
-            //나중에 구현하자
-            if (Input.GetMouseButtonDown(1))
-            {
-
-            }
-
-            //Debug.Log(__PLY_Selected_Skills[0].time);
-
-            //마우스로 무언가를 설치해야 되는 스킬을 사용했고 아직 설치가 안 됬다면 모든 스킬을 사용할 수 없음
-            //1번 스킬
-            if (Input.GetKeyDown(KeyCode.Alpha1) && !(_SPW_MOS_Skill_Activated))
-            {
-                PLY_Controller_Using_Skill(0);
-            }
-            //2번 스킬
-            else if (Input.GetKeyDown(KeyCode.Alpha2) && !(_SPW_MOS_Skill_Activated))
-            {
-                PLY_Controller_Using_Skill(1);
-            }
-            //3번 스킬
-            else if (Input.GetKeyDown(KeyCode.Alpha3) && !(_SPW_MOS_Skill_Activated))
-            {
-                PLY_Controller_Using_Skill(2);
-            }
-            // for test
-            else if (Input.GetKeyDown(KeyCode.Alpha4) && !(_SPW_MOS_Skill_Activated))
-            {
-                __PLY_Engine._unit_Combat_Engine.Using_Skill(ref playerAttacker, debugUltimateSkill, true);
-            }
-            else
-            { }
-
-            //스피드 버프 OR 디버프 지속시간 종료 여부
-            if (__PLY_Stat.__PUB_Stat_IsCoolTimeOn[0])
-            {
-                //스피드 버프 OR 디버프 해제
-                //스킬 넣는 부분은 일단 저런식으로 하는 수 밖에 없음
-                //나중에 스킬 위치를 마음대로 바꿀 수 있도록 변경할 때 고민이 필요함
-                __PLY_Engine._unit_Move_Engine.Init_Speed_BUF_Amount();
-                //스피드 버프 해제로 일단 간주
-                __PLY_Stat.__PUB_Stat_IsCoolTimeOn[0] = false;
-            }
-
-            //체력 버프 OR 디버프 지속시간 종료 여부
-            if (__PLY_Stat.__PUB_Stat_IsCoolTimeOn[1])
-            {
-
-            }
-
-            //기본 마나 회복 지속시간 종료 여부
-            if (__PLY_Stat.__PUB_Stat_IsCoolTimeOn[2])
-            {
-                //일단 1씩 회복한다.
-                __PLY_Stat.__Get_HIT__About_Mana(1, -1);
-                //다음 기본 마나 회복 시간까지 대기 
-                __PLY_Stat.__PUB_Stat_IsCoolTimeOn[2] = false;
-
-                //일단 8초마다 마나를 회복하도록 결정
-                __PLY_CoolTimer.StartCoroutine(
-                    __PLY_CoolTimer.Timer_Do_Once(8.0f,
-                    (input) => { __PLY_Stat.__PUB_Stat_IsCoolTimeOn[2] = input; },
-                    false)
-                    );
-            }
-
-            //PP 버프 OR 디버프 지속시간 종료 여부
-            if (__PLY_Stat.__PUB_Stat_IsCoolTimeOn[3])
-            {
-
-            }
-
-            //크리티컬 버프 OR 디버프 지속시간 종료 여부
-            if (__PLY_Stat.__PUB_Stat_IsCoolTimeOn[4])
-            {
-
+                //플레이어가 죽었다고 알려주고 파괴한다.
+                GameObject.Find("GameManager").GetComponent<MapManager>().PlayerDead();
+                Destroy(gameObject);
             }
         }
     }

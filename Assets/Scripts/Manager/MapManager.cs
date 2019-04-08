@@ -15,7 +15,7 @@ public class MapManager : MonoBehaviour {
     private int remainedEnemys = 0;
     private int remainedEnemySpawners = 0;
 
-    private PlayerUI playerUI; 
+    private PlayerUI playerUI;
 
     private const float dist = 1.6f;
 
@@ -57,5 +57,10 @@ public class MapManager : MonoBehaviour {
 
         //남아있는 Spawner와 적이 없으면 스테이지 클리어로 인정된다.
         if ((remainedEnemys <= 0) && (remainedEnemySpawners <= 0)) { remainedEnemys = 0; remainedEnemySpawners = 0;  Debug.Log("스테이지 클리어"); }
+    }
+
+    public void PlayerDead()
+    {
+        Debug.Log("실패");
     }
 }

@@ -143,7 +143,6 @@ public class Unit__Base_Stat {
         {
             __Health_Point = 0;
             //사망시 처리에 대해서는 각 Controller.cs에서 처리해야 될 것으로 예상됨.
-            Debug.Log("Dead");
         }
 
         //체력 회복 시 이미 최대 체력을 넘긴 상태라면
