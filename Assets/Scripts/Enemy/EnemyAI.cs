@@ -214,66 +214,64 @@ public class EnemyAI : MonoBehaviour {
     //체력과 상관없이 Player를 계속 공격하는 AI_Simple_Level0기반의 AI
     public void AI_Simple_Level0_WITH_BOSS()
     {
-        if (__ENE_Stat.__PUB__Health_Point > 0)
+
+        //일반적인 상황일 때
+        if (!isEnd_OF_Stage)
         {
-            //일반적인 상황일 때
-            if (!isEnd_OF_Stage)
+            //플레이어를 바라보도록 한다.
+            __ENE_AI_Engine.Rotate_TO_Direction(__ENE_Stat.__PUB_Rotation_Speed, ref enemyController.enemyTransform, enemyController.playerTransform, false);
+
+            //전방으로 이동한다.
+            __ENE_AI_Engine.Go_TO_Foward_UNTIL_RayHit(__ENE_Stat.__PUB_Move_Speed, ref enemyController.enemyTransform, enemyController.playerTransform);
+
+            //각도 차에 따라 다른 위치로 발사한다. (아직 미구현)
+            if (__ENE_AI_Engine._PUB_enemy_Is_ON_CoolTime[1])
             {
-                //플레이어를 바라보도록 한다.
-                __ENE_AI_Engine.Rotate_TO_Direction(__ENE_Stat.__PUB_Rotation_Speed, ref enemyController.enemyTransform, enemyController.playerTransform, false);
-
-                //전방으로 이동한다.
-                __ENE_AI_Engine.Go_TO_Foward_UNTIL_RayHit(__ENE_Stat.__PUB_Move_Speed, ref enemyController.enemyTransform, enemyController.playerTransform);
-
-                //각도 차에 따라 다른 위치로 발사한다. (아직 미구현)
-                if (__ENE_AI_Engine._PUB_enemy_Is_ON_CoolTime[1])
-                {
 
 
-                    //플레이어를 거의 정면으로 바라보고 있을 때
-                    //if(curAngleComparison <= 10.0f)
-                    //쿨타임에 랜덤변수를 더해서 난이도를 조금 올린다.
-                    __ENE_AI_Engine.Attack_Default(2.0f + Random.Range(0.0f, 1.0f), ref enemyController.enemy_Front, __ENE_Stat, 1);
+                //플레이어를 거의 정면으로 바라보고 있을 때
+                //if(curAngleComparison <= 10.0f)
+                //쿨타임에 랜덤변수를 더해서 난이도를 조금 올린다.
+                __ENE_AI_Engine.Attack_Default(2.0f + Random.Range(0.0f, 1.0f), ref enemyController.enemy_Front, __ENE_Stat, 1);
 
-                    ////20190310
-                    ////이속 디버프 스킬을 기본 공격으로 사용하도록 임시로 테스트 한다.
-                    ////같은 스탯에 대한 버프, 디버프 중첩 방지 성공
-                    //if (sampleSkillCoolTime)
-                    //{
-                    //    __ENE_AI_Engine.__ENE_Engine._unit_Combat_Engine.Using_Skill(ref enemyController.enemy_Front, sampleSkillTest, true);
-
-                    //    //쿨타임 관련 처리를 해준다
-                    //    StartCoroutine(
-                    //        enemyController.enemyCoolTimer.Timer(sampleSkillTest.__GET_Skill_Cool_Time,
-                    //        (input) => { sampleSkillCoolTime = input; }, sampleSkillCoolTime,
-                    //        (input) => { sampleSkillTest.time = input; })
-                    //        );
-                    //}
-
-                    //플레이어가 적의 좌측에 있을 때
-                    //else if(curAngleComparison <= 100.0f && curAngleComparison >= 80.0f && GET_RotataionDir(curAngle, destiAngle))
-                    //__ENE_AI_Engine.Attack_Default(2.0f + Random.Range(0.0f, 1.0f), ref enemyController.enemy_Left, __ENE_Stat, 1);
-                    //플레이어가 적의 우측에 있을 때
-                    //else if(  curAngleComparison <= 100.0f && curAngleComparison >= 80.0f && !( GET_RotataionDir(curAngle, destiAngle) )  )
-                    //__ENE_AI_Engine.Attack_Default(2.0f + Random.Range(0.0f, 1.0f), ref enemyController.enemy_Right, __ENE_Stat, 1);
-                }
-                //측면 공격
-                //if (__ENE_Engine._PUB_enemy_Is_ON_CoolTime[2])
+                ////20190310
+                ////이속 디버프 스킬을 기본 공격으로 사용하도록 임시로 테스트 한다.
+                ////같은 스탯에 대한 버프, 디버프 중첩 방지 성공
+                //if (sampleSkillCoolTime)
                 //{
-                //    __ENE_Engine.Attack_Default(2.0f, ref default_Ammo, ref enemy_Right, __ENE_Stat.__PUB_ATK__Val, 1);
+                //    __ENE_AI_Engine.__ENE_Engine._unit_Combat_Engine.Using_Skill(ref enemyController.enemy_Front, sampleSkillTest, true);
+
+                //    //쿨타임 관련 처리를 해준다
+                //    StartCoroutine(
+                //        enemyController.enemyCoolTimer.Timer(sampleSkillTest.__GET_Skill_Cool_Time,
+                //        (input) => { sampleSkillCoolTime = input; }, sampleSkillCoolTime,
+                //        (input) => { sampleSkillTest.time = input; })
+                //        );
                 //}
-                //if (__ENE_Engine._PUB_enemy_Is_ON_CoolTime[3])
-                //{
-                //    __ENE_Engine.Attack_Default(2.0f, ref default_Ammo, ref enemy_Left, __ENE_Stat.__PUB_ATK__Val, 2);
-                //}
+
+                //플레이어가 적의 좌측에 있을 때
+                //else if(curAngleComparison <= 100.0f && curAngleComparison >= 80.0f && GET_RotataionDir(curAngle, destiAngle))
+                //__ENE_AI_Engine.Attack_Default(2.0f + Random.Range(0.0f, 1.0f), ref enemyController.enemy_Left, __ENE_Stat, 1);
+                //플레이어가 적의 우측에 있을 때
+                //else if(  curAngleComparison <= 100.0f && curAngleComparison >= 80.0f && !( GET_RotataionDir(curAngle, destiAngle) )  )
+                //__ENE_AI_Engine.Attack_Default(2.0f + Random.Range(0.0f, 1.0f), ref enemyController.enemy_Right, __ENE_Stat, 1);
             }
-            //스테이지 경계선과 접촉했을 때
-            else
-            {
-                Go_INTO_Stage();
-                //7초 후엔 스테이지 경계선과 접촉하지 않은 것으로 간주한다.
-                StartCoroutine(enemyController.enemyCoolTimer.Timer_Do_Once(7.0f, (input) => { isEnd_OF_Stage = input; }, true));
-            }
+            //측면 공격
+            //if (__ENE_Engine._PUB_enemy_Is_ON_CoolTime[2])
+            //{
+            //    __ENE_Engine.Attack_Default(2.0f, ref default_Ammo, ref enemy_Right, __ENE_Stat.__PUB_ATK__Val, 1);
+            //}
+            //if (__ENE_Engine._PUB_enemy_Is_ON_CoolTime[3])
+            //{
+            //    __ENE_Engine.Attack_Default(2.0f, ref default_Ammo, ref enemy_Left, __ENE_Stat.__PUB_ATK__Val, 2);
+            //}
+        }
+        //스테이지 경계선과 접촉했을 때
+        else
+        {
+            Go_INTO_Stage();
+            //7초 후엔 스테이지 경계선과 접촉하지 않은 것으로 간주한다.
+            StartCoroutine(enemyController.enemyCoolTimer.Timer_Do_Once(7.0f, (input) => { isEnd_OF_Stage = input; }, true));
         }
     }
 

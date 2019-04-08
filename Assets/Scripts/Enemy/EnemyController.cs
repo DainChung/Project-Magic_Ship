@@ -339,8 +339,6 @@ public class EnemyController : MonoBehaviour {
     private List<System.Action> _AI_FuncList = new List<System.Action>();
 
     void Awake() {
-
-
         //이속, 회전속도, 체력, 마나, 파워 게이지, 공격력, 크리확률, 크리계수, AI레벨
         //__ENE_Stat.SampleInit(10.0f, 30.0f, 10, 10, 10, 1, 0.1f, 2.0f, 0);
         //__ENE_Stat.SampleInit(10.0f, 30.0f, 10, 10, 10, 1, 0.1f, 2.0f, sample_AI_Level);
@@ -377,6 +375,10 @@ public class EnemyController : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
+
+        //Enemy가 생성될 때 이를 PlayerUI에 알려준다
+        GameObject.Find("Main Camera").GetComponent<PlayerUI>().SearchEnemys();
+
         sEnemyUI = GetComponent<EnemyUI>();
 
         //생성된 후 자동으로 플레이어를 추적
@@ -386,50 +388,63 @@ public class EnemyController : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 
-        //나중에 EnemyAI 클래스를 따로 만들어서 이하 내용과 같은 기능을 하도록 넣을 것.
-        _AI_FuncList[__ENE_Stat._GET_ai_Level]();
-
-        //스피드 버프 OR 디버프 지속시간 종료 여부
-        if (__ENE_Stat.__PUB_Stat_IsCoolTimeOn[0])
+        //아직 살아있을 때
+        if (__ENE_Stat.__PUB__Health_Point > 0)
         {
-            //스피드 버프 OR 디버프 해제
-            __ENE_AI_Engine.__ENE_Engine._unit_Move_Engine.Init_Speed_BUF_Amount();
-            //스피드 버프 해제로 일단 간주
-            __ENE_Stat.__PUB_Stat_IsCoolTimeOn[0] = false;
+            //나중에 EnemyAI 클래스를 따로 만들어서 이하 내용과 같은 기능을 하도록 넣을 것.
+            _AI_FuncList[__ENE_Stat._GET_ai_Level]();
+
+            //스피드 버프 OR 디버프 지속시간 종료 여부
+            if (__ENE_Stat.__PUB_Stat_IsCoolTimeOn[0])
+            {
+                //스피드 버프 OR 디버프 해제
+                __ENE_AI_Engine.__ENE_Engine._unit_Move_Engine.Init_Speed_BUF_Amount();
+                //스피드 버프 해제로 일단 간주
+                __ENE_Stat.__PUB_Stat_IsCoolTimeOn[0] = false;
+            }
+
+            //체력 버프 OR 디버프 지속시간 종료 여부
+            if (__ENE_Stat.__PUB_Stat_IsCoolTimeOn[1])
+            {
+
+            }
+
+            //기본 마나 회복 지속시간 종료 여부
+            if (__ENE_Stat.__PUB_Stat_IsCoolTimeOn[2])
+            {
+                //일단 1씩 회복한다.
+                __ENE_Stat.__Get_HIT__About_Mana(1, -1);
+                //다음 기본 마나 회복 시간까지 대기 
+                __ENE_Stat.__PUB_Stat_IsCoolTimeOn[2] = false;
+
+                //일단 10초마다 마나를 회복하도록 결정
+                __ENE_AI_Engine.enemyCoolTimer.StartCoroutine(
+                    __ENE_AI_Engine.enemyCoolTimer.Timer_Do_Once(10.0f,
+                    (input) => { __ENE_Stat.__PUB_Stat_IsCoolTimeOn[2] = input; },
+                    false)
+                    );
+            }
+
+            //PP 버프 OR 디버프 지속시간 종료 여부
+            if (__ENE_Stat.__PUB_Stat_IsCoolTimeOn[3])
+            {
+
+            }
+
+            //크리티컬 버프 OR 디버프 지속시간 종료 여부
+            if (__ENE_Stat.__PUB_Stat_IsCoolTimeOn[4])
+            {
+
+            }
         }
-
-        //체력 버프 OR 디버프 지속시간 종료 여부
-        if (__ENE_Stat.__PUB_Stat_IsCoolTimeOn[1])
+        //죽었을 때
+        else
         {
+            //남아있는 적의 수를 확인한다.
+            GameObject.Find("GameManager").GetComponent<MapManager>().__SET_remainedEnemys();
 
-        }
-
-        //기본 마나 회복 지속시간 종료 여부
-        if (__ENE_Stat.__PUB_Stat_IsCoolTimeOn[2])
-        {
-            //일단 1씩 회복한다.
-            __ENE_Stat.__Get_HIT__About_Mana(1, -1);
-            //다음 기본 마나 회복 시간까지 대기 
-            __ENE_Stat.__PUB_Stat_IsCoolTimeOn[2] = false;
-
-            //일단 10초마다 마나를 회복하도록 결정
-            __ENE_AI_Engine.enemyCoolTimer.StartCoroutine(
-                __ENE_AI_Engine.enemyCoolTimer.Timer_Do_Once(10.0f,
-                (input) => { __ENE_Stat.__PUB_Stat_IsCoolTimeOn[2] = input; },
-                false)
-                );
-        }
-
-        //PP 버프 OR 디버프 지속시간 종료 여부
-        if (__ENE_Stat.__PUB_Stat_IsCoolTimeOn[3])
-        {
-
-        }
-
-        //크리티컬 버프 OR 디버프 지속시간 종료 여부
-        if (__ENE_Stat.__PUB_Stat_IsCoolTimeOn[4])
-        {
-
+            //파괴
+            Destroy(gameObject);
         }
     }
 

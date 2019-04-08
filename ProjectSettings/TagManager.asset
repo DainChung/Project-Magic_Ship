@@ -11,6 +11,7 @@ TagManager:
   - Boundary
   - PlayerAttack
   - EnemyAttack
+  - Spawner
   layers:
   - Default
   - TransparentFX

@@ -18,6 +18,8 @@ public class PlayerUI : MonoBehaviour {
     private GameObject[] enemys;
     private List<GameObject> enemyIndicators = new List<GameObject>();
 
+    public int enemysNum { get { return enemys.Length; } }
+
     private void Start()
     {
         // 플레이어 정보 가져오기
@@ -71,20 +73,24 @@ public class PlayerUI : MonoBehaviour {
 
             if (enemys[0] != null)
             {
+
                 index = 0;
 
                 do
                 {
-                    newIndicator = Instantiate(Resources.Load("UI/EnemyIndicator"), Camera.main.transform.GetChild(0)) as GameObject;
+                    newIndicator = Instantiate(Resources.Load("Prefabs/UI/EnemyIndicator"), Camera.main.transform.GetChild(0)) as GameObject;
                     newIndicator.GetComponent<EnemyIndicator>().InitializeEnemyIndicator(enemys[index].transform, sPlayerController.transform);
 
                     enemyIndicators.Add(newIndicator);
-
                     index++;
                 } while (index < enemys.Length);
             }
+            else
+            {
+
+            }
         }
-        catch (System.NullReferenceException){ }
+        catch (System.NullReferenceException){ Debug.Log("Hello?"); }
         catch (System.IndexOutOfRangeException) { }
         catch (System.ArgumentException) { }
 
