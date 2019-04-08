@@ -9,14 +9,22 @@ using System.Collections.Generic;
 //4. 함수 인자에 Action<float> time을 추가하고 SkillBaseStat으로 가서 public float time을 만들고 SkillBaseStat.time을 Action<float> time에 연결할 것.
 public class UnitCoolTimer : MonoBehaviour {
 
-    public IEnumerator Timer(float timeVal, bool beforeVal)
+    //차세대 Timer, 1초보다 작은 단위로 셀 수 있다.
+    //아직 미적용
+    public IEnumerator Timer(float timeVal, Action<float> remainedTime)
     {
+        float time = timeVal;
 
-        yield return !(beforeVal);
-        //시간 계산
-        yield return new WaitForSeconds(timeVal);
+        while (time > 0)
+        {
+            time -= Time.deltaTime;
 
-        yield return beforeVal;
+            if (time < 0) time = 0;
+            remainedTime(time);
+
+            //반복문 한 번 돌 때마다 한 번씩 쉰다(다음 프레임까지 대기)
+            yield return null;
+        }
 
         //해당 코루틴 자동 종료
         yield break;
