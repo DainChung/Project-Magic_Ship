@@ -649,7 +649,7 @@ MonoBehaviour:
   enemy_Front: {fileID: 4000012856865424}
   enemy_Right: {fileID: 4000013255867076}
   enemy_Left: {fileID: 4000010166329120}
-  sampleUnitID: Stage_0_NORMAL_NORMAL
+  sampleUnitID: Stage_0_NORMAL_Normal
 --- !u!114 &114000013267256962
 MonoBehaviour:
   m_ObjectHideFlags: 1
