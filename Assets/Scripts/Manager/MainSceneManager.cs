@@ -140,9 +140,6 @@ public class MainSceneManager : MonoBehaviour {
         //스킬 장착 관련 내용 초기화
         //Sample_SkillDB에 저장된 스킬 내용들을 불러오기
         allSkills = IO_CSV.__Get_All_SkillBaseStat();
-
-        //Sample_Player_Info에 저장된 스킬 내용들 불러오기
-        equippedSkills = Player_Info_Manager.Read_Equipped_SkillBaseStat();
         //================================================================================================
     }
 
@@ -192,8 +189,22 @@ public class MainSceneManager : MonoBehaviour {
         {
             string logForSample = allSkills[i].__GET_Skill_Name;
 
-            buttonsValidSkills[i].GetChild(0).GetComponent<Text>().text = allSkills[i].__GET_Skill_Name;
-            buttonsValidSkills[i].GetComponent<Button>().onClick.AddListener(() => Equip_Skill(logForSample));
+            //열려있는 스킬이면
+            try
+            {
+                MainSceneManagerSkillException.Validate_SkillLockedException(allSkills[i].__GET_isItLocked, player.GetComponent<Player_Info_Manager>().__GET_playerInfo._GET_saveSlotNum);
+
+                buttonsValidSkills[i].GetChild(0).GetComponent<Text>().text = allSkills[i].__GET_Skill_Name;
+                buttonsValidSkills[i].GetComponent<Button>().onClick.AddListener(() => Equip_Skill(logForSample));
+            }
+            //잠겨있는 스킬이면
+            catch (MainSceneManagerSkillException.SkillLockedException)
+            {
+                //잠겨있다고 출력한다.
+                buttonsValidSkills[i].GetChild(0).GetComponent<Text>().text = "잠겨있는 스킬";
+                //해당 버튼은 눌러도 잠겨있다는 메시지만 출력한다.
+                buttonsValidSkills[i].GetComponent<Button>().onClick.AddListener(() => Equip_Skill(logForSample));
+            }
         }
 
         SkillEquipWindowCleaner();
@@ -239,6 +250,9 @@ public class MainSceneManager : MonoBehaviour {
 
         List<string> newPlayerInfo = new List<string>();
 
+        newPlayerInfo.Add(player.GetComponent<Player_Info_Manager>().__GET_playerInfo._GET_saveSlotNum.ToString());
+        newPlayerInfo.Add(player.GetComponent<Player_Info_Manager>().__GET_playerInfo._GET_saveDate);
+
         newPlayerInfo.Add(player.GetComponent<Player_Info_Manager>().__GET_playerInfo._GET_Player_ID);
         newPlayerInfo.Add(player.GetComponent<Player_Info_Manager>().__GET_playerInfo._GET_Player_Name);
 
@@ -257,8 +271,9 @@ public class MainSceneManager : MonoBehaviour {
 
 
         textSystemLog_Upgrade.text = "저장되었습니다.";
-        //저장 기능 수행
-        player.GetComponent<Player_Info_Manager>().Write_Player_Info();
+
+        //저장 기능 수행, 일단 0번 슬롯에만 저장해 본다
+        player.GetComponent<Player_Info_Manager>().Write_Player_Info(0);
     }
 
 
@@ -425,7 +440,7 @@ public class MainSceneManager : MonoBehaviour {
 
     public void SkillEquipWindowLogCleaner()
     {
-        equippedSkills = Player_Info_Manager.Read_Equipped_SkillBaseStat();
+        equippedSkills = player.GetComponent<PlayerController>().__PLY_Selected_Skills;
         SkillEquipWindowCleaner();
         textSystemLog_Skill.text = "스킬을 장착하거나 뺄 수 있습니다.";
     }
@@ -437,7 +452,7 @@ public class MainSceneManager : MonoBehaviour {
     private void Save_EquippedSkills()
     {
         textSystemLog_Skill.text = "저장되었습니다.";
-        Player_Info_Manager.Write_Equipped_SkillBaseStat(equippedSkills);
+        player.GetComponent<PlayerController>().ReInit_Player_EquippedSkills(equippedSkills);
     }
 
     //스킬을 장착하는 함수
@@ -448,6 +463,8 @@ public class MainSceneManager : MonoBehaviour {
             //Exception 여부를 검사한다. (스킬을 추가로 장착할 수 있는지 확인한다.)
             MainSceneManagerSkillException.Validate_FullSkillInventoryException(buttonsSkillInventory);
             MainSceneManagerSkillException.Validate_SkillOverlapped_IN_InventoryException(skillName, equippedSkills);
+            //(장착하려는 스킬이 잠겨있는 스킬인지 확인한다.)
+            MainSceneManagerSkillException.Validate_SkillLockedException(IO_CSV.__Get_Searched_SkillBaseStat(skillName).__GET_isItLocked, player.GetComponent<Player_Info_Manager>().__GET_playerInfo._GET_saveSlotNum);
 
             //스킬을 장착할 빈 자리가 있으면 스킬을 장착한다.
             equippedSkills.Add(Search_SkillBaseStat_BY_Name_IN_List(skillName, allSkills));
@@ -468,6 +485,11 @@ public class MainSceneManager : MonoBehaviour {
         {
             //안내 메시지만 띄운다.
             textSystemLog_Skill.text = skillName + "을(를) 이미 장착했습니다.";
+        }
+        catch (MainSceneManagerSkillException.SkillLockedException)
+        {
+            //안내 메시지만 띄운다.
+            textSystemLog_Skill.text = skillName + "은(는) 잠겨있는 스킬입니다.";
         }
 
     }

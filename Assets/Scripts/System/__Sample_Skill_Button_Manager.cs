@@ -136,7 +136,6 @@ public class __Sample_Skill_Button_Manager : MonoBehaviour {
     void Save_EquippedSkills()
     {
         Debug.Log("저장되었습니다.");
-        Player_Info_Manager.Write_Equipped_SkillBaseStat(equippedSkills);
     }
 
     //스킬을 장착하는 함수

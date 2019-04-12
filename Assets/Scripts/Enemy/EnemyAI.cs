@@ -6,6 +6,7 @@ using System.Collections.Generic;
 
 using File_IO;
 using PMS_Math;
+using PMS_AISystem;
 
 //EnemyAI에 직접적으로 관련된 클래스를 새로 생성함
 public class EnemyAI : MonoBehaviour {
@@ -17,11 +18,9 @@ public class EnemyAI : MonoBehaviour {
 
     //나중엔 파일에서 읽어오도록 변경될 수도 있음.
     //외부의 딥러닝 프로그램이 함수를 호출할 때 사용하기 위한 함수 List
-    private List<System.Action> behaveList = new List<System.Action>();
-    public List<System.Action> _GET_behaveList
-    {
-        get { return behaveList; }
-    }
+    private List<System.Action> behaveList_Move = new List<System.Action>();
+    private List<System.Action> behaveList_Rotate = new List<System.Action>();
+    private List<System.Action> behaveList_Attack = new List<System.Action>();
 
     //페이즈 구분 용
     private int behaveIndex;
@@ -29,7 +28,9 @@ public class EnemyAI : MonoBehaviour {
 
     //AI_DeapLearning__Random_Ver에서 사용할 변수들
     private bool isbehaveCoolTimeOn = true;
-    private int realIndex = 3;
+    private int realIndex_Move = 0;
+    private int realIndex_Rotate = 0;
+    private int realIndex_Attack = 0;
 
     private bool isEnd_OF_Stage = false;
     private Transform middle_OF_Stage;
@@ -56,69 +57,39 @@ public class EnemyAI : MonoBehaviour {
         //sampleSkillTest = IO_CSV.__Get_Searched_SkillBaseStat("00000003");
         //sampleSkillCoolTime = true;
 
-        //기본 공격=====
-        //정면
-        behaveList.Add(() => __ENE_AI_Engine.Attack_Default(2.0f + Random.Range(0.0f, 1.0f), ref enemyController.enemy_Front, __ENE_Stat, 1));
-        //우측
-        behaveList.Add(() => __ENE_AI_Engine.Attack_Default(2.0f + Random.Range(0.0f, 1.0f), ref enemyController.enemy_Right, __ENE_Stat, 1));
-        //좌측
-        behaveList.Add(() => __ENE_AI_Engine.Attack_Default(2.0f + Random.Range(0.0f, 1.0f), ref enemyController.enemy_Left, __ENE_Stat, 1));
-        //============
-        //플레이어와 일정 거리 이하가 될 때까지 앞으로 이동
-        behaveList.Add(() => __ENE_AI_Engine.Go_TO_Foward_UNTIL_RayHit(__ENE_Stat.__PUB_Move_Speed, ref enemyController.enemyTransform, enemyController.playerTransform));
+        //이동에 관한 함수 리스트
+        //이동 없음
+        behaveList_Move.Add(() => AI_DO_Nothing());
+        //전방이동
+        behaveList_Move.Add(() => __ENE_AI_Engine.__ENE_Engine._unit_Move_Engine.Move_OBJ(__ENE_Stat.__PUB_Move_Speed, ref enemyController.enemyTransform, 1));
+        //후방이동
+        behaveList_Move.Add(() => __ENE_AI_Engine.__ENE_Engine._unit_Move_Engine.Move_OBJ(__ENE_Stat.__PUB_Move_Speed, ref enemyController.enemyTransform, -1));
 
-        //제자리에서 플레이어의 반대 방향을 바라보는 것
-        behaveList.Add(() => __ENE_AI_Engine.Rotate_TO_Direction(enemyController.__ENE_Stat.__PUB_Rotation_Speed, ref enemyController.enemyTransform, enemyController.playerTransform, true));
-        //제자리에서 플레이어를 바라보는 것
-        behaveList.Add(() => __ENE_AI_Engine.Rotate_TO_Direction(enemyController.__ENE_Stat.__PUB_Rotation_Speed, ref enemyController.enemyTransform, enemyController.playerTransform, false));
-        //제자리에서 플레이어를 바라보면서 기본 공격
-        behaveList.Add(() => AI_DeapLearning__Rotate_TO_Player_WITH_Default_Attack(false, 0));
-        behaveList.Add(() => AI_DeapLearning__Rotate_TO_Player_WITH_Default_Attack(false, 1));
-        behaveList.Add(() => AI_DeapLearning__Rotate_TO_Player_WITH_Default_Attack(false, 2));
-        //제자리에서 플레이어 반대 방향을 바라보면서 기본 공격
-        behaveList.Add(() => AI_DeapLearning__Rotate_TO_Player_WITH_Default_Attack(true, 0));
-        behaveList.Add(() => AI_DeapLearning__Rotate_TO_Player_WITH_Default_Attack(true, 1));
-        behaveList.Add(() => AI_DeapLearning__Rotate_TO_Player_WITH_Default_Attack(true, 2));
+        //회전에 관한 함수 리스트
+        //회전 없음
+        behaveList_Rotate.Add(() => AI_DO_Nothing());
+        //시계방향 회전
+        behaveList_Rotate.Add(() => __ENE_AI_Engine.__ENE_Engine._unit_Move_Engine.Rotate_OBJ(__ENE_Stat.__PUB_Rotation_Speed, ref enemyController.enemyTransform, 1));
+        //반시계방향 회전
+        behaveList_Rotate.Add(() => __ENE_AI_Engine.__ENE_Engine._unit_Move_Engine.Rotate_OBJ(__ENE_Stat.__PUB_Rotation_Speed, ref enemyController.enemyTransform, -1));
+        //플레이어를 정면으로 바라볼 때까지 회전
+        behaveList_Rotate.Add(() => __ENE_AI_Engine.Rotate_TO_Direction(__ENE_Stat.__PUB_Rotation_Speed, ref enemyController.enemyTransform, enemyController.playerTransform, false));
+        //플레이어를 우측으로 바라볼 때까지 회전
+        behaveList_Rotate.Add(() => __ENE_AI_Engine.Rotate_TO_Direction(__ENE_Stat.__PUB_Rotation_Speed, ref enemyController.enemyTransform, enemyController.playerTransform, false, enemyController.enemy_Right));
+        //플레이어를 좌측으로 바라볼 때까지 회전
+        behaveList_Rotate.Add(() => __ENE_AI_Engine.Rotate_TO_Direction(__ENE_Stat.__PUB_Rotation_Speed, ref enemyController.enemyTransform, enemyController.playerTransform, false, enemyController.enemy_Left));
+        //플레이어 반대 방향 바라볼 때까지 회전
+        behaveList_Rotate.Add(() => __ENE_AI_Engine.Rotate_TO_Direction(__ENE_Stat.__PUB_Rotation_Speed, ref enemyController.enemyTransform, enemyController.playerTransform, true));
 
-        //플레이어를 바라보면서 앞으로 이동(isRunning == false) 또는 플레이어로부터 도망(isRunning == false)
-        //플레이어와 가까우면 이동하지 않음
-        behaveList.Add(() => this.AI_DeapLearning__Move_AND_Rotate_TO_SomeWhere(false));
-        behaveList.Add(() => this.AI_DeapLearning__Move_AND_Rotate_TO_SomeWhere(true));
-        //플레이어를 바라보면서 앞으로 이동(isRunning == false) 또는 플레이어로부터 도망(isRunning == false) 하면서 기본 공격
-        //플레이어와 가까우면 이동하지 않음
-        behaveList.Add(() => this.AI_DeapLearning__Move_AND_Rotate_TO_SomeWhere_WITH_Default_Attack(false, 0));
-        behaveList.Add(() => this.AI_DeapLearning__Move_AND_Rotate_TO_SomeWhere_WITH_Default_Attack(false, 1));
-        behaveList.Add(() => this.AI_DeapLearning__Move_AND_Rotate_TO_SomeWhere_WITH_Default_Attack(false, 2));
-
-        behaveList.Add(() => this.AI_DeapLearning__Move_AND_Rotate_TO_SomeWhere_WITH_Default_Attack(true, 0));
-        behaveList.Add(() => this.AI_DeapLearning__Move_AND_Rotate_TO_SomeWhere_WITH_Default_Attack(true, 1));
-        behaveList.Add(() => this.AI_DeapLearning__Move_AND_Rotate_TO_SomeWhere_WITH_Default_Attack(true, 2));
-
-        //조건과 관계없이 앞으로 이동하면서 기본 공격
-        behaveList.Add(() => AI_DeapLearning__Move_TO_Forward_OR_Back_WITH_Default_Attack(1, 0));
-        behaveList.Add(() => AI_DeapLearning__Move_TO_Forward_OR_Back_WITH_Default_Attack(1, 1));
-        behaveList.Add(() => AI_DeapLearning__Move_TO_Forward_OR_Back_WITH_Default_Attack(1, 2));
-        //조건과 관계없이 뒤로 이동하면서 기본 공격
-        behaveList.Add(() => AI_DeapLearning__Move_TO_Forward_OR_Back_WITH_Default_Attack(-1, 0));
-        behaveList.Add(() => AI_DeapLearning__Move_TO_Forward_OR_Back_WITH_Default_Attack(-1, 1));
-        behaveList.Add(() => AI_DeapLearning__Move_TO_Forward_OR_Back_WITH_Default_Attack(-1, 2));
-        
-        //조건과 관계없이 플레이어를 바라보면서 (isRunning == false) 앞 (dir == 1)이나 뒤(dir == -1)로 이동하면서 기본 공격
-        behaveList.Add(() => AI_DeapLearning__Rotate_TO_Player_AND_Move_TO_Forward_WITH_Default_Attack(false, 0, 1));
-        behaveList.Add(() => AI_DeapLearning__Rotate_TO_Player_AND_Move_TO_Forward_WITH_Default_Attack(false, 1, 1));
-        behaveList.Add(() => AI_DeapLearning__Rotate_TO_Player_AND_Move_TO_Forward_WITH_Default_Attack(false, 2, 1));
-
-        behaveList.Add(() => AI_DeapLearning__Rotate_TO_Player_AND_Move_TO_Forward_WITH_Default_Attack(false, 0, -1));
-        behaveList.Add(() => AI_DeapLearning__Rotate_TO_Player_AND_Move_TO_Forward_WITH_Default_Attack(false, 1, -1));
-        behaveList.Add(() => AI_DeapLearning__Rotate_TO_Player_AND_Move_TO_Forward_WITH_Default_Attack(false, 2, -1));
-        //조건과 관계없이 플레이어 반대 방향을 바라보면서 (isRunning == true) 앞 (dir == 1)이나 뒤(dir == -1)로 이동하면서 기본 공격
-        behaveList.Add(() => AI_DeapLearning__Rotate_TO_Player_AND_Move_TO_Forward_WITH_Default_Attack(true, 0, 1));
-        behaveList.Add(() => AI_DeapLearning__Rotate_TO_Player_AND_Move_TO_Forward_WITH_Default_Attack(true, 1, 1));
-        behaveList.Add(() => AI_DeapLearning__Rotate_TO_Player_AND_Move_TO_Forward_WITH_Default_Attack(true, 2, 1));
-
-        behaveList.Add(() => AI_DeapLearning__Rotate_TO_Player_AND_Move_TO_Forward_WITH_Default_Attack(true, 0, -1));
-        behaveList.Add(() => AI_DeapLearning__Rotate_TO_Player_AND_Move_TO_Forward_WITH_Default_Attack(true, 1, -1));
-        behaveList.Add(() => AI_DeapLearning__Rotate_TO_Player_AND_Move_TO_Forward_WITH_Default_Attack(true, 2, -1));
+        //공격에 관한 함수 리스트
+        //공격 없음
+        behaveList_Attack.Add(() => AI_DO_Nothing());
+        //정면 일반 공격
+        behaveList_Attack.Add(() => __ENE_AI_Engine.Attack_Default(2.0f, ref enemyController.enemy_Front, __ENE_Stat, 1));
+        //우측 일반 공격
+        behaveList_Attack.Add(() => __ENE_AI_Engine.Attack_Default(2.0f, ref enemyController.enemy_Right, __ENE_Stat, 1));
+        //좌측 일반 공격
+        behaveList_Attack.Add(() => __ENE_AI_Engine.Attack_Default(2.0f, ref enemyController.enemy_Left, __ENE_Stat, 1));
     }
 
     //가장 단순한 수준의 AI
@@ -303,7 +274,7 @@ public class EnemyAI : MonoBehaviour {
                     //정면 공격 3회 수행 후 행동 패턴 변경
                     if (behaveCounter >= 3) { behaveIndex = 1; behaveCounter = 0; }
                 }
-                //전방으로 2초 동안 이동 후 우현으로 플레이어 측면 공격
+                //전방으로 2초 동안 이동 후 우현으로 플레이어 공격
                 else if (behaveIndex == 1)
                 {
                     //전방으로 2초 동안 이동
@@ -336,7 +307,7 @@ public class EnemyAI : MonoBehaviour {
                         if (behaveCounter >= 3) { behaveIndex = 2; behaveCounter = 0; __ENE_AI_Engine._PUB_enemy_Is_ON_CoolTime[1] = true; }
                     }
                 }
-                //전방으로 2초 동안 이동 후 좌현으로 플레이어 측면 공격
+                //전방으로 2초 동안 이동 후 좌현으로 플레이어 공격
                 else if (behaveIndex == 2)
                 {
                     if (__ENE_AI_Engine._PUB_enemy_Is_ON_CoolTime[1])
@@ -538,80 +509,39 @@ public class EnemyAI : MonoBehaviour {
 
     //데이터 수집 목적인 랜덤한 행동을 지시하는 함수
     //아직 데이터를 수집하는 스크립트는 없음
-    //어느 스크립트에서 데이터를 DB에 전송할 것인지는 천천히 생각해볼것
     public void AI_DeapLearning__Random_Ver()
     {
-        int listIndex = (int)(Random.Range(0.0f, (float)(_GET_behaveList.Count)));
+        int listIndex_Move = (int)(Random.Range(0.0f, (float)(behaveList_Move.Count)));
+        int listIndex_Rotate = (int)(Random.Range(0.0f, (float)(behaveList_Rotate.Count)));
+        int listIndex_Attack = (int)(Random.Range(0.0f, (float)(behaveList_Attack.Count)));
         //Timer 코루틴을 돌리기 위한 더미 변수
         float dummy = 0.0f;
 
 
         if (isbehaveCoolTimeOn)
         {
-            realIndex = listIndex;
+            realIndex_Move = listIndex_Move;
+            realIndex_Rotate = listIndex_Rotate;
+            realIndex_Attack = listIndex_Attack;
+
             //0.5~1.5초 마다 행동을 갱신한다 (값 변경될 수 있음)
             StartCoroutine(enemyController.enemyCoolTimer.Timer(0.5f + Random.Range(0.0f, 1.0f), (input) => { isbehaveCoolTimeOn = input; }, true, (input) => { dummy = input; }));
         }
 
-        //Debug.Log(realIndex);
-
-        //일반 공격은 쿨타임이 지났을 때만 사용할 수 있도록 한다.
-        if (realIndex >= 0 && realIndex <= 2)
+        //1차적으로 일반 공격만 생각하도록 한다.
+        //공격 쿨타임도 끝났고 공격을 하려는 경우
+        if (__ENE_AI_Engine._PUB_enemy_Is_ON_CoolTime[1] && realIndex_Attack != 0)
         {
-            if (__ENE_AI_Engine._PUB_enemy_Is_ON_CoolTime[1])
-                behaveList[realIndex]();
+            //주어진 공격 수행
+            behaveList_Attack[realIndex_Attack]();
         }
-        else
-        {
-            behaveList[realIndex]();
-        }
+
+        //주어진 이동 수행
+        behaveList_Move[realIndex_Move]();
+        //주어진 회전 수행
+        behaveList_Rotate[realIndex_Rotate]();
     }
 
-    //플레이어를 바라보면서 앞으로 이동(isRunning == false) 또는 플레이어 반대 방향을 보며 앞으로 이동(isRunning == false)
-    //충분히 가까우면 이동하지 않음
-    private void AI_DeapLearning__Move_AND_Rotate_TO_SomeWhere(bool isRunning)
-    {
-        __ENE_AI_Engine.Rotate_TO_Direction(enemyController.__ENE_Stat.__PUB_Rotation_Speed, ref enemyController.enemyTransform, enemyController.playerTransform, isRunning);
-        __ENE_AI_Engine.Go_TO_Foward_UNTIL_RayHit(__ENE_Stat.__PUB_Move_Speed, ref enemyController.enemyTransform, enemyController.playerTransform);
-    }
-
-    //플레이어를 바라보면서 앞으로 이동(isRunning == false) 또는 플레이어 반대 방향을 보며 앞으로 이동(isRunning == false) 하면서 기본공격
-    //충분히 가까우면 이동하지 않음
-    //attackSpot == 0 이면 앞에서 발사
-    //attackSpot == 1 이면 우측에서 발사
-    //attackSpot == 2 이면 좌측에서 발사
-    private void AI_DeapLearning__Move_AND_Rotate_TO_SomeWhere_WITH_Default_Attack(bool isRunning, int attackSpot)
-    {
-        //공격 가능한 상태일때만 공격
-        if (__ENE_AI_Engine._PUB_enemy_Is_ON_CoolTime[1])
-            behaveList[attackSpot]();
-        AI_DeapLearning__Move_AND_Rotate_TO_SomeWhere(isRunning);
-    }
-
-    //조건과 관계없이 앞 (dir == 1)이나 뒤 (dir == -1)로 이동하면서 기본 공격
-    private void AI_DeapLearning__Move_TO_Forward_OR_Back_WITH_Default_Attack(int dir, int attackSpot)
-    {
-        //공격 가능한 상태일때만 공격
-        if (__ENE_AI_Engine._PUB_enemy_Is_ON_CoolTime[1])
-            behaveList[attackSpot]();
-        __ENE_AI_Engine.__ENE_Engine._unit_Move_Engine.Move_OBJ(__ENE_Stat.__PUB_Move_Speed, ref enemyController.enemyTransform, dir);
-    }
-
-    //제자리에서 플레이어를 바라보면서 (isRunning == false) 또는 플레이어 반대방향을 바라보면서 (isRunning == true) 기본 공격
-    private void AI_DeapLearning__Rotate_TO_Player_WITH_Default_Attack(bool isRunning, int attackSpot)
-    {
-        if (__ENE_AI_Engine._PUB_enemy_Is_ON_CoolTime[1])
-            behaveList[attackSpot]();
-        __ENE_AI_Engine.Rotate_TO_Direction(enemyController.__ENE_Stat.__PUB_Rotation_Speed, ref enemyController.enemyTransform, enemyController.playerTransform, isRunning);
-    }
-
-    //조건과 관계없이 플레이어를 바라보면서 (isRunning == false) 앞 (dir == 1)이나 뒤(dir == -1)로 이동하면서 기본 공격
-    //또는 플레이어 반대 방향을 바라보면서 (isRunning == true) 앞 (dir == 1)이나 뒤(dir == -1)로 이동하면서 기본 공격
-    private void AI_DeapLearning__Rotate_TO_Player_AND_Move_TO_Forward_WITH_Default_Attack(bool isRunning, int attackSpot, int dir)
-    {
-        if (__ENE_AI_Engine._PUB_enemy_Is_ON_CoolTime[1])
-            behaveList[attackSpot]();
-        __ENE_AI_Engine.Rotate_TO_Direction(enemyController.__ENE_Stat.__PUB_Rotation_Speed, ref enemyController.enemyTransform, enemyController.playerTransform, isRunning);
-        __ENE_AI_Engine.__ENE_Engine._unit_Move_Engine.Move_OBJ(__ENE_Stat.__PUB_Move_Speed, ref enemyController.enemyTransform, dir);
-    }
+    //랜덤 행동 중 아무것도 안 하는 함수
+    private void AI_DO_Nothing(){}
 }

@@ -73,5 +73,22 @@ namespace PMS_Exception {
                 }
             }
         }
+
+        //====================================================================================
+
+        [Serializable]
+        public class SkillLockedException : Exception
+        {
+            public SkillLockedException() { }
+        }
+
+        //장착 또는 장착해제, 사용하려는 스킬이 잠겨있는 스킬인지 확인한다.
+        public static void Validate_SkillLockedException(List<int> isItLocked, int saveSlotNum)
+        {
+            if (isItLocked[saveSlotNum] == 0)
+            {
+                throw new SkillLockedException();
+            }
+        }
     }
 }

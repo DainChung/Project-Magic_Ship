@@ -36,7 +36,7 @@ namespace File_IO {
             {
                 //CSV파일 읽기
                 var reader = new StreamReader(File.OpenRead(fileName), System.Text.Encoding.Default);
-                
+
 
                 while (!reader.EndOfStream)
                 {
@@ -67,6 +67,8 @@ namespace File_IO {
                     }
                 }
 
+                reader.Close();
+
                 //CSV 파일 맨 첫번째 줄 제거
                 readList.Remove(readList[0]);
 
@@ -80,6 +82,94 @@ namespace File_IO {
             return readList;
         }
 
+        //한 줄만 수정하기 위해 첫 줄까지 읽어오는 함수
+        //fileName은 "/어떠어떠한_파일.csv" 형식으로 입력해야됨
+        public static List<string> Reader_CSV_WITH_FirstLine(string fileName)
+        {
+            //읽은 내용 중 쓸모없는 내용을 제거하기 위해 필요한 변수들
+            string dummyString = ",,,,,,,,,,,,,,,";
+
+            List<string> readList = new List<string>();
+
+            //filePath뒤에 읽을 파일이름을 더한다.
+            fileName = filePath + fileName;
+
+            try
+            {
+                //CSV파일 읽기
+                var reader = new StreamReader(File.OpenRead(fileName), System.Text.Encoding.Default);
+
+
+                while (!reader.EndOfStream)
+                {
+                    var line = reader.ReadLine();
+                    readList.Add(line);
+                }
+
+                //CSV 파일 줄이 바뀌기 전에 있는 ','가 여러 개 찍혀있는 지점을 제거하거나
+                //NULL_ID를 readList에서 완전히 제외하는 반복문
+
+                //foreach문에서는 List.Remove()가 InvalidOperationException을 발생시키므로 for문에서 작동해야함.
+                for (int index = readList.Count - 1; index > 0; index--)
+                {
+                    //각 searchList마다 dummyString과 같은 내용들을 모두 제거하고 덮어씌운다.
+                    try
+                    {
+                        readList[index] = readList[index].Remove(readList[index].IndexOf(dummyString), dummyString.Length);
+                    }
+                    //ArgumentOutOfRangeException이 발생하면 dummyString과 같은 내용이 없다는 것이므로 아무것도 하지 않는다.
+                    //File_IO에 의해 새로 쓰여진 CSV 파일의 경우 dummyString이 발견되지 않는다.
+                    catch (ArgumentOutOfRangeException)
+                    { }
+
+                    //읽은 값이 NULL_ID인 경우 아예 readList에 반영하지 않는다.
+                    if (readList[index] == "NULL_ID")
+                    {
+                        readList.Remove(readList[index]);
+                    }
+                }
+
+                reader.Close();
+            }
+            catch (FileNotFoundException)
+            {
+                Debug.Log("FileNotFoundException: You Need " + fileName);
+                readList[0] = "FileNotFoundException";
+            }
+
+            return readList;
+        }
+
+
+        //파일의 한 줄만 수정하고 덮어써버리는 함수
+        //fileName은 "/어떠어떠한_파일.csv" 형식으로 입력해야됨
+        public static void Writer_CSV(string fileName, string[] savingData)
+        {
+            List<string> readData_0 = Reader_CSV_WITH_FirstLine(fileName);
+
+            List<string> readData = __Get_pieces_OF_BaseStrings(readData_0[0]);
+            List<string> readData_1 = __Get_pieces_OF_BaseStrings(readData_0[2]);
+            List<string> readData_2 = __Get_pieces_OF_BaseStrings(readData_0[3]);
+            readData_0 = __Get_pieces_OF_BaseStrings(readData_0[1]);
+
+            string[,] newData = new string[4,21];
+
+            for (int y = 0; y <= newData.GetUpperBound(1); y++)
+            {
+                newData[0, y] = readData[y];
+
+                if (int.Parse(savingData[0]) == 0){ newData[1, y] = savingData[y];}
+                else{   newData[1, y] = readData_0[y];}
+
+                if (int.Parse(savingData[0]) == 1){ newData[2, y] = savingData[y];}
+                else{   newData[2, y] = readData_1[y];}
+
+                if (int.Parse(savingData[0]) == 2){ newData[3, y] = savingData[y];}
+                else{   newData[3, y] = readData_2[y];}
+            }
+
+            Writer_CSV(fileName, newData);
+        }
 
         //파일의 처음부터 덮어써버리는 함수 (입력할 내용이 많으면 일부분이 입력되지 않을 수가 있음)
         //fileName은 "/어떠어떠한_파일.csv" 형식으로 입력해야됨
@@ -182,7 +272,7 @@ namespace File_IO {
             //가공이 되지 않은 SkillBaseStat자료를 가공함수에 투입하고 그걸 그대로 반환
             //아래에 작성된 __Get_All_SkillBaseStat 함수로 인해 이 함수를 이 형태로 유지할 것
             //다른 좋은 생각 있으면 추후 수정 요구
-            return Set_ResultStat(SearchString_In_File("/Sample__SkillDataBase.csv", wannaSearch));
+            return Set_ResultStat(SearchString_In_File("/SkillDataBase.csv", wannaSearch));
         }
         
         //string을 SkillBaseStat으로 가공하는 함수
@@ -206,14 +296,24 @@ namespace File_IO {
 
                 SkillBaseCode.SkillCode skillCode = Get_SkillCode_FROM_String(pieces_OF_BaseStatString[6], pieces_OF_BaseStatString[7], pieces_OF_BaseStatString[8]);
 
+                List<int> isItLocked = new List<int>();
+                isItLocked.Add(int.Parse(pieces_OF_BaseStatString[9]));
+                isItLocked.Add(int.Parse(pieces_OF_BaseStatString[10]));
+                isItLocked.Add(int.Parse(pieces_OF_BaseStatString[11]));
+
                 //가공된 내용들을 resultStat에 넣어서 최종 정리한다.
-                resultStat.Initialize_Skill(pieces_OF_BaseStatString[1], rate, coolTime, ingTime, amount, skillCode, pieces_OF_BaseStatString[0]);
+                resultStat.Initialize_Skill(pieces_OF_BaseStatString[1], rate, coolTime, ingTime, amount, skillCode, pieces_OF_BaseStatString[0], isItLocked);
             }
             else
             {
                 SkillBaseCode.SkillCode nullCode = Get_SkillCode_FROM_String("FIN", "NULL", "NULL");
 
-                resultStat.Initialize_Skill("NULL", 0,0,0,0, nullCode, "NULL");
+                List<int> errorLocked = new List<int>();
+                errorLocked.Add(-1);
+                errorLocked.Add(-1);
+                errorLocked.Add(-1);
+
+                resultStat.Initialize_Skill("NULL", 0,0,0,0, nullCode, "NULL", errorLocked);
             }
 
             return resultStat;
@@ -273,7 +373,7 @@ namespace File_IO {
         public static List<SkillBaseStat> __Get_All_SkillBaseStat()
         {
             List<SkillBaseStat> allSkills = new List<SkillBaseStat>();
-            List<string> base_AllSkills = Reader_CSV("/Sample__SkillDataBase.csv");
+            List<string> base_AllSkills = Reader_CSV("/SkillDataBase.csv");
 
             //각 줄마다 SkillBaseStat으로 변경하여 allSkills에 저장
             foreach (string base_SkillString in base_AllSkills)

@@ -21,6 +21,15 @@ public class Player_Info_Manager : MonoBehaviour {
         //플레이어가 장착한 스킨
         private string playerSkinID = "";
 
+        //saveSlot을 알려주는 변수
+        private int saveSlotNum;
+
+        //저장한 날짜를 알려주는 변수
+        private string saveDate;
+
+        //스테이지 진척도를 알려주는 변수
+        private List<int> stageIsLocked = new List<int>();
+
         //위 변수들에 대한 Getter
         public string _GET_Player_ID { get { return _ID; } }
         public string _GET_Player_Name { get { return name; } }
@@ -29,22 +38,40 @@ public class Player_Info_Manager : MonoBehaviour {
         public int _GET_Player_Gold { get { return gold; } }
         public int _GET_Player_Cash { get { return cash; } }
         public string _GET_Player_SkinID { get { return playerSkinID; } }
+        public int _GET_saveSlotNum { get { return saveSlotNum; } }
+        public string _GET_saveDate { get { return saveDate; } }
+        public List<int> _GET_stageIsLocked { get { return stageIsLocked; } }
 
-        //name에 대한 Setter
+        //위 변수들에 대한 Setter
         public string _SET_Player_Name { set { name = value; } }
+        public List<int> _SET_stageIsLocked { set { stageIsLocked = value; } }
 
         public void Set_Player_Infomation(List<string> playerInfomation)
         {
-            _ID = playerInfomation[0];
-            name = playerInfomation[1];
+            saveSlotNum = int.Parse(playerInfomation[0]);
+            saveDate = playerInfomation[1];
 
-            level = int.Parse(playerInfomation[10]);
-            exp = float.Parse(playerInfomation[11]);
+            _ID = playerInfomation[2];
+            name = playerInfomation[3];
 
-            gold = int.Parse(playerInfomation[12]);
-            cash = int.Parse(playerInfomation[13]);
+            level = int.Parse(playerInfomation[12]);
+            exp = float.Parse(playerInfomation[13]);
 
-            playerSkinID = playerInfomation[14];
+            gold = int.Parse(playerInfomation[14]);
+            cash = int.Parse(playerInfomation[15]);
+
+            playerSkinID = playerInfomation[16];
+
+            //임시 노가다
+            string stageString = playerInfomation[20];
+            string[] stageStrings = { "","",""};
+            stageStrings[0] += stageString[1];
+            stageStrings[1] += stageString[2];
+            stageStrings[2] += stageString[3];
+
+            stageIsLocked.Add(int.Parse(stageStrings[0]));
+            stageIsLocked.Add(int.Parse(stageStrings[1]));
+            stageIsLocked.Add(int.Parse(stageStrings[2]));
 
             ////모두 정상적으로 작동함
             //Debug.Log("name: " + name);
@@ -57,16 +84,19 @@ public class Player_Info_Manager : MonoBehaviour {
 
         public void Set_Player_Infomation_(List<string> playerInfomation)
         {
-            _ID = playerInfomation[0];
-            name = playerInfomation[1];
+            saveSlotNum = int.Parse(playerInfomation[0]);
+            saveDate = playerInfomation[1];
 
-            level = int.Parse(playerInfomation[2]);
-            exp = float.Parse(playerInfomation[3]);
+            _ID = playerInfomation[2];
+            name = playerInfomation[3];
 
-            gold = int.Parse(playerInfomation[4]);
-            cash = int.Parse(playerInfomation[5]);
+            level = int.Parse(playerInfomation[4]);
+            exp = float.Parse(playerInfomation[5]);
 
-            playerSkinID = playerInfomation[6];
+            gold = int.Parse(playerInfomation[6]);
+            cash = int.Parse(playerInfomation[7]);
+
+            playerSkinID = playerInfomation[8];
 
             ////모두 정상적으로 작동함
             //Debug.Log("name: " + name);
@@ -139,17 +169,78 @@ public class Player_Info_Manager : MonoBehaviour {
     //플레이어 스탯과 각종 정보들을 불러오는 함수
     private void Read_Player_Info()
     {
-        List<string> playerInfoList = IO_CSV.__Get_pieces_OF_BaseStrings( IO_CSV.Reader_CSV("/Sample__Player_Info.csv")[0] );
-        
+        List<string> playerInfoList = IO_CSV.__Get_pieces_OF_BaseStrings(IO_CSV.Reader_CSV("/SaveSlot.csv")[0]);
+
         playerInfo.Set_Player_Infomation(playerInfoList);
         playerController.__PLY_Stat.Initialize_Player_Stat(playerInfoList);
+        playerController.Initialize_Player_EquippedSkills(playerInfoList);
+    }
+
+    //플레이어 스탯과 각종 정보들을 불러오는 함수
+    private void Read_Player_Info(int saveSlotNum)
+    {
+        List<string> playerInfoList = IO_CSV.__Get_pieces_OF_BaseStrings(IO_CSV.Reader_CSV("/SaveSlot.csv")[saveSlotNum]);
+
+        playerInfo.Set_Player_Infomation(playerInfoList);
+        playerController.__PLY_Stat.Initialize_Player_Stat(playerInfoList);
+        playerController.Initialize_Player_EquippedSkills(playerInfoList);
+    }
+
+    //저장슬롯에 따라 플레이어 스탯과 각종 정보들을 저장하는 함수
+    public void Write_Player_Info(int slotNum)
+    {
+        string[] playerInfoString = new string[21];
+
+        ////값이 반영됨. 저장 성공
+        ////제대로 저장되는 지 확인하기 위한 코딩
+        playerInfo._SET_Player_Name = "NEWNEW Writing Success?";
+        //playerInfo.__Buy_OR_Sell__About_Money("Gold", 1);
+
+        //저장슬롯ID, 저장날짜
+        playerInfoString[0] = playerInfo._GET_saveSlotNum.ToString();
+        playerInfoString[1] = playerInfo._GET_saveDate;
+        //ID와 이름
+        playerInfoString[2] = playerInfo._GET_Player_ID;
+        playerInfoString[3] = playerInfo._GET_Player_Name;
+        //이동속도, 회전속도
+        playerInfoString[4] = playerController.__PLY_Stat.__PUB_Move_Speed.ToString();
+        playerInfoString[5] = playerController.__PLY_Stat.__PUB_Rotation_Speed.ToString();
+        //체력, 마나, 파워
+        playerInfoString[6] = playerController.__PLY_Stat.__GET_Max_HP.ToString();
+        playerInfoString[7] = playerController.__PLY_Stat.__GET_Max_MP.ToString();
+        playerInfoString[8] = playerController.__PLY_Stat.__GET_Max_PP.ToString();
+        //공격력, 크리티컬 확률, 크리티컬 계수
+        playerInfoString[9] = playerController.__PLY_Stat.__PUB_ATK__Val.ToString();
+        playerInfoString[10] = playerController.__PLY_Stat.__PUB_Critical_Rate.ToString();
+        playerInfoString[11] = playerController.__PLY_Stat.__PUB_Critical_P.ToString();
+        //레벨, 경험치
+        playerInfoString[12] = playerInfo._GET_Player_Level.ToString();
+        playerInfoString[13] = playerInfo._GET_Player_Exp.ToString();
+        //골드와 캐쉬
+        playerInfoString[14] = playerInfo._GET_Player_Gold.ToString();
+        playerInfoString[15] = playerInfo._GET_Player_Cash.ToString();
+        //장착 중인 스킨 ID
+        playerInfoString[16] = playerInfo._GET_Player_SkinID;
+        //장착 중인 스킬들
+        playerInfoString[17] = playerController.__PLY_Selected_Skills[0].__Get_Skill_ID;
+        playerInfoString[18] = playerController.__PLY_Selected_Skills[1].__Get_Skill_ID;
+        playerInfoString[19] = playerController.__PLY_Selected_Skills[2].__Get_Skill_ID;
+        //스테이지 진척도
+        string stageString = "c";
+        for (int i = 0; i < playerInfo._GET_stageIsLocked.Count; i++)
+        {
+            stageString += playerInfo._GET_stageIsLocked[i].ToString();
+        }
+        playerInfoString[20] = stageString;
+
+        IO_CSV.Writer_CSV("/SaveSlot.csv", playerInfoString);
     }
 
     //플레이어 스탯과 각종 정보들을 저장하는 함수
     public void Write_Player_Info()
     {
-        string[,] playerInfoString = { {"ID", "Name", "Move Speed", "Rotate Speed", "Health", "Mana", "Power", "Damage", "Critical Rate", "Critical Point", "Level", "Exp", "Gold", "Cash", "Equipped Skin"},
-                                        {"", "", "", "", "", "", "", "", "", "", "", "", "", "", ""} };
+        string[,] playerInfoString = { {"SlotNum","Date","ID", "Name", "Move Speed", "Rotate Speed", "Health", "Mana", "Power", "Damage", "Critical Rate", "Critical Point", "Level", "Exp", "Gold", "Cash", "Equipped Skin", "EquippedSkill0", "EquippedSkill1", "EquippedSkill2", "Stage0Lock"},
+                                        {"","","","","","","", "", "", "", "", "", "", "", "", "", "", "", "", "", ""} };
 
         ////값이 반영됨. 저장 성공
         ////제대로 저장되는 지 확인하기 위한 코딩
@@ -202,28 +293,5 @@ public class Player_Info_Manager : MonoBehaviour {
         }
 
         return resultSkills;
-    }
-
-    //Player_Info에 저장될 내용에 따라 해당 알고리즘은 변할 수 있음.
-    public static void Write_Equipped_SkillBaseStat(List<SkillBaseStat> equippedSkills)
-    {
-        string[,] writer = { { "Skill_ID"}, { "" }, { "" }, { "" } };
-
-        //일단 최대 장착가능한 스킬만큼 저장한다.
-        for (int i = 0; i < 3; i++)
-        {
-            try
-            {
-                writer[(i + 1), 0] = equippedSkills[i].__Get_Skill_ID;
-            }
-            //2개 이하의 스킬만 장착되어 있는 경우
-            catch (System.ArgumentOutOfRangeException)
-            {
-                //비어있음을 알린다.
-                writer[(i + 1), 0] = "NULL_ID";
-            }
-        }
-
-        IO_CSV.Writer_CSV("/Sample__PlayerEquippedInfo.csv", writer);
     }
 }

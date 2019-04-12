@@ -44,21 +44,21 @@ public class PlayerStat : Unit__Base_Stat {
 
     public void Initialize_Player_Stat(List<string> playerStatBaseString)
     {
-        base.__PUB_Move_Speed = float.Parse(playerStatBaseString[2]);
-        base.__PUB_Rotation_Speed = float.Parse(playerStatBaseString[3]);
+        base.__PUB_Move_Speed = float.Parse(playerStatBaseString[4]);
+        base.__PUB_Rotation_Speed = float.Parse(playerStatBaseString[5]);
 
-        base.__MAX_Health_Point = int.Parse(playerStatBaseString[4]);
-        base.__MAX_Mana_Point = int.Parse(playerStatBaseString[5]);
-        base.__MAX_Power_Point = int.Parse(playerStatBaseString[6]);
+        base.__MAX_Health_Point = int.Parse(playerStatBaseString[6]);
+        base.__MAX_Mana_Point = int.Parse(playerStatBaseString[7]);
+        base.__MAX_Power_Point = int.Parse(playerStatBaseString[8]);
 
         base.__PUB__Health_Point = base.__MAX_Health_Point;
         base.__PUB__Mana_Point = base.__MAX_Mana_Point;
         //파워 포인트는 0에서부터 시작한다
         base.__PUB__Power_Point = 0;
 
-        base.__PUB_ATK__Val = int.Parse(playerStatBaseString[7]);
-        base.__PUB_Critical_Rate = float.Parse(playerStatBaseString[8]);
-        base.__PUB_Critical_P = float.Parse(playerStatBaseString[9]);
+        base.__PUB_ATK__Val = int.Parse(playerStatBaseString[9]);
+        base.__PUB_Critical_Rate = float.Parse(playerStatBaseString[10]);
+        base.__PUB_Critical_P = float.Parse(playerStatBaseString[11]);
 
         base.FOriginalMoveSpeed = base._Move_Speed;
         base.FOriginalRotateSpeed = base._Rotation_Speed;
@@ -137,6 +137,24 @@ public class PlayerController : MonoBehaviour {
     //궁극기 임시 조치
     SkillBaseStat debugUltimateSkill = new SkillBaseStat();
 
+    public void Initialize_Player_EquippedSkills(List<string> playerInfo)
+    {
+        for (int i = 0; i < 3; i++)
+        {
+            __PLY_Selected_Skills.Add(File_IO.IO_CSV.__Get_Searched_SkillBaseStat(playerInfo[i + 17]));
+        }
+    }
+
+    public void ReInit_Player_EquippedSkills(List<SkillBaseStat> playerSkillInfo)
+    {
+        for (int i = 0; i < 3; i++)
+        {
+            __PLY_Selected_Skills[i] = playerSkillInfo[i];
+        }
+
+        transform.GetComponent<Player_Info_Manager>().Write_Player_Info(transform.GetComponent<Player_Info_Manager>().__GET_playerInfo._GET_saveSlotNum);
+    }
+
     //나중엔 DB에서 긁어온 값을 여기서 초기화할 것.
     void Awake()
     {
@@ -156,9 +174,6 @@ public class PlayerController : MonoBehaviour {
         __PLY_Engine._unit_Stat = __PLY_Stat;
 
         //----------------------------------------------------------------------------------------
-        //20190117 이 지점에서 PlayerInfoManager를 통해 지정된 Skill들을 읽어온다. (Skill ID 값만 읽기)
-        //읽은 Skill ID 값들을 이용하여 해당 Skill들의 정보를 __PLY_Selected_Skills에 추가한다.
-        __PLY_Selected_Skills = Player_Info_Manager.Read_Equipped_SkillBaseStat();
 
         ////확인용. 정상적으로 작동함.
         //foreach (SkillBaseStat forDebug in __PLY_Selected_Skills)
@@ -169,7 +184,7 @@ public class PlayerController : MonoBehaviour {
         //}
 
         //궁극기 임시 조치
-        debugUltimateSkill = File_IO.IO_CSV.__Get_Searched_SkillBaseStat("10000000");
+        debugUltimateSkill = File_IO.IO_CSV.__Get_Searched_SkillBaseStat("FIN000");
 
         _Is_On_CoolTime__Default_ATK = true;
 
@@ -418,6 +433,7 @@ public class PlayerController : MonoBehaviour {
     //플레이어가 피격 받을 때
     public void _Player_Get_Hit(int damage)
     {
+        Debug.Log("Player Get Hit");
         __PLY_Stat.__GET_HIT__About_Health(damage, 1);
     }
 }

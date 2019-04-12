@@ -286,23 +286,23 @@ public class UnitBaseEngine : MonoBehaviour
 
             //임시 조치. 코드 정리 도중 ID 체계화 과정에서 수정 필수
             //체력 회복(00000000), 디버프(00000001)
-            if (whichSkill.__Get_Skill_ID == "00000001")
+            if (whichSkill.__Get_Skill_ID == "NORMAL_HP_01")
             {
-                funcName += "00000000";
+                funcName += "NORMAL_HP_00";
                 //Debug.Log("This is HP DeBuff Skill");
             }
             //이동 속도 버프, 디버프 묶기
             //이속 버프(00000002), 디버프(00000003)
-            else if (whichSkill.__Get_Skill_ID == "00000003")
+            else if (whichSkill.__Get_Skill_ID == "NORMAL_SP_01")
             {
-                funcName += "00000002";
+                funcName += "NORMAL_SP_00";
                 //Debug.Log("This is SP DeBuff Skill");
             }
             //임시 조치. 코드 정리 중 ID 체계화 과정에서 수정 필수
             //산탄(00000005), 속사(00000006)
-            else if (whichSkill.__Get_Skill_ID == "00000006")
+            else if (whichSkill.__Get_Skill_ID == "NORMAL_ATK_01")
             {
-                funcName += "00000005";
+                funcName += "NORMAL_ATK_00";
             }
             else
             {
@@ -334,7 +334,7 @@ public class UnitBaseEngine : MonoBehaviour
     //HP쪽 스킬들처럼 한 함수가 두 가지 이상의 일을 하는 경우에는 일단 "00000000" || "00000001" 인 경우 모두 "00000000"으로 해석하도록 임시 조치를 취할 것
 
     //HP에 관여하는 스킬들
-    private void _Skill_00000000(Transform attacker, SkillBaseStat whichSkill, bool isUnitUsingThis)
+    private void _Skill_NORMAL_HP_00(Transform attacker, SkillBaseStat whichSkill, bool isUnitUsingThis)
     {
         int isHit_OR_Heal = 0;
 
@@ -401,7 +401,7 @@ public class UnitBaseEngine : MonoBehaviour
     }
 
     //SP(이동속도)에 관여하는 스킬들
-    private void _Skill_00000002(Transform attacker, SkillBaseStat whichSkill, bool isUnitUsingThis)
+    private void _Skill_NORMAL_SP_00(Transform attacker, SkillBaseStat whichSkill, bool isUnitUsingThis)
     {
         int isBuFF_OR_DeBuff = 0;
 
@@ -457,7 +457,7 @@ public class UnitBaseEngine : MonoBehaviour
      * @param Amount 한 번 회복하거나 감소하는 마나량
      * @param isUnitUsingThis 마나 회복(true), 마나 감소(false)
      */
-    private void _Skill_00000004(Transform attacker, SkillBaseStat whichSkill, bool isUnitUsingThis)
+    private void _Skill_NORMAL_MP_00(Transform attacker, SkillBaseStat whichSkill, bool isUnitUsingThis)
     {
         int isHIT_OR_Heal;
 
@@ -477,7 +477,7 @@ public class UnitBaseEngine : MonoBehaviour
     }
 
     //산탄(5번, "00000005") 스킬과 속사(6번, "00000006") 스킬을 통합한 것
-    private void _Skill_00000005(Transform attacker, SkillBaseStat whichSkill, bool isUnitUsingThis)
+    private void _Skill_NORMAL_ATK_00(Transform attacker, SkillBaseStat whichSkill, bool isUnitUsingThis)
     {
         Vector2 valueVec2 = Rotation_Math.Rotation_AND_Position(attacker.rotation, 0.58f, 0.0f);
 
@@ -541,7 +541,7 @@ public class UnitBaseEngine : MonoBehaviour
     //지형 소환
     //Enemy의 경우 마우스를 이용한 투사체가 아닌 물체 소환을 수행할 이유가 없으므로 신경쓰지 않는다.
     //7번 스킬 지형소환처럼 마우스로 투사체가 아닌 물체를 소환하는 스킬
-    private void _Skill_00000007(Transform attacker, SkillBaseStat whichSkill, bool isUnitUsingThis)
+    private void _Skill_NORMAL_SPW_00(Transform attacker, SkillBaseStat whichSkill, bool isUnitUsingThis)
     {
         //player인 경우
         if (playerController != null)
@@ -566,7 +566,7 @@ public class UnitBaseEngine : MonoBehaviour
      * @param Distance Distance 플레이어와 HailStoneSpawner 사이의 거리
      * @param Height HailStoneSpawner의 높이 
      */
-    private void _Skill_00000008(Transform attacker, SkillBaseStat whichSkill, bool isUnitUsingThis)
+    private void _Skill_NORMAL_SPW_01(Transform attacker, SkillBaseStat whichSkill, bool isUnitUsingThis)
     {
         //distance랑 height 값도 나중엔 whichSkill에서 긁어오거나 PMS_Math에서 긁어올 것
         float distance = 10.0f;
@@ -596,7 +596,7 @@ public class UnitBaseEngine : MonoBehaviour
      * @param Amount 한 번 회복하거나 감소하는 기의 양
      * @param isUnitUsingThis 기 회복(true), 기 감소(false)
      */
-    private void _Skill_00000009(Transform attacker, SkillBaseStat whichSkill, bool isUnitUsingThis)
+    private void _Skill_NORMAL_PP_00(Transform attacker, SkillBaseStat whichSkill, bool isUnitUsingThis)
     {
         int isHIT_OR_Heal;
 
@@ -616,7 +616,7 @@ public class UnitBaseEngine : MonoBehaviour
     }
 
     //궁극기 - 폭풍우 (광범위 이속 디버프)
-    private void _Skill_10000000(Transform attacker, SkillBaseStat whichSkill, bool isUnitUsingThis)
+    private void _Skill_FIN000(Transform attacker, SkillBaseStat whichSkill, bool isUnitUsingThis)
     {
         bool isPlayerUsingThis;
 

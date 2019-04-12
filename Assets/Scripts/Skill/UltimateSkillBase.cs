@@ -25,7 +25,7 @@ public class UltimateSkillBase : MonoBehaviour {
         //아래 조치는 임시 조치
 
         //이속 디버프 추가
-        subSkillStats.Add(IO_CSV.__Get_Searched_SkillBaseStat("00000003"));
+        subSkillStats.Add(IO_CSV.__Get_Searched_SkillBaseStat("NORMAL_SP_01"));
         //차이 확인을 위해 임의로 값을 변경한다. (상대 이속 & 회전속도를 70% 감소시키는 디버프)
         subSkillStats[0].__SET_Skill_Rate = 0.7f;
 

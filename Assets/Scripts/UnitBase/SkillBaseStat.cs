@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 using SkillBaseCode;
 
@@ -20,6 +21,8 @@ public class SkillBaseStat {
     private _SKILL_CODE_Main _Skill_Code_M;
     private _SKILL_CODE_Sub _Skill_Code_S;
     private _SKILL_CODE_Time _Skill_Code_T;
+
+    private List<int> isItLocked = new List<int>();
 
     //스킬 이름
     private string _Skill_Name;
@@ -69,10 +72,20 @@ public class SkillBaseStat {
         get { return _Skill_ID; }
     }
 
+    public List<int> __GET_isItLocked
+    {
+        get { return isItLocked; }
+    }
+
     //Setter
     public float __SET_Skill_Rate
     {
         set { _Skill_Rate = value; }
+    }
+
+    public List<int> __SET_isItLocked
+    {
+        set { isItLocked = value; }
     }
 
     //20190215 남은 쿨타임에 따른 UI 효과를 보여주기 위해 추가된 변수
@@ -97,7 +110,7 @@ public class SkillBaseStat {
         time = coolT;
     }
 
-    public void Initialize_Skill(string name, float rate, float coolT, float ingT, int amount, SkillCode skill_Code, string skillID)
+    public void Initialize_Skill(string name, float rate, float coolT, float ingT, int amount, SkillCode skill_Code, string skillID, List<int> _isItLocked)
     {
         _Skill_Name = name;
 
@@ -113,6 +126,8 @@ public class SkillBaseStat {
         _Skill_Code_T = skill_Code._Skill_Code_T;
 
         _Skill_ID = skillID;
+
+        isItLocked = _isItLocked;
     }
 
     //Debug.Log로 확인하는 용도

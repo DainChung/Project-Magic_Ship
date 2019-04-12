@@ -122,6 +122,7 @@ public class EnemyStat : Unit__Base_Stat {
 //특정 방향을 바라보기, 목표로부터 일정 거리 이하가 될 때까지 앞으로 이동, 기본 공격 처럼 매우 기본적인 행동에 대한 함수들이 있다.
 public class EnemyAIEngine {
 
+    public float destiAngle;
     public UnitBaseEngine __ENE_Engine;
 
     //destiTrn을 바라보는 방향 또는 그 반대 방향
@@ -156,7 +157,7 @@ public class EnemyAIEngine {
     {
         //두 지점 사이의 각도 구하기 (도달해야 되는 각도 => 목표 각도)
         //일단 플레이어를 향하는 각도를 구한다.
-        float destiAngle = Mathf.Atan2(destiTrn.position.x - rotated_OBJ.position.x, destiTrn.position.z - rotated_OBJ.position.z) * Mathf.Rad2Deg;
+        float _destiAngle = Mathf.Atan2(destiTrn.position.x - rotated_OBJ.position.x, destiTrn.position.z - rotated_OBJ.position.z) * Mathf.Rad2Deg;
 
         //어떤 방향으로 돌아야 목표 각도에 빠르게 도달할 수 있는지를 계산하기 위한 변수들 => dir값을 1 또는 -1로 결정
         //현재 Enemy가 바라보고 있는 방향의 각도를 구한다.
@@ -173,10 +174,10 @@ public class EnemyAIEngine {
 
         if (is_RunAway)
         {
-            destiAngle = Rotation_Math.Get_Opposite_Direction_Angle(destiAngle);
+            _destiAngle = Rotation_Math.Get_Opposite_Direction_Angle(_destiAngle);
         }
         //방향 계산을 위해 값을 그대로 가져온다.
-        destiAngle_FOR_dir = destiAngle;
+        destiAngle_FOR_dir = _destiAngle;
 
         //아래 Debug.Log를 통해 확인할 수 있다.
         //Debug.Log(destiAngle);
@@ -198,8 +199,9 @@ public class EnemyAIEngine {
             dir *= (-1);
         }
 
+        destiAngle = _destiAngle;
         //목표 각도를 Quaternion으로 바꿔준다.
-        destiQT = Quaternion.Euler(0, destiAngle, 0);
+        destiQT = Quaternion.Euler(0, _destiAngle, 0);
 
         //rotated_OBJ.rotation = destiQT;
 
@@ -463,5 +465,22 @@ public class EnemyController : MonoBehaviour {
     {
         __ENE_AI_Engine.__ENE_Engine._unit_Combat_Engine.Using_Skill(ref enemy_Front, whichDeBuffSkill_Hit_Enemy, false);
         //__ENE_Engine.__ENE_C_Engine.Using_Skill_ENE(ref enemy_Front, whichDeBuffSkill_Hit_Enemy, __ENE_Stat, this, false);
+    }
+
+    //랜덤 데이터 얻을 때에 한해서만 필요한 함수들
+    void OnTriggerEnter(Collider other)
+    {
+        if (__ENE_Stat._GET_ai_Level == 3 && transform.GetComponent<Collider>().isTrigger && other.transform.tag == "Player")
+        {
+            transform.GetComponent<Collider>().isTrigger = false;
+        }
+    }
+
+    void OnTriggerExit(Collider other)
+    {
+        if (__ENE_Stat._GET_ai_Level == 3 && !transform.GetComponent<Collider>().isTrigger && other.transform.tag == "Player")
+        {
+            transform.GetComponent<Collider>().isTrigger = true;
+        }
     }
 }
