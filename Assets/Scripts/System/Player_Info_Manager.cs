@@ -198,7 +198,7 @@ public class Player_Info_Manager : MonoBehaviour {
 
         //저장슬롯ID, 저장날짜
         playerInfoString[0] = playerInfo._GET_saveSlotNum.ToString();
-        playerInfoString[1] = playerInfo._GET_saveDate;
+        playerInfoString[1] = System.DateTime.Now.ToString();
         //ID와 이름
         playerInfoString[2] = playerInfo._GET_Player_ID;
         playerInfoString[3] = playerInfo._GET_Player_Name;

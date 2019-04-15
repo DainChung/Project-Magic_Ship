@@ -4,6 +4,33 @@ using System.Collections;
 
 public class ButtonScript : MonoBehaviour {
 
+    public void GoToGameStage(string name)
+    {
+        int index = -1;
+
+        if (name == "Stage 1") index = 0;
+        else if (name == "Stage 2") index = 1;
+        else index = 2;
+
+        int isLocked = GameObject.FindWithTag("Player").GetComponent<Player_Info_Manager>().__GET_playerInfo._GET_stageIsLocked[index];
+
+        //스테이지 잠김
+        if (isLocked == 0) Debug.Log("잠긴 스테이지");
+        //스테이지 열림
+        else if (isLocked == 1)
+        {
+            SceneManager.LoadScene(name);
+            Debug.Log("플레이 가능한 스테이지");
+        }
+        //이미 클리어한 스테이지
+        else if (isLocked == 2)
+        {
+            SceneManager.LoadScene(name);
+            Debug.Log("이미 클리어한 스테이지");
+        }
+        else { }
+    }
+
 	public void GoToStage(string name)
     {
         SceneManager.LoadScene(name);

@@ -5,10 +5,8 @@ using System.Collections.Generic;
 
 namespace PMS_AISystem
 {
-
     //딥러닝을 적용하기 위한 현재 상황에 관한 정보들
-    public class Situation
-    {
+    public class Situation {
         //적과 플레이어의 위치, 방향 차
         private Vector3 enemy_TO_playerPosition;
         //rotation 대신 각도 값으로 진행한다.
@@ -25,7 +23,9 @@ namespace PMS_AISystem
         //private List<int> playerCur = new List<int>();
         //---------------------------------------------------
 
-        //이전 행동의 DB상에서의 ID
+        private string dataID = "";
+
+        //이전 행동의 ID
         private string beforeDataID = "";
 
         //이번 행동에서 사용할 함수 인덱스들
@@ -52,8 +52,10 @@ namespace PMS_AISystem
         public Vector3 _GET_curFuncName { get { return curFuncName; } }
 
         //값 설정하는 함수
-        public void _SET_Situation(Transform _enemy, Vector3 _playerPos, string _beforeID, Vector3 _curFunc, bool _isPlayerGetHit, bool _isDoSomethingStart)//, int pointVersion, Vector3 enemyCurrent, Vector3 playerCurrent)
+        public void _SET_Situation(string _dataID, Transform _enemy, Vector3 _playerPos, string _beforeID, Vector3 _curFunc, bool _isPlayerGetHit, bool _isDoSomethingStart)//, int pointVersion, Vector3 enemyCurrent, Vector3 playerCurrent)
         {
+            dataID = _dataID;
+
             enemy_TO_playerPosition = _enemy.position - _playerPos;
 
             enemy_TO_playerAngle = _enemy.GetComponent<EnemyController>()._GET__ENE_AI_Engine.destiAngle;

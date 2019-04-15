@@ -5,13 +5,19 @@ EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Scenes:
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/__Sample_SkillEquip_Scene.unity
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/ProtoType.unity
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/StandardStage.unity
+  - enabled: 1
+    path: Assets/Scenes/MainScene.unity
+  - enabled: 1
+    path: Assets/Scenes/SceneSelection.unity
   - enabled: 1
     path: Assets/Scenes/Chapter/Stage 1.unity
   - enabled: 1
     path: Assets/Scenes/Chapter/Stage 2.unity
+  - enabled: 1
+    path: Assets/Scenes/Chapter/Stage 3 Boss.unity
