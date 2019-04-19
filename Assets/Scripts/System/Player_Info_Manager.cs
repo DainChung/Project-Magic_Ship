@@ -131,6 +131,9 @@ public class Player_Info_Manager : MonoBehaviour {
     //File_IO를 실험하기 위한 임시 코드만 작성
     void Start()
     {
+        //초단위까지 나옴
+        //ex) "4/17/2019 10:19:42 PM"
+        //Debug.Log(System.DateTime.Now.ToString());
         //Debug용
         //정상 작동함
         //Write_Player_Info();
