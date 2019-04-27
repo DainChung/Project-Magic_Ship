@@ -81,5 +81,8 @@ public class EnemyIndicator : MonoBehaviour {
         //과잉 생성되는 경우 자동 파괴
         catch (System.NullReferenceException)
         { Destroy(gameObject); }
-	}
+        //갑작스런 Enemy 소멸이 발생했을 때 자동 파괴
+        catch (MissingReferenceException)
+        { Destroy(gameObject); }
+    }
 }

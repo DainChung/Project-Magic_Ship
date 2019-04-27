@@ -212,14 +212,29 @@ public class UnitBaseEngine : MonoBehaviour
             GameObject spawned_OBJ;
             spawned_OBJ = (GameObject)(MonoBehaviour.Instantiate(threw_Ammo, spawnPosition, spawnRotation));
             //투사체가 날아가는 속도를 특정 값으로 설정. 나중엔 DB에서 긁어올 것
-            spawned_OBJ.GetComponent<AmmoBase>().__Init_Ammo(
-                55.0f,
-                attacker.tag,
-                unit_Base_Engine._unit_Stat.__PUB_ATK__Val,
-                unit_Base_Engine._unit_Stat.__PUB_Critical_Rate,
-                unit_Base_Engine._unit_Stat.__PUB_Critical_P,
-                whichSkill
-                );
+            if (unit_Base_Engine.enemyController != null)
+            {
+                spawned_OBJ.GetComponent<AmmoBase>().__Init_Ammo(
+                    unit_Base_Engine.enemyController,
+                    55.0f,
+                    attacker.tag,
+                    unit_Base_Engine._unit_Stat.__PUB_ATK__Val,
+                    unit_Base_Engine._unit_Stat.__PUB_Critical_Rate,
+                    unit_Base_Engine._unit_Stat.__PUB_Critical_P,
+                    whichSkill
+                    );
+            }
+            else
+            {
+                spawned_OBJ.GetComponent<AmmoBase>().__Init_Ammo(
+                    55.0f,
+                    attacker.tag,
+                    unit_Base_Engine._unit_Stat.__PUB_ATK__Val,
+                    unit_Base_Engine._unit_Stat.__PUB_Critical_Rate,
+                    unit_Base_Engine._unit_Stat.__PUB_Critical_P,
+                    whichSkill
+                    );
+            }
         }
 
 
@@ -231,14 +246,29 @@ public class UnitBaseEngine : MonoBehaviour
             GameObject spawned_OBJ;
             spawned_OBJ = (GameObject)(MonoBehaviour.Instantiate(threw_Ammo, attacker.position, attacker.rotation));
             //투사체가 날아가는 속도를 특정 값으로 설정. 나중엔 DB에서 긁어올 것
-            spawned_OBJ.GetComponent<AmmoBase>().__Init_Ammo(
-                55.0f,
-                attacker.tag,
-                unit_Base_Engine._unit_Stat.__PUB_ATK__Val,
-                unit_Base_Engine._unit_Stat.__PUB_Critical_Rate,
-                unit_Base_Engine._unit_Stat.__PUB_Critical_P,
-                whichSkill
-                );
+            if (unit_Base_Engine.enemyController != null)
+            {
+                spawned_OBJ.GetComponent<AmmoBase>().__Init_Ammo(
+                    unit_Base_Engine.enemyController,
+                    55.0f,
+                    attacker.tag,
+                    unit_Base_Engine._unit_Stat.__PUB_ATK__Val,
+                    unit_Base_Engine._unit_Stat.__PUB_Critical_Rate,
+                    unit_Base_Engine._unit_Stat.__PUB_Critical_P,
+                    whichSkill
+                    );
+            }
+            else
+            {
+                spawned_OBJ.GetComponent<AmmoBase>().__Init_Ammo(
+                    55.0f,
+                    attacker.tag,
+                    unit_Base_Engine._unit_Stat.__PUB_ATK__Val,
+                    unit_Base_Engine._unit_Stat.__PUB_Critical_Rate,
+                    unit_Base_Engine._unit_Stat.__PUB_Critical_P,
+                    whichSkill
+                    );
+            }
         }
 
         /** 탄환 발사

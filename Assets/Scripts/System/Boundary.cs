@@ -32,6 +32,9 @@ public class Boundary : MonoBehaviour {
         {
             if(other.tag != "Boundary")
                 other.GetComponent<Rigidbody>().AddForce(addForceValueFOR_ENTER * transform.forward, ForceMode.Impulse);
+
+            if (other.tag == "SampleEnemy")
+                other.GetComponent<EnemyAI>()._SET_isHitB = true;
         }
         //이 물체와 부딪친 물체에 RigidBody가 없으면
         catch (System.NullReferenceException)
@@ -47,6 +50,9 @@ public class Boundary : MonoBehaviour {
         {
             if (other.tag != "Boundary")
                 other.GetComponent<Rigidbody>().AddForce(addForceValueFOR_STAY * transform.forward, ForceMode.Acceleration);
+
+            if (other.tag == "SampleEnemy")
+                other.GetComponent<EnemyAI>()._SET_isHitB = true;
         }
         //이 물체와 부딪친 물체에 RigidBody가 없으면
         catch (System.NullReferenceException)
@@ -62,6 +68,9 @@ public class Boundary : MonoBehaviour {
         {
             if (other.tag != "Boundary")
                 other.GetComponent<Rigidbody>().velocity = velocityFOR_EXIT;
+
+            if (other.tag == "SampleEnemy")
+                other.GetComponent<EnemyAI>()._SET_isHitB = false;
         }
         //이 물체와 부딪친 물체에 RigidBody가 없으면
         catch (System.NullReferenceException)

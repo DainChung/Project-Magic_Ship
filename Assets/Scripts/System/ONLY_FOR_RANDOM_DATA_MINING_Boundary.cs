@@ -8,6 +8,16 @@ public class ONLY_FOR_RANDOM_DATA_MINING_Boundary : MonoBehaviour {
         if (other.tag == "SampleEnemy")
         {
             other.GetComponent<Collider>().isTrigger = false;
+            other.GetComponent<EnemyAI>()._SET_isHitB = true;
+        }
+    }
+
+    void OnTriggerStay(Collider other)
+    {
+        if (other.tag == "SampleEnemy")
+        {
+            other.GetComponent<Collider>().isTrigger = false;
+            other.GetComponent<EnemyAI>()._SET_isHitB = true;
         }
     }
 
@@ -16,6 +26,7 @@ public class ONLY_FOR_RANDOM_DATA_MINING_Boundary : MonoBehaviour {
         if (other.tag == "SampleEnemy")
         {
             other.GetComponent<Collider>().isTrigger = true;
+            other.GetComponent<EnemyAI>()._SET_isHitB = false;
         }
     }
 }

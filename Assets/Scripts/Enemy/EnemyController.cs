@@ -122,7 +122,7 @@ public class EnemyStat : Unit__Base_Stat {
 //특정 방향을 바라보기, 목표로부터 일정 거리 이하가 될 때까지 앞으로 이동, 기본 공격 처럼 매우 기본적인 행동에 대한 함수들이 있다.
 public class EnemyAIEngine {
 
-    public float destiAngle;
+    public float angleComp;
     public UnitBaseEngine __ENE_Engine;
 
     //destiTrn을 바라보는 방향 또는 그 반대 방향
@@ -137,13 +137,6 @@ public class EnemyAIEngine {
     }
 
     public UnitCoolTimer enemyCoolTimer;
-
-    public bool AngleComparison()
-    {
-        bool result = false;
-
-        return result;
-    }
 
     //시계방향 또는 반시계방향으로 돌아야된다는 걸 알려주는 함수
     //true면 시계방향, false면 반시계방향
@@ -164,6 +157,8 @@ public class EnemyAIEngine {
         float curAngle = rotated_OBJ.rotation.eulerAngles.y;
 
         float destiAngle_FOR_dir = 0.0f;
+
+        float destiAngle;
 
         //시계방향 회전을 기본값으로 한다.
         int dir = 1;
@@ -283,6 +278,41 @@ public class EnemyAIEngine {
         //Debug.Log(angleComparison);
     }
 
+    public void GetAngleComp(Transform enemy, Transform destiTrn)
+    {
+        //두 지점 사이의 각도 구하기 (도달해야 되는 각도 => 목표 각도)
+        //일단 플레이어를 향하는 각도를 구한다.
+        float _destiAngle = Mathf.Atan2(destiTrn.position.x - enemy.position.x, destiTrn.position.z - enemy.position.z) * Mathf.Rad2Deg;
+
+        //어떤 방향으로 돌아야 목표 각도에 빠르게 도달할 수 있는지를 계산하기 위한 변수들 => dir값을 1 또는 -1로 결정
+        //현재 Enemy가 바라보고 있는 방향의 각도를 구한다.
+        float curAngle = enemy.rotation.eulerAngles.y;
+
+        float destiAngle_FOR_dir = 0.0f;
+
+        float destiAngle;
+
+        //curAngle은 0 <= curAgnle < 360 (destiAngle은 -180 < destiAngle <= 180)이기 떄문에 curAngle > 180인 경우 curAngle 값을 보정하도록 한다.
+        //curAngle도 -180 < curAngle <= 180으로 변경한다.
+        curAngle = Rotation_Math.Angle360_TO_Angle180(curAngle);
+        //방향 계산을 위해 값을 그대로 가져온다.
+        destiAngle_FOR_dir = _destiAngle;
+
+        //destiAngle_FOR_dir와 curAngle의 부호가 다른 경우
+        if ((destiAngle_FOR_dir < 0 && curAngle >= 0) || (destiAngle_FOR_dir >= 0 && curAngle < 0))
+        {
+            //destiAngle_FOR_dir의 반대방향으로 계산하도록 조정한다.
+            destiAngle_FOR_dir = Rotation_Math.Get_Opposite_Direction_Angle(destiAngle_FOR_dir);
+        }
+
+        destiAngle = _destiAngle;
+        //목표 각도를 Quaternion으로 바꿔준다.
+        destiQT = Quaternion.Euler(0, _destiAngle, 0);
+
+        //호출될 때마다 목표 각도와 현재 각도 차 구하기
+        angleComp = Quaternion.Angle(enemy.rotation, destiQT);
+    }
+
     //충분히 가까울 때까지 앞으로 이동하는 함수
     public void Go_TO_Foward_UNTIL_RayHit(float speed, ref Transform mover, Transform target)
     {
@@ -323,6 +353,7 @@ public class EnemyController : MonoBehaviour {
     }
 
     private EnemyAI __ENE_AI;
+    public EnemyAI __PUB__ENE_AI { get { return __ENE_AI; } set { __ENE_AI = value; } }
 
     private EnemyUI sEnemyUI;
 
@@ -372,7 +403,8 @@ public class EnemyController : MonoBehaviour {
         _AI_FuncList.Add(() => __ENE_AI.AI_Simple_Level0());
         _AI_FuncList.Add(() => __ENE_AI.AI_Simple_Level0_WITH_BOSS());
         _AI_FuncList.Add(() => __ENE_AI.AI_Simple_Level0_BOSS());
-        _AI_FuncList.Add(() => __ENE_AI.AI_DeapLearning__Random_Ver());    
+        _AI_FuncList.Add(() => __ENE_AI.AI_DeapLearning__Random_Ver());
+        _AI_FuncList.Add(() => __ENE_AI.AI_DeapLearning__BigData_Ver());
     }
 
 	// Use this for initialization
@@ -389,6 +421,8 @@ public class EnemyController : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
+
+        __ENE_AI_Engine.GetAngleComp(transform, playerTransform);
 
         //아직 살아있을 때
         if (__ENE_Stat.__PUB__Health_Point > 0)

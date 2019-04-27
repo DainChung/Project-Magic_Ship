@@ -135,7 +135,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1000011401530540}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 33.5, y: 1, z: 33.2}
+  m_LocalPosition: {x: 65.5, y: 1, z: 69.6}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children:
@@ -341,7 +341,7 @@ Rigidbody:
   m_GameObject: {fileID: 1000011401530540}
   serializedVersion: 2
   m_Mass: 1
-  m_Drag: 1
+  m_Drag: 5
   m_AngularDrag: 1
   m_UseGravity: 0
   m_IsKinematic: 0
@@ -359,6 +359,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 32b3ee2b510b93d498ce5b177e31a175, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  playerMustBeFreeze: 0
   __PLY_CoolTimer: {fileID: 0}
   playerTransform: {fileID: 4000011885214964}
   playerAttackerTransforms:
