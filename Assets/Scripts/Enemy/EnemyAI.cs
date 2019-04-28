@@ -30,8 +30,10 @@ public class EnemyAI : MonoBehaviour {
 
     //AI_DeapLearning__Random_Ver에서 사용할 변수들
     private bool isbehaveCoolTimeOn = true;
+    public bool __GET_isbehaveCoolTimeOn { get { return isbehaveCoolTimeOn; } }
 
     private IntVector3 realIndex = new IntVector3(-1,-1,-1);
+    private SituationCUR sitCUR = new SituationCUR("NULL", -1f, -1f, -1f, -1f, new IntVector3(-1,-1,-1), -1f);
 
     private bool isEnd_OF_Stage = false;
     private Transform middle_OF_Stage;
@@ -545,6 +547,7 @@ public class EnemyAI : MonoBehaviour {
 
         if (isbehaveCoolTimeOn)
         {
+            float time = 0.5f + Random.Range(0.0f, 1.0f);
             bool isCloser = false;
 
             behaveID = System.DateTime.Now.ToString() + ": " + gameObject.GetInstanceID().ToString();
@@ -554,65 +557,38 @@ public class EnemyAI : MonoBehaviour {
 
             beforeDistTOInt = ((int)(beforeDist / 10f));
 
+            //알고리즘 상의 한계로 발생하는 오류 정정
+            //공격을 하지도 않았는데 공격이 성공한 것처럼 기록되는 경우, 이전 행동에서 한 공격이 다음 행동 시작 지점에서 성공했을 때 발생하는 것으로 추정됨.
+            //이런 유형의 지난 데이터들을 모두 찾아서 폐기해야됨
+            if (hitCounter != 0 && (realIndex.vecZ == 0 || curDist > 17f))
+            {
+                hitCounter = 0;
+                //Debug.Log("Purifying");
+            }
+
             //데이터 모으기
+            //사거리 이내 데이터는 따로 복사해서 모은다
             switch ((int)(curDist / 10f))
             {
                 case 0:
-                    enemyCollector.listSitCUR0.Add(new SituationCUR(behaveID, transform.position.x, transform.position.z, curDist, enemyController._GET__ENE_AI_Engine.angleComp, realIndex, isHitB));
-                    enemyCollector.listSitAFT0.Add(new SituationAFT(behaveID, transform.position.x, transform.position.z, curDist, enemyController._GET__ENE_AI_Engine.angleComp, beforeBehaveID, beforeDistTOInt, hitCounter, isCloser, isHitB));
+                    enemyCollector.listSitCUR0.Add(new SituationCUR(behaveID, transform.position.x, transform.position.z, curDist, enemyController._GET__ENE_AI_Engine.angleComp, realIndex, time));
+                    enemyCollector.listSitAFT0.Add(new SituationAFT(behaveID, transform.position.x, transform.position.z, curDist, enemyController._GET__ENE_AI_Engine.angleComp, beforeBehaveID, beforeDistTOInt, hitCounter, isCloser));
                     break;
                 case 1:
-                    enemyCollector.listSitCUR1.Add(new SituationCUR(behaveID, transform.position.x, transform.position.z, curDist, enemyController._GET__ENE_AI_Engine.angleComp, realIndex, isHitB));
-                    enemyCollector.listSitAFT1.Add(new SituationAFT(behaveID, transform.position.x, transform.position.z, curDist, enemyController._GET__ENE_AI_Engine.angleComp, beforeBehaveID, beforeDistTOInt, hitCounter, isCloser, isHitB));
-                    break;
-                case 2:
-                    enemyCollector.listSitCUR2.Add(new SituationCUR(behaveID, transform.position.x, transform.position.z, curDist, enemyController._GET__ENE_AI_Engine.angleComp, realIndex, isHitB));
-                    enemyCollector.listSitAFT2.Add(new SituationAFT(behaveID, transform.position.x, transform.position.z, curDist, enemyController._GET__ENE_AI_Engine.angleComp, beforeBehaveID, beforeDistTOInt, hitCounter, isCloser, isHitB));
-                    break;
-                case 3:
-                    enemyCollector.listSitCUR3.Add(new SituationCUR(behaveID, transform.position.x, transform.position.z, curDist, enemyController._GET__ENE_AI_Engine.angleComp, realIndex, isHitB));
-                    enemyCollector.listSitAFT3.Add(new SituationAFT(behaveID, transform.position.x, transform.position.z, curDist, enemyController._GET__ENE_AI_Engine.angleComp, beforeBehaveID, beforeDistTOInt, hitCounter, isCloser, isHitB));
-                    break;
-                case 4:
-                    enemyCollector.listSitCUR4.Add(new SituationCUR(behaveID, transform.position.x, transform.position.z, curDist, enemyController._GET__ENE_AI_Engine.angleComp, realIndex, isHitB));
-                    enemyCollector.listSitAFT4.Add(new SituationAFT(behaveID, transform.position.x, transform.position.z, curDist, enemyController._GET__ENE_AI_Engine.angleComp, beforeBehaveID, beforeDistTOInt, hitCounter, isCloser, isHitB));
-                    break;
-                case 5:
-                    enemyCollector.listSitCUR5.Add(new SituationCUR(behaveID, transform.position.x, transform.position.z, curDist, enemyController._GET__ENE_AI_Engine.angleComp, realIndex, isHitB));
-                    enemyCollector.listSitAFT5.Add(new SituationAFT(behaveID, transform.position.x, transform.position.z, curDist, enemyController._GET__ENE_AI_Engine.angleComp, beforeBehaveID, beforeDistTOInt, hitCounter, isCloser, isHitB));
-                    break;
-                case 6:
-                    enemyCollector.listSitCUR6.Add(new SituationCUR(behaveID, transform.position.x, transform.position.z, curDist, enemyController._GET__ENE_AI_Engine.angleComp, realIndex, isHitB));
-                    enemyCollector.listSitAFT6.Add(new SituationAFT(behaveID, transform.position.x, transform.position.z, curDist, enemyController._GET__ENE_AI_Engine.angleComp, beforeBehaveID, beforeDistTOInt, hitCounter, isCloser, isHitB));
-                    break;
-                case 7:
-                    enemyCollector.listSitCUR7.Add(new SituationCUR(behaveID, transform.position.x, transform.position.z, curDist, enemyController._GET__ENE_AI_Engine.angleComp, realIndex, isHitB));
-                    enemyCollector.listSitAFT7.Add(new SituationAFT(behaveID, transform.position.x, transform.position.z, curDist, enemyController._GET__ENE_AI_Engine.angleComp, beforeBehaveID, beforeDistTOInt, hitCounter, isCloser, isHitB));
-                    break;
-                case 8:
-                    enemyCollector.listSitCUR8.Add(new SituationCUR(behaveID, transform.position.x, transform.position.z, curDist, enemyController._GET__ENE_AI_Engine.angleComp, realIndex, isHitB));
-                    enemyCollector.listSitAFT8.Add(new SituationAFT(behaveID, transform.position.x, transform.position.z, curDist, enemyController._GET__ENE_AI_Engine.angleComp, beforeBehaveID, beforeDistTOInt, hitCounter, isCloser, isHitB));
-                    break;
-                case 9:
-                    enemyCollector.listSitCUR9.Add(new SituationCUR(behaveID, transform.position.x, transform.position.z, curDist, enemyController._GET__ENE_AI_Engine.angleComp, realIndex, isHitB));
-                    enemyCollector.listSitAFT9.Add(new SituationAFT(behaveID, transform.position.x, transform.position.z, curDist, enemyController._GET__ENE_AI_Engine.angleComp, beforeBehaveID, beforeDistTOInt, hitCounter, isCloser, isHitB));
-                    break;
-                case 10:
-                    enemyCollector.listSitCUR10.Add(new SituationCUR(behaveID, transform.position.x, transform.position.z, curDist, enemyController._GET__ENE_AI_Engine.angleComp, realIndex, isHitB));
-                    enemyCollector.listSitAFT10.Add(new SituationAFT(behaveID, transform.position.x, transform.position.z, curDist, enemyController._GET__ENE_AI_Engine.angleComp, beforeBehaveID, beforeDistTOInt, hitCounter, isCloser, isHitB));
-                    break;
-                default:
-                    enemyCollector.listSitCUR.Add(new SituationCUR(behaveID, transform.position.x, transform.position.z, curDist, enemyController._GET__ENE_AI_Engine.angleComp, realIndex, isHitB));
-                    enemyCollector.listSitAFT.Add(new SituationAFT(behaveID, transform.position.x, transform.position.z, curDist, enemyController._GET__ENE_AI_Engine.angleComp, beforeBehaveID, beforeDistTOInt, hitCounter, isCloser, isHitB));
+                    enemyCollector.listSitCUR1.Add(new SituationCUR(behaveID, transform.position.x, transform.position.z, curDist, enemyController._GET__ENE_AI_Engine.angleComp, realIndex, time));
+                    enemyCollector.listSitAFT1.Add(new SituationAFT(behaveID, transform.position.x, transform.position.z, curDist, enemyController._GET__ENE_AI_Engine.angleComp, beforeBehaveID, beforeDistTOInt, hitCounter, isCloser));
                     break;
             }
+            //사거리 외 & 이내 데이터 모두 한 곳에 모은다
+            enemyCollector.listSitCUR.Add(new SituationCUR(behaveID, transform.position.x, transform.position.z, curDist, enemyController._GET__ENE_AI_Engine.angleComp, realIndex, time));
+            enemyCollector.listSitAFT.Add(new SituationAFT(behaveID, transform.position.x, transform.position.z, curDist, enemyController._GET__ENE_AI_Engine.angleComp, beforeBehaveID, beforeDistTOInt, hitCounter, isCloser));
 
             realIndex.InitIntVector3(listIndex_Move, listIndex_Rotate, listIndex_Attack);
 
             beforeBehaveID = behaveID;
             beforeDist = curDist;
             //0.5~1.5초 마다 행동을 갱신한다 (값 변경될 수 있음)
-            StartCoroutine(enemyController.enemyCoolTimer.Timer(0.5f + Random.Range(0.0f, 1.0f), (input) => { isbehaveCoolTimeOn = input; }, true, (input) => { dummy = input; }));
+            StartCoroutine(enemyController.enemyCoolTimer.Timer(time, (input) => { isbehaveCoolTimeOn = input; }, true, (input) => { dummy = input; }));
 
             hitCounter = 0;
         }
@@ -633,33 +609,43 @@ public class EnemyAI : MonoBehaviour {
 
     public void AI_DeapLearning__BigData_Ver()
     {
-        float dummy = 0f;
+        //임시로 추가한 것, P를 누르면 모든 데이터 수집 개체 삭제 및 데이터 저장
+        if (Input.GetKeyDown(KeyCode.M))
+        {
+            Destroy(gameObject);
+        }
 
-        //Debug.Log(enemyController._GET__ENE_AI_Engine.angleComp);
+        float dummy = 0f;
 
         if (isbehaveCoolTimeOn)
         {
             float curDist = Vector3.Distance(transform.position, enemyController.playerTransform.position);
-            realIndex = enemyCollector.SearchGoodDoing(curDist, enemyController._GET__ENE_AI_Engine.angleComp);
 
-            //Debug.Log("Do: "+ realIndex.IntVector3ToString());
+            if (hitCounter != 0 && curDist <= 17f && sitCUR._doing.vecZ != 0)
+            {
+                enemyCollector.listSitCUR.Add(sitCUR);
+                //Debug.Log(enemyCollector.listSitCUR[(enemyCollector.listSitCUR.Count - 1)]._id);
+            }
 
-            //0.5~1.5초 마다 행동을 갱신한다 (값 변경될 수 있음)
-            StartCoroutine(enemyController.enemyCoolTimer.Timer(0.5f + Random.Range(0.0f, 1.0f), (input) => { isbehaveCoolTimeOn = input; }, true, (input) => { dummy = input; }));
+            sitCUR = enemyCollector.SearchGoodSitCUR(curDist, enemyController._GET__ENE_AI_Engine.angleComp);
+           
+            //DataBase에서 긁어온 정보의 time동안 행동한다.
+            StartCoroutine(enemyController.enemyCoolTimer.Timer(sitCUR._time, (input) => { isbehaveCoolTimeOn = input; }, true, (input) => { dummy = input; }));
+            hitCounter = 0;
         }
 
         //1차적으로 일반 공격만 생각하도록 한다.
         //공격 쿨타임도 끝났고 공격을 하려는 경우
-        if (__ENE_AI_Engine._PUB_enemy_Is_ON_CoolTime[1] && realIndex.vecZ != 0 && realIndex.vecZ < behaveList_Attack.Count)
+        if (__ENE_AI_Engine._PUB_enemy_Is_ON_CoolTime[1] && sitCUR._doing.vecZ != 0 && sitCUR._doing.vecZ < behaveList_Attack.Count)
         {
             //주어진 공격 수행
-            behaveList_Attack[realIndex.vecZ]();
+            behaveList_Attack[sitCUR._doing.vecZ]();
         }
 
         //주어진 이동 수행
-        behaveList_Move[realIndex.vecX]();
+        behaveList_Move[sitCUR._doing.vecX]();
         //주어진 회전 수행
-        behaveList_Rotate[realIndex.vecY]();
+        behaveList_Rotate[sitCUR._doing.vecY]();
     }
 
     //랜덤 행동 중 아무것도 안 하는 함수

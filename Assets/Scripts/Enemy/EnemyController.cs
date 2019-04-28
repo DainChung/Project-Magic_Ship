@@ -504,7 +504,7 @@ public class EnemyController : MonoBehaviour {
     //랜덤 데이터 얻을 때에 한해서만 필요한 함수들
     void OnTriggerEnter(Collider other)
     {
-        if (__ENE_Stat._GET_ai_Level == 3 && transform.GetComponent<Collider>().isTrigger && other.transform.tag == "Player")
+        if ((__ENE_Stat._GET_ai_Level == 3 || __ENE_Stat._GET_ai_Level == 4) && transform.GetComponent<Collider>().isTrigger && other.transform.tag == "Player")
         {
             transform.GetComponent<Collider>().isTrigger = false;
         }
@@ -512,7 +512,7 @@ public class EnemyController : MonoBehaviour {
 
     void OnTriggerExit(Collider other)
     {
-        if (__ENE_Stat._GET_ai_Level == 3 && !transform.GetComponent<Collider>().isTrigger && other.transform.tag == "Player")
+        if ((__ENE_Stat._GET_ai_Level == 3 || __ENE_Stat._GET_ai_Level == 4) && !transform.GetComponent<Collider>().isTrigger && other.transform.tag == "Player")
         {
             transform.GetComponent<Collider>().isTrigger = true;
         }

@@ -152,7 +152,8 @@ public class AmmoBase : MonoBehaviour {
             other.GetComponent<Rigidbody>().AddForce(transform.forward * 4f, ForceMode.Impulse);
 
             //0.5 ~ 1.5초 간 얼마나 많이 명중했는지 알려준다.
-            enemyAI.hitCounter++;
+            //행동을 갱신하는 동안은 예외로 둔다.
+            if(!enemyAI.__GET_isbehaveCoolTimeOn)   enemyAI.hitCounter++;
 
             //디버프가 딸린 투사체의 경우
             if (whichSkill != null && whichSkill.__GET_Skill_Code_S != SkillBaseCode._SKILL_CODE_Sub.NULL)

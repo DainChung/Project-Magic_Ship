@@ -445,7 +445,7 @@ namespace File_IO {
                         float CURTrn_dist = reader.GetFloat(3);
                         float CURTrn_angle = reader.GetFloat(4);
 
-                        cur.Add(new SituationCUR("NULL", -1f, -1f, -1f, -1f, new IntVector3(-1, -1, -1), false));
+                        cur.Add(new SituationCUR("NULL", -1f, -1f, -1f, -1f, new IntVector3(-1, -1, -1), -1f));
 
                         cur[index]._id = id;
                         cur[index]._posX = CURTrn_enePosX;
@@ -467,9 +467,12 @@ namespace File_IO {
 
                     while (reader.Read())
                     {
+
+                        string id = reader.GetString(0);
                         int CURDo_mov = reader.GetInt32(1);
                         int CURDo_rot = reader.GetInt32(2);
                         int CURDo_atk = reader.GetInt32(3);
+
 
                         cur[index]._doing = new IntVector3(CURDo_mov, CURDo_rot, CURDo_atk);
 
@@ -487,13 +490,11 @@ namespace File_IO {
 
                     while (reader.Read())
                     {
-                        int CURBo = reader.GetInt32(1);
-                        bool CURBo_hB = false;
 
-                        if (CURBo == 1)
-                            CURBo_hB = true;
+                        string id = reader.GetString(0);
+                        float CURBo_Time = reader.GetFloat(1);
 
-                        cur[index]._isHitB = CURBo_hB;
+                        cur[index]._time = CURBo_Time;
 
                         index++;
                     }
@@ -517,7 +518,7 @@ namespace File_IO {
                         float AFTTrn_dist = reader.GetFloat(3);
                         float AFTTrn_angle = reader.GetFloat(4);
 
-                        aft.Add(new SituationAFT("NULL", -1f, -1f, -1f, -1f, "NULL", -1, -1, false, false));
+                        aft.Add(new SituationAFT("NULL", -1f, -1f, -1f, -1f, "NULL", -1, -1, false));
 
                         aft[index]._id = id;
                         aft[index]._posX = AFTTrn_enePosX;
@@ -541,21 +542,16 @@ namespace File_IO {
                     {
                         int AFTBo_P = reader.GetInt32(1);
                         int AFTBo_C = reader.GetInt32(2);
-                        int AFTBo_B = reader.GetInt32(3);
                         string AFTBo_bID = reader.GetString(4);
                         int AFTBo_bD = reader.GetInt32(5);
 
                         bool AFTBo_c = false;
-                        bool AFTBo_hB = false;
 
                         if (AFTBo_C == 1)
                             AFTBo_c = true;
-                        if (AFTBo_B == 1)
-                            AFTBo_hB = true;
 
                         aft[index]._hitCounter = AFTBo_P;
                         aft[index]._closer = AFTBo_c;
-                        aft[index]._isHitB = AFTBo_hB;
                         aft[index]._beforeID = AFTBo_bID;
                         aft[index]._beforeDB = AFTBo_bD;
 
@@ -580,6 +576,7 @@ namespace File_IO {
         }
 
         //"behaveData0"처럼 뒤의 숫자도 써줘야 됨
+        //이제 안 써도 됨, 모든 데이터 "behaveData"로 통합
         public static List<SituationCUR> ReadSitCUR_FROM_DB(string fileName)
         {
             List<SituationCUR> cur = new List<SituationCUR>();
@@ -599,6 +596,8 @@ namespace File_IO {
 
                     IDataReader reader = dbCommand.ExecuteReader();
 
+                    List<string> ids = new List<string>();
+
                     int index = 0;
 
                     while (reader.Read())
@@ -609,15 +608,22 @@ namespace File_IO {
                         float CURTrn_dist = reader.GetFloat(3);
                         float CURTrn_angle = reader.GetFloat(4);
 
-                        cur.Add(new SituationCUR("NULL", -1f, -1f, -1f, -1f, new IntVector3(-1, -1, -1), false));
+                        if (CURTrn_dist <= 17)
+                        {
+                            cur.Add(new SituationCUR("NULL", -1f, -1f, -1f, -1f, new IntVector3(-1, -1, -1), -1f));
 
-                        cur[index]._id = id;
-                        cur[index]._posX = CURTrn_enePosX;
-                        cur[index]._posZ = CURTrn_enePosZ;
-                        cur[index]._dist = CURTrn_dist;
-                        cur[index]._angleComp = CURTrn_angle;
+                            cur[index]._id = id;
+                            cur[index]._posX = CURTrn_enePosX;
+                            cur[index]._posZ = CURTrn_enePosZ;
+                            cur[index]._dist = CURTrn_dist;
+                            cur[index]._angleComp = CURTrn_angle;
 
-                        index++;
+                            index++;
+                        }
+                        else
+                        {
+                            ids.Add(id);
+                        }
                     }
 
                     reader.Close();
@@ -631,13 +637,28 @@ namespace File_IO {
 
                     while (reader.Read())
                     {
+                        bool checker = false;
+
+                        string id = reader.GetString(0);
                         int CURDo_mov = reader.GetInt32(1);
                         int CURDo_rot = reader.GetInt32(2);
                         int CURDo_atk = reader.GetInt32(3);
 
-                        cur[index]._doing = new IntVector3(CURDo_mov, CURDo_rot, CURDo_atk);
+                        foreach (string item in ids)
+                        {
+                            if (item == id)
+                            {
+                                checker = true;
+                                break;
+                            }
+                        }
 
-                        index++;
+                        if (!checker)
+                        {
+                            cur[index]._doing = new IntVector3(CURDo_mov, CURDo_rot, CURDo_atk);
+
+                            index++;
+                        }
                     }
 
                     reader.Close();
@@ -651,15 +672,26 @@ namespace File_IO {
 
                     while (reader.Read())
                     {
-                        int CURBo = reader.GetInt32(1);
-                        bool CURBo_hB = false;
+                        bool checker = false;
 
-                        if (CURBo == 1)
-                            CURBo_hB = true;
+                        string id = reader.GetString(0);
+                        float time = reader.GetFloat(1);
+                       
+                        foreach (string item in ids)
+                        {
+                            if (item == id)
+                            {
+                                checker = true;
+                                break;
+                            }
+                        }
 
-                        cur[index]._isHitB = CURBo_hB;
+                        if (!checker)
+                        {
+                            cur[index]._time = time;
 
-                        index++;
+                            index++;
+                        }
                     }
 
                     //닫아주고 초기화
@@ -671,6 +703,15 @@ namespace File_IO {
                 dbConnection.Close();
             }
 
+            for (int i = 0; i < cur.Count; i++)
+            {
+                if (cur[i]._doing.vecZ == 0)
+                {
+                    cur.RemoveAt(i);
+                    i--;
+                }
+            }
+
             return cur;
         }
 
@@ -678,7 +719,7 @@ namespace File_IO {
         //현재 거리, 현재 각도와 가장 유사했을 때 가장 좋았던 행동들을 출력하는 함수
         public static IntVector3 Search_Doing_IN_DB(string fileName, float posX, float posZ, float eneTOplyDist, float eneTOplyAngle)
         {
-            fileName = @"Data Source=" + dbPath + "/" + fileName + ((int)(eneTOplyDist/ 10f)) + ".db";
+            fileName = @"Data Source=" + dbPath + "/" + fileName + ".db";
             //fileName = @"Data Source=" + dbPath + "/" + fileName + ".db";
 
             //Debug.Log("file: " + fileName);
@@ -777,7 +818,7 @@ namespace File_IO {
              */
             //테이블 총 6개
 
-            fileName = @"Data Source=" + dbPath + "/" + fileName + ((int)(sitCUR._dist / 10f)) + ".db";
+            fileName = @"Data Source=" + dbPath + "/" + fileName + ".db";
             //Debug.Log(fileName);
             //fileName = @"Data Source=" + dbPath + "/" + fileName + ".db";
 
@@ -817,17 +858,13 @@ namespace File_IO {
                         dbCommand.ExecuteNonQuery();
 
                         //CUR_Bools 테이블에 대한 Query문 준비
-                        sqlQuery = "INSERT INTO CUR_Bools (CUR_Bo_id, CUR_Bo_hitBoundary)VALUES (@id, @hitBound);";
-
-                        int hitBound = 0;
-
-                        if (sitCUR._isHitB) hitBound = 1;
+                        sqlQuery = "INSERT INTO CUR_Bools (CUR_Bo_id, CUR_Bo_time)VALUES (@id, @time);";
 
                         dbCommand.CommandText = sqlQuery;
 
                         //파라미터 입력
                         dbCommand.Parameters.Add(new SqliteParameter("@id", sitCUR._id));
-                        dbCommand.Parameters.Add(new SqliteParameter("@hitBound", hitBound));
+                        dbCommand.Parameters.Add(new SqliteParameter("@time", sitCUR._time));
 
                         dbCommand.ExecuteNonQuery();
 
@@ -851,7 +888,7 @@ namespace File_IO {
              */
             //테이블 총 6개
 
-            fileName = @"Data Source=" + dbPath + "/" + fileName + ((int)(sitAFT._dist / 10f)) + ".db";
+            fileName = @"Data Source=" + dbPath + "/" + fileName + ".db";
             //fileName = @"Data Source=" + dbPath + "/" + fileName + ".db";
 
             using (var dbConnection = new SqliteConnection(fileName))
@@ -880,13 +917,11 @@ namespace File_IO {
                         dbCommand.ExecuteNonQuery();
 
                         //AFT_Bools 테이블에 대한 Query문 준비
-                        sqlQuery = "INSERT INTO AFT_Bools (AFT_Bo_id, AFT_Bo_getHitCount, AFT_Bo_gettingCloser, AFT_Bo_hitBoundary, AFT_Bo_beforeBehaveID, AFT_Bo_beforeBehaveDB)VALUES (@id, @_isPlayerGetHitCount, @getCloser, @hitBound, @beforeID, @beforeDB);";
+                        sqlQuery = "INSERT INTO AFT_Bools (AFT_Bo_id, AFT_Bo_getHitCount, AFT_Bo_gettingCloser, AFT_Bo_beforeBehaveID, AFT_Bo_beforeBehaveDB)VALUES (@id, @_isPlayerGetHitCount, @getCloser, @beforeID, @beforeDB);";
 
                         int getCloser = 0;
-                        int hitBound = 0;
 
                         if (sitAFT._closer) getCloser = 1;
-                        if (sitAFT._isHitB) hitBound = 1;
 
                         dbCommand.CommandText = sqlQuery;
 
@@ -894,7 +929,6 @@ namespace File_IO {
                         dbCommand.Parameters.Add(new SqliteParameter("@id", sitAFT._id));
                         dbCommand.Parameters.Add(new SqliteParameter("@_isPlayerGetHitCount", sitAFT._hitCounter));
                         dbCommand.Parameters.Add(new SqliteParameter("@getCloser", getCloser));
-                        dbCommand.Parameters.Add(new SqliteParameter("@hitBound", hitBound));
                         dbCommand.Parameters.Add(new SqliteParameter("@beforeID", sitAFT._beforeID));
                         dbCommand.Parameters.Add(new SqliteParameter("@beforeDB", sitAFT._beforeDB));
 
@@ -905,156 +939,6 @@ namespace File_IO {
                     dbTranssaction.Commit();
                 }
 
-                dbConnection.Close();
-            }
-        }
-
-        //dataID = (행동 시작 시점에서의 System.DateTime.Now) + ": " + (gameObject.GetInstanceID);
-        //CUR전용 함수
-        public static void WriteDB_CUR(string fileName, List<SituationCUR> sitCUR, int index)
-        {
-            /* 예상 데이터 분류 (()안은 AD, BD가 들어갈 자리 => id로 AD, BD를 구분할 필요 없음)
-             * TABLE: CUR_Transform, AFT_Transform, CUR_Doing, AFT_Doing, CUR_Bools, AFT_Bools
-             * ()_Transform => ()Trn_id, ()Trn_enePosX, ()Trn_enePosZ, ()Trn_dist, ()Trn_angles
-             * ()_Doing => ()Do_id, ()Do_Mov, ()Do_Rot, ()Do_Atk
-             * ()_Bools => ()Bo_id, ()Bo_plyGetHit, ()Bo_plyCloser, ()Bo_hitBoundary
-             */
-            //테이블 총 6개
-
-            fileName = @"Data Source=" + dbPath + "/" + fileName + index + ".db";
-            //fileName = @"Data Source=" + dbPath + "/" + fileName + ".db";
-
-            using (var dbConnection = new SqliteConnection(fileName))
-            {
-
-                dbConnection.Open();
-
-
-                using (SqliteTransaction dbTransaction = dbConnection.BeginTransaction())
-                {
-                    for (int i = 0; i < sitCUR.Count; i++)
-                    {
-                        using (IDbCommand dbCommand = dbConnection.CreateCommand())
-                        {
-                            //CUR_Transform 테이블에 대한 Query문 준비
-                            string sqlQuery = "INSERT INTO CUR_Transform (CUR_Trn_id, CUR_Trn_posX, CUR_Trn_posZ, CUR_Trn_dist, CUR_Trn_angle) VALUES (@id, @posX, @posZ, @_ene_TO_plyDist, @_ene_TO_plyAngles);";
-
-                            dbCommand.CommandText = sqlQuery;
-
-                            //파라미터 입력
-                            dbCommand.Parameters.Add(new SqliteParameter("@id", sitCUR[i]._id));
-                            dbCommand.Parameters.Add(new SqliteParameter("@posX", sitCUR[i]._posX));
-                            dbCommand.Parameters.Add(new SqliteParameter("@posZ", sitCUR[i]._posZ));
-                            dbCommand.Parameters.Add(new SqliteParameter("@_ene_TO_plyDist", sitCUR[i]._dist));
-                            dbCommand.Parameters.Add(new SqliteParameter("@_ene_TO_plyAngles", sitCUR[i]._angleComp));
-
-                            dbCommand.ExecuteNonQuery();
-                            //CUR_Doing 테이블에 대한 Query문 준비
-                            sqlQuery = "INSERT INTO CUR_Doing (CUR_Do_id, CUR_Do_mov, CUR_Do_rot, CUR_Do_atk) VALUES (@id, @_doingMov, @_doingRot, @_doingAtk);";
-
-                            dbCommand.CommandText = sqlQuery;
-
-                            //파라미터 입력
-                            dbCommand.Parameters.Add(new SqliteParameter("@id", sitCUR[i]._id));
-                            dbCommand.Parameters.Add(new SqliteParameter("@_doingMov", sitCUR[i]._doing.vecX));
-                            dbCommand.Parameters.Add(new SqliteParameter("@_doingRot", sitCUR[i]._doing.vecY));
-                            dbCommand.Parameters.Add(new SqliteParameter("@_doingAtk", sitCUR[i]._doing.vecZ));
-
-                            dbCommand.ExecuteNonQuery();
-
-                            //CUR_Bools 테이블에 대한 Query문 준비
-                            sqlQuery = "INSERT INTO CUR_Bools (CUR_Bo_id, CUR_Bo_hitBoundary)VALUES (@id, @hitBound);";
-
-                            int hitBound = 0;
-
-                            if (sitCUR[i]._isHitB) hitBound = 1;
-
-                            dbCommand.CommandText = sqlQuery;
-
-                            //파라미터 입력
-                            dbCommand.Parameters.Add(new SqliteParameter("@id", sitCUR[i]._id));
-                            dbCommand.Parameters.Add(new SqliteParameter("@hitBound", hitBound));
-
-                            dbCommand.ExecuteNonQuery();
-
-                            dbCommand.Dispose();
-                        }
-
-                    }
-                    dbTransaction.Commit();
-                }
-                dbConnection.Close();
-            }
-        }
-
-        //AFT전용 함수
-        public static void WriteDB_AFT(string fileName, List<SituationAFT> sitAFT, int index)
-        {
-            /* 예상 데이터 분류 (()안은 AD, BD가 들어갈 자리 => id로 AD, BD를 구분할 필요 없음)
-             * TABLE: CUR_Transform, AFT_Transform, CUR_Doing, AFT_Doing, CUR_Bools, AFT_Bools
-             * ()_Transform => ()Trn_id, ()Trn_enePosX, ()Trn_enePosZ, ()Trn_dist, ()Trn_angles
-             * ()_Doing => ()Do_id, ()Do_Mov, ()Do_Rot, ()Do_Atk
-             * ()_Bools => ()Bo_id, ()Bo_plyGetHit, ()Bo_plyCloser, ()Bo_hitBoundary
-             */
-            //테이블 총 6개
-
-            fileName = @"Data Source=" + dbPath + "/" + fileName + index + ".db";
-            //fileName = @"Data Source=" + dbPath + "/" + fileName + ".db";
-
-            using (var dbConnection = new SqliteConnection(fileName))
-            {
-
-                dbConnection.Open();
-
-                using (SqliteTransaction dbTranssaction = dbConnection.BeginTransaction())
-                {
-                    for (int i = 0; i < sitAFT.Count; i++)
-                    {
-                        using (IDbCommand dbCommand = dbConnection.CreateCommand())
-                        {
-
-                            //AFT_Transform 테이블에 대한 Query문 준비
-                            string sqlQuery = "INSERT INTO AFT_Transform (AFT_Trn_id, AFT_Trn_posX, AFT_Trn_posZ, AFT_Trn_dist, AFT_Trn_angle) VALUES (@id, @posX, @posZ, @_ene_TO_plyDist, @_ene_TO_plyAngles);";
-
-                            dbCommand.CommandText = sqlQuery;
-
-                            //파라미터 입력
-                            dbCommand.Parameters.Add(new SqliteParameter("@id", sitAFT[i]._id));
-                            dbCommand.Parameters.Add(new SqliteParameter("@posX", sitAFT[i]._posX));
-                            dbCommand.Parameters.Add(new SqliteParameter("@posZ", sitAFT[i]._posZ));
-                            dbCommand.Parameters.Add(new SqliteParameter("@_ene_TO_plyDist", sitAFT[i]._dist));
-                            dbCommand.Parameters.Add(new SqliteParameter("@_ene_TO_plyAngles", sitAFT[i]._angleComp));
-
-                            //Query 전송 및 수행
-                            dbCommand.ExecuteNonQuery();
-
-                            //AFT_Bools 테이블에 대한 Query문 준비
-                            sqlQuery = "INSERT INTO AFT_Bools (AFT_Bo_id, AFT_Bo_getHitCount, AFT_Bo_gettingCloser, AFT_Bo_hitBoundary, AFT_Bo_beforeBehaveID, AFT_Bo_beforeBehaveDB)VALUES (@id, @_isPlayerGetHitCount, @getCloser, @hitBound, @beforeID, @beforeDB);";
-
-                            int getCloser = 0;
-                            int hitBound = 0;
-
-                            if (sitAFT[i]._closer) getCloser = 1;
-                            if (sitAFT[i]._isHitB) hitBound = 1;
-
-                            dbCommand.CommandText = sqlQuery;
-
-                            //파라미터 입력
-                            dbCommand.Parameters.Add(new SqliteParameter("@id", sitAFT[i]._id));
-                            dbCommand.Parameters.Add(new SqliteParameter("@_isPlayerGetHitCount", sitAFT[i]._hitCounter));
-                            dbCommand.Parameters.Add(new SqliteParameter("@getCloser", getCloser));
-                            dbCommand.Parameters.Add(new SqliteParameter("@hitBound", hitBound));
-                            dbCommand.Parameters.Add(new SqliteParameter("@beforeID", sitAFT[i]._beforeID));
-                            dbCommand.Parameters.Add(new SqliteParameter("@beforeDB", sitAFT[i]._beforeDB));
-
-                            dbCommand.ExecuteNonQuery();
-
-                            dbCommand.Dispose();
-                        }
-
-                    }
-                    dbTranssaction.Commit();
-                }
                 dbConnection.Close();
             }
         }
@@ -1113,17 +997,13 @@ namespace File_IO {
                             dbCommand.ExecuteNonQuery();
 
                             //CUR_Bools 테이블에 대한 Query문 준비
-                            sqlQuery = "INSERT INTO CUR_Bools (CUR_Bo_id, CUR_Bo_hitBoundary)VALUES (@id, @hitBound);";
-
-                            int hitBound = 0;
-
-                            if (sitCUR[i]._isHitB) hitBound = 1;
+                            sqlQuery = "INSERT INTO CUR_Bools (CUR_Bo_id, CUR_Bo_time)VALUES (@id, @time);";
 
                             dbCommand.CommandText = sqlQuery;
 
                             //파라미터 입력
                             dbCommand.Parameters.Add(new SqliteParameter("@id", sitCUR[i]._id));
-                            dbCommand.Parameters.Add(new SqliteParameter("@hitBound", hitBound));
+                            dbCommand.Parameters.Add(new SqliteParameter("@time", sitCUR[i]._time));
 
                             dbCommand.ExecuteNonQuery();
 
@@ -1179,13 +1059,11 @@ namespace File_IO {
                             dbCommand.ExecuteNonQuery();
 
                             //AFT_Bools 테이블에 대한 Query문 준비
-                            sqlQuery = "INSERT INTO AFT_Bools (AFT_Bo_id, AFT_Bo_getHitCount, AFT_Bo_gettingCloser, AFT_Bo_hitBoundary, AFT_Bo_beforeBehaveID, AFT_Bo_beforeBehaveDB)VALUES (@id, @_isPlayerGetHitCount, @getCloser, @hitBound, @beforeID, @beforeDB);";
+                            sqlQuery = "INSERT INTO AFT_Bools (AFT_Bo_id, AFT_Bo_getHitCount, AFT_Bo_gettingCloser, AFT_Bo_beforeBehaveID, AFT_Bo_beforeBehaveDB)VALUES (@id, @_isPlayerGetHitCount, @getCloser, @beforeID, @beforeDB);";
 
                             int getCloser = 0;
-                            int hitBound = 0;
 
                             if (sitAFT[i]._closer) getCloser = 1;
-                            if (sitAFT[i]._isHitB) hitBound = 1;
 
                             dbCommand.CommandText = sqlQuery;
 
@@ -1193,7 +1071,6 @@ namespace File_IO {
                             dbCommand.Parameters.Add(new SqliteParameter("@id", sitAFT[i]._id));
                             dbCommand.Parameters.Add(new SqliteParameter("@_isPlayerGetHitCount", sitAFT[i]._hitCounter));
                             dbCommand.Parameters.Add(new SqliteParameter("@getCloser", getCloser));
-                            dbCommand.Parameters.Add(new SqliteParameter("@hitBound", hitBound));
                             dbCommand.Parameters.Add(new SqliteParameter("@beforeID", sitAFT[i]._beforeID));
                             dbCommand.Parameters.Add(new SqliteParameter("@beforeDB", sitAFT[i]._beforeDB));
 
