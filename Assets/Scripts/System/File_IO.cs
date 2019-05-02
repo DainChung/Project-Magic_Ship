@@ -413,6 +413,205 @@ namespace File_IO {
         private static string dbPath = Application.persistentDataPath;
 
         //"behaveData0"처럼 뒤의 숫자도 써줘야 됨
+        public static List<AIData> ReadAIData_FROM_DB_FOR_KILL_JUNK(string fileName)
+        {
+            List<SituationCUR> cur = new List<SituationCUR>();
+            List<SituationAFT> aft = new List<SituationAFT>();
+
+            List<AIData> result = new List<AIData>();
+
+            fileName = @"Data Source=" + dbPath + "/" + fileName + ".db";
+
+            using (var dbConnection = new SqliteConnection(fileName))
+            {
+                dbConnection.Open();
+
+                using (IDbCommand dbCommand = dbConnection.CreateCommand())
+                {
+                    int index = 0;
+
+                    string sqlQuery = "SELECT * FROM CUR_Doing";
+                    dbCommand.CommandText = sqlQuery;
+
+                    IDataReader reader = dbCommand.ExecuteReader();
+
+                    while (reader.Read())
+                    {
+
+                        string id = reader.GetString(0);
+                        int CURDo_mov = reader.GetInt32(1);
+                        int CURDo_rot = reader.GetInt32(2);
+                        int CURDo_atk = reader.GetInt32(3);
+
+                        if (CURDo_atk != 0)
+                        {
+                            cur.Add(new SituationCUR("NULL", -1f, -1f, -1f, -1f, new IntVector3(-1, -1, -1), -1f));
+
+                            cur[index]._id = id;
+                            cur[index]._doing = new IntVector3(CURDo_mov, CURDo_rot, CURDo_atk);
+
+                            index++;
+                        }
+                    }
+
+                    reader.Close();
+
+                    //"SELECT 조회할 칼럼 FROM 조회할 테이블"
+                    //CUR_Transform => CURTrn_id, CURTrn_enePosX, CURTrn_enePosZ, CURTrn_dist, CURTrn_angle
+                    sqlQuery = "SELECT * FROM CUR_Transform";
+                    dbCommand.CommandText = sqlQuery;
+
+                    reader = dbCommand.ExecuteReader();
+
+                    index = 0;
+
+                    while (reader.Read())
+                    {
+                        string id = reader.GetString(0);
+                        float CURTrn_enePosX = reader.GetFloat(1);
+                        float CURTrn_enePosZ = reader.GetFloat(2);
+                        float CURTrn_dist = reader.GetFloat(3);
+                        float CURTrn_angle = reader.GetFloat(4);
+
+                        if (index >= cur.Count)
+                        {
+                            break;
+                        }
+
+                        if (cur[index]._id == id)
+                        {
+                            cur[index]._posX = CURTrn_enePosX;
+                            cur[index]._posZ = CURTrn_enePosZ;
+                            cur[index]._dist = CURTrn_dist;
+                            cur[index]._angleComp = CURTrn_angle;
+
+                            index++;
+                        }
+                    }
+
+                    reader.Close();
+
+                    index = 0;
+
+                    sqlQuery = "SELECT * FROM CUR_Bools";
+                    dbCommand.CommandText = sqlQuery;
+
+                    reader = dbCommand.ExecuteReader();
+
+                    while (reader.Read())
+                    {
+
+                        string id = reader.GetString(0);
+                        float CURBo_Time = reader.GetFloat(1);
+
+                        if (index >= cur.Count)
+                        {
+                            break;
+                        }
+
+                        if (cur[index]._id == id)
+                        {
+                            cur[index]._time = CURBo_Time;
+
+                            index++;
+                        }
+                    }
+
+                    reader.Close();
+                    //--------------------------------------------------------------------
+
+                    index = 0;
+
+                    //"SELECT 조회할 칼럼 FROM 조회할 테이블"
+                    sqlQuery = "SELECT * FROM AFT_Transform";
+                    dbCommand.CommandText = sqlQuery;
+
+                    reader = dbCommand.ExecuteReader();
+
+                    while (reader.Read())
+                    {
+                        string id = reader.GetString(0);
+                        float AFTTrn_enePosX = reader.GetFloat(1);
+                        float AFTTrn_enePosZ = reader.GetFloat(2);
+                        float AFTTrn_dist = reader.GetFloat(3);
+                        float AFTTrn_angle = reader.GetFloat(4);
+
+                        if (index >= cur.Count)
+                        {
+                            break;
+                        }
+
+                        if (cur[index]._id == id)
+                        {
+                            aft.Add(new SituationAFT("NULL", -1f, -1f, -1f, -1f, "NULL", -1, -1, false));
+
+                            aft[index]._id = id;
+                            aft[index]._posX = AFTTrn_enePosX;
+                            aft[index]._posZ = AFTTrn_enePosZ;
+                            aft[index]._dist = AFTTrn_dist;
+                            aft[index]._angleComp = AFTTrn_angle;
+
+                            index++;
+                        }
+                    }
+
+                    reader.Close();
+
+                    index = 0;
+
+                    sqlQuery = "SELECT * FROM AFT_Bools";
+                    dbCommand.CommandText = sqlQuery;
+
+                    reader = dbCommand.ExecuteReader();
+
+                    while (reader.Read())
+                    {
+                        string id = reader.GetString(0);
+                        int AFTBo_P = reader.GetInt32(1);
+                        int AFTBo_C = reader.GetInt32(2);
+                        string AFTBo_bID = reader.GetString(3);
+                        int AFTBo_bD = reader.GetInt32(4);
+
+                        bool AFTBo_c = false;
+
+                        if (AFTBo_C == 1)
+                            AFTBo_c = true;
+
+                        if (index >= cur.Count)
+                        {
+                            break;
+                        }
+
+                        if (cur[index]._id == id)
+                        {
+                            aft[index]._hitCounter = AFTBo_P;
+                            aft[index]._closer = AFTBo_c;
+                            aft[index]._beforeID = AFTBo_bID;
+                            aft[index]._beforeDB = AFTBo_bD;
+
+                            index++;
+                        }
+
+                    }
+
+                    //닫아주고 초기화
+                    reader.Close();
+                    reader = null;
+                    dbCommand.Dispose();
+                }
+
+                dbConnection.Close();
+            }
+
+            for (int i = 0; i < cur.Count; i++)
+            {
+                result.Add(new AIData(cur[i], aft[i]));
+            }
+
+            return result;
+        }
+
+
         public static List<AIData> ReadAIData_FROM_DB(string fileName)
         {
             List<SituationCUR> cur = new List<SituationCUR>();
@@ -460,6 +659,7 @@ namespace File_IO {
 
                     index = 0;
 
+
                     sqlQuery = "SELECT * FROM CUR_Doing";
                     dbCommand.CommandText = sqlQuery;
 
@@ -472,7 +672,6 @@ namespace File_IO {
                         int CURDo_mov = reader.GetInt32(1);
                         int CURDo_rot = reader.GetInt32(2);
                         int CURDo_atk = reader.GetInt32(3);
-
 
                         cur[index]._doing = new IntVector3(CURDo_mov, CURDo_rot, CURDo_atk);
 
@@ -542,8 +741,8 @@ namespace File_IO {
                     {
                         int AFTBo_P = reader.GetInt32(1);
                         int AFTBo_C = reader.GetInt32(2);
-                        string AFTBo_bID = reader.GetString(4);
-                        int AFTBo_bD = reader.GetInt32(5);
+                        string AFTBo_bID = reader.GetString(3);
+                        int AFTBo_bD = reader.GetInt32(4);
 
                         bool AFTBo_c = false;
 
@@ -784,7 +983,7 @@ namespace File_IO {
                     dbCommand.CommandText = sqlQuery;
                     reader = dbCommand.ExecuteReader();
 
-                    Debug.Log("ID: " + id);
+                    //Debug.Log("ID: " + id);
 
                     while (reader.Read())
                     {

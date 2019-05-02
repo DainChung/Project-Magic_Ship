@@ -99,9 +99,9 @@ public class EnemyAI : MonoBehaviour {
         behaveList_Attack.Add(() => AI_DO_Nothing());
         //정면 일반 공격
         behaveList_Attack.Add(() => __ENE_AI_Engine.Attack_Default(2.0f, ref enemyController.enemy_Front, __ENE_Stat, 1));
-        //우측 일반 공격
+        //우측 일반 공격(2번, angleComp > 0)
         behaveList_Attack.Add(() => __ENE_AI_Engine.Attack_Default(2.0f, ref enemyController.enemy_Right, __ENE_Stat, 1));
-        //좌측 일반 공격
+        //좌측 일반 공격(3번, angleComp < 0)
         behaveList_Attack.Add(() => __ENE_AI_Engine.Attack_Default(2.0f, ref enemyController.enemy_Left, __ENE_Stat, 1));
 
         realIndex.InitIntVector3(0,0,0);
@@ -560,7 +560,7 @@ public class EnemyAI : MonoBehaviour {
             //알고리즘 상의 한계로 발생하는 오류 정정
             //공격을 하지도 않았는데 공격이 성공한 것처럼 기록되는 경우, 이전 행동에서 한 공격이 다음 행동 시작 지점에서 성공했을 때 발생하는 것으로 추정됨.
             //이런 유형의 지난 데이터들을 모두 찾아서 폐기해야됨
-            if (hitCounter != 0 && (realIndex.vecZ == 0 || curDist > 17f))
+            if (realIndex.vecZ == 0 || curDist > 17f)
             {
                 hitCounter = 0;
                 //Debug.Log("Purifying");
@@ -609,7 +609,7 @@ public class EnemyAI : MonoBehaviour {
 
     public void AI_DeapLearning__BigData_Ver()
     {
-        //임시로 추가한 것, P를 누르면 모든 데이터 수집 개체 삭제 및 데이터 저장
+        //임시로 추가한 것, M을 누르면 모든 데이터 수집 개체 삭제 및 데이터 저장
         if (Input.GetKeyDown(KeyCode.M))
         {
             Destroy(gameObject);

@@ -138,7 +138,22 @@ public class EnemyDataCollector : MonoBehaviour {
 
     void Awake()
     {
+        //데이터 정리용
+        //모든 행동 DB는 정리가 되지 않음 => 학습 시킬 때 우수행동 DB에 없는 건 모두 안 좋은 행동으로 취급해야 됨. 
+        //학습 단계시 유의할 것
+        //aiDatas = IO_SqlDB.ReadAIData_FROM_DB_FOR_KILL_JUNK("behaveDataGoodATK");
+
+        //for (int i = 0; i < aiDatas.Count; i++)
+        //{
+        //    listSitCUR.Add(aiDatas[i].sitCUR);
+        //    listSitAFT.Add(aiDatas[i].sitAFT);
+        //}
+
+        //IO_SqlDB.WriteDB_CUR("behaveDataGoodATK_TEMP", listSitCUR);
+        //IO_SqlDB.WriteDB_AFT("behaveDataGoodATK_TEMP", listSitAFT);
+
         goodBehaveList = IO_SqlDB.ReadSitCUR_FROM_DB("behaveDataGoodATK");
+        //goodBehaveList = IO_SqlDB.ReadSitCUR_FROM_DB("behaveDataGreatATK");
         quickSort(0, goodBehaveList.Count - 1);
     }
 
@@ -214,7 +229,7 @@ public class EnemyDataCollector : MonoBehaviour {
     {
         for (int i = 0; i < cur.Count; i++)
         {
-            if (aft[i]._hitCounter != 0)
+            if (aft[i]._hitCounter != 0 && cur[i]._doing.vecZ != 0)
             {
                 aiDatas.Add(new AIData(cur[i], aft[i]));
             }

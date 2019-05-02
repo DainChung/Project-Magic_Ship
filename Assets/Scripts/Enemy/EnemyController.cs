@@ -123,6 +123,7 @@ public class EnemyStat : Unit__Base_Stat {
 public class EnemyAIEngine {
 
     public float angleComp;
+
     public UnitBaseEngine __ENE_Engine;
 
     //destiTrn을 바라보는 방향 또는 그 반대 방향
@@ -292,6 +293,8 @@ public class EnemyAIEngine {
 
         float destiAngle;
 
+        int dir = 1;
+
         //curAngle은 0 <= curAgnle < 360 (destiAngle은 -180 < destiAngle <= 180)이기 떄문에 curAngle > 180인 경우 curAngle 값을 보정하도록 한다.
         //curAngle도 -180 < curAngle <= 180으로 변경한다.
         curAngle = Rotation_Math.Angle360_TO_Angle180(curAngle);
@@ -303,6 +306,16 @@ public class EnemyAIEngine {
         {
             //destiAngle_FOR_dir의 반대방향으로 계산하도록 조정한다.
             destiAngle_FOR_dir = Rotation_Math.Get_Opposite_Direction_Angle(destiAngle_FOR_dir);
+
+            //dir값을 보정한다.
+            dir *= (-1);
+        }
+
+        //dir값을 결정한다.
+        //각도 차를 구하여 시계방향으로 돌지 반시계방향으로 돌지 결정한다. (1이 시계 방향)
+        if (!(GET_RotataionDir(curAngle, destiAngle_FOR_dir)))
+        {
+            dir *= (-1);
         }
 
         destiAngle = _destiAngle;
@@ -310,7 +323,7 @@ public class EnemyAIEngine {
         destiQT = Quaternion.Euler(0, _destiAngle, 0);
 
         //호출될 때마다 목표 각도와 현재 각도 차 구하기
-        angleComp = Quaternion.Angle(enemy.rotation, destiQT);
+        angleComp = Quaternion.Angle(enemy.rotation, destiQT) * dir;
     }
 
     //충분히 가까울 때까지 앞으로 이동하는 함수
