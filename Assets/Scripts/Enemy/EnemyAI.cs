@@ -39,8 +39,10 @@ public class EnemyAI : MonoBehaviour {
     private Transform middle_OF_Stage;
 
     float beforeDist = -1f;
-    string beforeBehaveID = "NULL";
+    string beforeBehaveID = "N_U_L_L";
     int beforeDistTOInt = -1;
+    float beforeAngleComp = 0.0f;
+    Vector2 beforeVec2 = new Vector2(-1f,-1f);
     string behaveID = "NULL";
     public int hitCounter = 0;
     bool isHitB = false;
@@ -537,13 +539,27 @@ public class EnemyAI : MonoBehaviour {
             Destroy(gameObject);
         }
 
-        int listIndex_Move = (int)(Random.Range(0.0f, (float)(behaveList_Move.Count - 0.1f)));
-        int listIndex_Rotate = (int)(Random.Range(0.0f, (float)(behaveList_Rotate.Count - 0.1f)));
-        int listIndex_Attack = (int)(Random.Range(0.0f, (float)(behaveList_Attack.Count - 0.1f)));
+        float curDist = Vector3.Distance(transform.position, enemyController.playerTransform.position);
         //Timer 코루틴을 돌리기 위한 더미 변수
         float dummy = 0.0f;
 
-        float curDist = Vector3.Distance(transform.position, enemyController.playerTransform.position);
+        int listIndex_Move = (int)(Random.Range(0.0f, (float)(behaveList_Move.Count - 0.1f)));
+        int listIndex_Rotate = (int)(Random.Range(0.0f, (float)(behaveList_Rotate.Count - 0.1f)));
+        int listIndex_Attack = (int)(Random.Range(0.0f, (float)(behaveList_Attack.Count - 0.1f)));
+
+        if (beforeBehaveID == "N_U_L_L")
+        {
+            float time = 0.5f + Random.Range(0.0f, 1.0f);
+
+            beforeDist = curDist;
+            beforeAngleComp = enemyController._GET__ENE_AI_Engine.angleComp;
+            beforeVec2 = new Vector2(transform.position.x, transform.position.z);
+
+            realIndex.InitIntVector3(listIndex_Move, listIndex_Rotate, listIndex_Attack);
+
+            StartCoroutine(enemyController.enemyCoolTimer.Timer(time, (input) => { isbehaveCoolTimeOn = input; }, true, (input) => { dummy = input; }));
+            beforeBehaveID = "NULL";
+        }
 
         if (isbehaveCoolTimeOn)
         {
@@ -559,34 +575,34 @@ public class EnemyAI : MonoBehaviour {
 
             //알고리즘 상의 한계로 발생하는 오류 정정
             //공격을 하지도 않았는데 공격이 성공한 것처럼 기록되는 경우, 이전 행동에서 한 공격이 다음 행동 시작 지점에서 성공했을 때 발생하는 것으로 추정됨.
+            //행동의 처음부터 끝까지 플레이어가 Enemy의 좌측에 있었으나 우측에서 발사한 공격이 명중했거나
+            //행동의 처음부터 끝까지 플레이어가 Enemy의 우측에 있었으나 좌측에서 발사한 공격이 명중했다면 오류, 발생 원인을 자세하게는 모르겠으나 지속적으로 관찰됨. => 저장하려는 단계에서 처리하도록 변경
             //이런 유형의 지난 데이터들을 모두 찾아서 폐기해야됨
-            if (realIndex.vecZ == 0 || curDist > 17f)
+            if (realIndex.vecZ == 0)
             {
                 hitCounter = 0;
                 //Debug.Log("Purifying");
             }
 
             //데이터 모으기
-            //사거리 이내 데이터는 따로 복사해서 모은다
-            switch ((int)(curDist / 10f))
+            //공격에 성공한 데이터를 따로 모은다
+            if (hitCounter != 0)
             {
-                case 0:
-                    enemyCollector.listSitCUR0.Add(new SituationCUR(behaveID, transform.position.x, transform.position.z, curDist, enemyController._GET__ENE_AI_Engine.angleComp, realIndex, time));
-                    enemyCollector.listSitAFT0.Add(new SituationAFT(behaveID, transform.position.x, transform.position.z, curDist, enemyController._GET__ENE_AI_Engine.angleComp, beforeBehaveID, beforeDistTOInt, hitCounter, isCloser));
-                    break;
-                case 1:
-                    enemyCollector.listSitCUR1.Add(new SituationCUR(behaveID, transform.position.x, transform.position.z, curDist, enemyController._GET__ENE_AI_Engine.angleComp, realIndex, time));
-                    enemyCollector.listSitAFT1.Add(new SituationAFT(behaveID, transform.position.x, transform.position.z, curDist, enemyController._GET__ENE_AI_Engine.angleComp, beforeBehaveID, beforeDistTOInt, hitCounter, isCloser));
-                    break;
+                enemyCollector.listSitCUR0.Add(new SituationCUR(behaveID, beforeVec2.x, beforeVec2.y, beforeDist, beforeAngleComp, realIndex, time));
+                enemyCollector.listSitAFT0.Add(new SituationAFT(behaveID, transform.position.x, transform.position.z, curDist, enemyController._GET__ENE_AI_Engine.angleComp, beforeBehaveID, beforeDistTOInt, hitCounter, isCloser));
             }
+
             //사거리 외 & 이내 데이터 모두 한 곳에 모은다
-            enemyCollector.listSitCUR.Add(new SituationCUR(behaveID, transform.position.x, transform.position.z, curDist, enemyController._GET__ENE_AI_Engine.angleComp, realIndex, time));
+            enemyCollector.listSitCUR.Add(new SituationCUR(behaveID, beforeVec2.x, beforeVec2.y, beforeDist, beforeAngleComp, realIndex, time));
             enemyCollector.listSitAFT.Add(new SituationAFT(behaveID, transform.position.x, transform.position.z, curDist, enemyController._GET__ENE_AI_Engine.angleComp, beforeBehaveID, beforeDistTOInt, hitCounter, isCloser));
 
             realIndex.InitIntVector3(listIndex_Move, listIndex_Rotate, listIndex_Attack);
 
             beforeBehaveID = behaveID;
             beforeDist = curDist;
+            beforeAngleComp = enemyController._GET__ENE_AI_Engine.angleComp;
+            beforeVec2 = new Vector2(transform.position.x, transform.position.z);
+
             //0.5~1.5초 마다 행동을 갱신한다 (값 변경될 수 있음)
             StartCoroutine(enemyController.enemyCoolTimer.Timer(time, (input) => { isbehaveCoolTimeOn = input; }, true, (input) => { dummy = input; }));
 
@@ -621,14 +637,15 @@ public class EnemyAI : MonoBehaviour {
         {
             float curDist = Vector3.Distance(transform.position, enemyController.playerTransform.position);
 
-            if (hitCounter != 0 && curDist <= 17f && sitCUR._doing.vecZ != 0)
+            //if (hitCounter != 0 && curDist <= 17f && sitCUR._doing.vecZ != 0)
+            if (hitCounter != 0 && sitCUR._doing.vecZ != 0)
             {
                 enemyCollector.listSitCUR.Add(sitCUR);
                 //Debug.Log(enemyCollector.listSitCUR[(enemyCollector.listSitCUR.Count - 1)]._id);
             }
 
             sitCUR = enemyCollector.SearchGoodSitCUR(curDist, enemyController._GET__ENE_AI_Engine.angleComp);
-           
+
             //DataBase에서 긁어온 정보의 time동안 행동한다.
             StartCoroutine(enemyController.enemyCoolTimer.Timer(sitCUR._time, (input) => { isbehaveCoolTimeOn = input; }, true, (input) => { dummy = input; }));
             hitCounter = 0;

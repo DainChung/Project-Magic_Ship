@@ -645,6 +645,7 @@ namespace File_IO {
                         float CURTrn_angle = reader.GetFloat(4);
 
                         cur.Add(new SituationCUR("NULL", -1f, -1f, -1f, -1f, new IntVector3(-1, -1, -1), -1f));
+                        aft.Add(new SituationAFT("NULL", -1f, -1f, -1f, -1f, "NULL", -1, -1, false));
 
                         cur[index]._id = id;
                         cur[index]._posX = CURTrn_enePosX;
@@ -717,8 +718,6 @@ namespace File_IO {
                         float AFTTrn_dist = reader.GetFloat(3);
                         float AFTTrn_angle = reader.GetFloat(4);
 
-                        aft.Add(new SituationAFT("NULL", -1f, -1f, -1f, -1f, "NULL", -1, -1, false));
-
                         aft[index]._id = id;
                         aft[index]._posX = AFTTrn_enePosX;
                         aft[index]._posZ = AFTTrn_enePosZ;
@@ -739,6 +738,7 @@ namespace File_IO {
 
                     while (reader.Read())
                     {
+                        string id = reader.GetString(0);
                         int AFTBo_P = reader.GetInt32(1);
                         int AFTBo_C = reader.GetInt32(2);
                         string AFTBo_bID = reader.GetString(3);
@@ -749,11 +749,12 @@ namespace File_IO {
                         if (AFTBo_C == 1)
                             AFTBo_c = true;
 
+                        aft[index]._id = id;
                         aft[index]._hitCounter = AFTBo_P;
                         aft[index]._closer = AFTBo_c;
                         aft[index]._beforeID = AFTBo_bID;
                         aft[index]._beforeDB = AFTBo_bD;
-
+     
                         index++;
                     }
 
@@ -778,6 +779,7 @@ namespace File_IO {
         //이제 안 써도 됨, 모든 데이터 "behaveData"로 통합
         public static List<SituationCUR> ReadSitCUR_FROM_DB(string fileName)
         {
+
             List<SituationCUR> cur = new List<SituationCUR>();
 
             fileName = @"Data Source=" + dbPath + "/" + fileName + ".db";
@@ -795,7 +797,7 @@ namespace File_IO {
 
                     IDataReader reader = dbCommand.ExecuteReader();
 
-                    List<string> ids = new List<string>();
+                    //List<string> ids = new List<string>();
 
                     int index = 0;
 
@@ -807,22 +809,22 @@ namespace File_IO {
                         float CURTrn_dist = reader.GetFloat(3);
                         float CURTrn_angle = reader.GetFloat(4);
 
-                        if (CURTrn_dist <= 17)
-                        {
-                            cur.Add(new SituationCUR("NULL", -1f, -1f, -1f, -1f, new IntVector3(-1, -1, -1), -1f));
+                        //if (CURTrn_dist <= 17)
+                        //{
+                        cur.Add(new SituationCUR("NULL", -1f, -1f, -1f, -1f, new IntVector3(-1, -1, -1), -1f));
 
-                            cur[index]._id = id;
-                            cur[index]._posX = CURTrn_enePosX;
-                            cur[index]._posZ = CURTrn_enePosZ;
-                            cur[index]._dist = CURTrn_dist;
-                            cur[index]._angleComp = CURTrn_angle;
+                        cur[index]._id = id;
+                        cur[index]._posX = CURTrn_enePosX;
+                        cur[index]._posZ = CURTrn_enePosZ;
+                        cur[index]._dist = CURTrn_dist;
+                        cur[index]._angleComp = CURTrn_angle;
 
-                            index++;
-                        }
-                        else
-                        {
-                            ids.Add(id);
-                        }
+                        index++;
+                        //}
+                        //else
+                        //{
+                        //    ids.Add(id);
+                        //}
                     }
 
                     reader.Close();
@@ -836,28 +838,28 @@ namespace File_IO {
 
                     while (reader.Read())
                     {
-                        bool checker = false;
+                        //bool checker = false;
 
-                        string id = reader.GetString(0);
+                        //string id = reader.GetString(0);
                         int CURDo_mov = reader.GetInt32(1);
                         int CURDo_rot = reader.GetInt32(2);
                         int CURDo_atk = reader.GetInt32(3);
 
-                        foreach (string item in ids)
-                        {
-                            if (item == id)
-                            {
-                                checker = true;
-                                break;
-                            }
-                        }
+                        //foreach (string item in ids)
+                        //{
+                        //    if (item == id)
+                        //    {
+                        //        checker = true;
+                        //        break;
+                        //    }
+                        //}
 
-                        if (!checker)
-                        {
-                            cur[index]._doing = new IntVector3(CURDo_mov, CURDo_rot, CURDo_atk);
+                        //if (!checker)
+                        //{
+                        cur[index]._doing = new IntVector3(CURDo_mov, CURDo_rot, CURDo_atk);
 
-                            index++;
-                        }
+                        index++;
+                        //}
                     }
 
                     reader.Close();
@@ -871,26 +873,26 @@ namespace File_IO {
 
                     while (reader.Read())
                     {
-                        bool checker = false;
+                        //bool checker = false;
 
-                        string id = reader.GetString(0);
+                        //string id = reader.GetString(0);
                         float time = reader.GetFloat(1);
-                       
-                        foreach (string item in ids)
-                        {
-                            if (item == id)
-                            {
-                                checker = true;
-                                break;
-                            }
-                        }
 
-                        if (!checker)
-                        {
-                            cur[index]._time = time;
+                        //foreach (string item in ids)
+                        //{
+                        //    if (item == id)
+                        //    {
+                        //        checker = true;
+                        //        break;
+                        //    }
+                        //}
 
-                            index++;
-                        }
+                        //if (!checker)
+                        //{
+                        cur[index]._time = time;
+
+                        index++;
+                        //}
                     }
 
                     //닫아주고 초기화
@@ -900,15 +902,6 @@ namespace File_IO {
                 }
 
                 dbConnection.Close();
-            }
-
-            for (int i = 0; i < cur.Count; i++)
-            {
-                if (cur[i]._doing.vecZ == 0)
-                {
-                    cur.RemoveAt(i);
-                    i--;
-                }
             }
 
             return cur;
@@ -1256,6 +1249,61 @@ namespace File_IO {
 
                             //Query 전송 및 수행
                             dbCommand.ExecuteNonQuery();
+
+                            //AFT_Bools 테이블에 대한 Query문 준비
+                            sqlQuery = "INSERT INTO AFT_Bools (AFT_Bo_id, AFT_Bo_getHitCount, AFT_Bo_gettingCloser, AFT_Bo_beforeBehaveID, AFT_Bo_beforeBehaveDB)VALUES (@id, @_isPlayerGetHitCount, @getCloser, @beforeID, @beforeDB);";
+
+                            int getCloser = 0;
+
+                            if (sitAFT[i]._closer) getCloser = 1;
+
+                            dbCommand.CommandText = sqlQuery;
+
+                            //파라미터 입력
+                            dbCommand.Parameters.Add(new SqliteParameter("@id", sitAFT[i]._id));
+                            dbCommand.Parameters.Add(new SqliteParameter("@_isPlayerGetHitCount", sitAFT[i]._hitCounter));
+                            dbCommand.Parameters.Add(new SqliteParameter("@getCloser", getCloser));
+                            dbCommand.Parameters.Add(new SqliteParameter("@beforeID", sitAFT[i]._beforeID));
+                            dbCommand.Parameters.Add(new SqliteParameter("@beforeDB", sitAFT[i]._beforeDB));
+
+                            dbCommand.ExecuteNonQuery();
+
+                            dbCommand.Dispose();
+                        }
+
+                    }
+                    dbTranssaction.Commit();
+                }
+                dbConnection.Close();
+            }
+        }
+
+        //AFT전용 함수
+        public static void WriteDB_AFT_FOR_GreatTEMP(string fileName, List<SituationAFT> sitAFT)
+        {
+            /* 예상 데이터 분류 (()안은 AD, BD가 들어갈 자리 => id로 AD, BD를 구분할 필요 없음)
+             * TABLE: CUR_Transform, AFT_Transform, CUR_Doing, CUR_Bools, AFT_Bools
+             * ()_Transform => ()Trn_id, ()Trn_enePosX, ()Trn_enePosZ, ()Trn_dist, ()Trn_angles
+             * ()_Doing => ()Do_id, ()Do_Mov, ()Do_Rot, ()Do_Atk
+             * ()_Bools => ()Bo_id, ()Bo_plyGetHit, ()Bo_plyCloser, ()Bo_hitBoundary
+             */
+            //테이블 총 5개
+
+            fileName = @"Data Source=" + dbPath + "/" + fileName + ".db";
+            //fileName = @"Data Source=" + dbPath + "/" + fileName + ".db";
+
+            using (var dbConnection = new SqliteConnection(fileName))
+            {
+
+                dbConnection.Open();
+
+                using (SqliteTransaction dbTranssaction = dbConnection.BeginTransaction())
+                {
+                    for (int i = 0; i < sitAFT.Count; i++)
+                    {
+                        using (IDbCommand dbCommand = dbConnection.CreateCommand())
+                        {
+                            string sqlQuery;
 
                             //AFT_Bools 테이블에 대한 Query문 준비
                             sqlQuery = "INSERT INTO AFT_Bools (AFT_Bo_id, AFT_Bo_getHitCount, AFT_Bo_gettingCloser, AFT_Bo_beforeBehaveID, AFT_Bo_beforeBehaveDB)VALUES (@id, @_isPlayerGetHitCount, @getCloser, @beforeID, @beforeDB);";
