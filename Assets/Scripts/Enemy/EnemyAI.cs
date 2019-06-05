@@ -45,6 +45,7 @@ public class EnemyAI : MonoBehaviour {
     Vector2 beforeVec2 = new Vector2(-1f,-1f);
     string behaveID = "NULL";
     public int hitCounter = 0;
+    public int getDamagedCounter = 0;
     bool isHitB = false;
     public bool _SET_isHitB { set { isHitB = value; } }
 
@@ -112,6 +113,9 @@ public class EnemyAI : MonoBehaviour {
     void Start()
     {
         enemyCollector = GameObject.FindGameObjectWithTag("GameController").GetComponent<EnemyDataCollector>();
+
+        //체력 관리
+        //enemyController.__ENE_Stat.__PUB__Health_Point = 4;
     }
 
     //가장 단순한 수준의 AI
@@ -531,6 +535,7 @@ public class EnemyAI : MonoBehaviour {
 
     //데이터 수집 목적인 랜덤한 행동을 지시하는 함수
     //2019.04.20
+    //함수 폐기
     public void AI_DeapLearning__Random_Ver()
     {
         //임시로 추가한 것, P를 누르면 모든 데이터 수집 개체 삭제 및 데이터 저장
@@ -606,6 +611,11 @@ public class EnemyAI : MonoBehaviour {
             //0.5~1.5초 마다 행동을 갱신한다 (값 변경될 수 있음)
             StartCoroutine(enemyController.enemyCoolTimer.Timer(time, (input) => { isbehaveCoolTimeOn = input; }, true, (input) => { dummy = input; }));
 
+            beforeBehaveID = behaveID;
+            beforeDist = curDist;
+            beforeAngleComp = enemyController._GET__ENE_AI_Engine.angleComp;
+            beforeVec2 = new Vector2(transform.position.x, transform.position.z);
+
             hitCounter = 0;
         }
 
@@ -623,32 +633,63 @@ public class EnemyAI : MonoBehaviour {
         behaveList_Rotate[realIndex.vecY]();
     }
 
+    //강화학습을 위한 형태로 개조됨
+    //강화학습 데이터대로 행동했지만 결과가 좋지 못한 경우(행동 점수 <= 0) 임의 행동을 한 뒤 별도의 DB에 저장할 수 있도록 한다.
+    //별도의 DB에 저장된 데이터를 일단 수동으로 학습하도록 한다.(프로그래머가 수동으로 변수나 코드를 바꿔줘야 하는 방식)
     public void AI_DeapLearning__BigData_Ver()
     {
-        //임시로 추가한 것, M을 누르면 모든 데이터 수집 개체 삭제 및 데이터 저장
-        if (Input.GetKeyDown(KeyCode.M))
-        {
-            Destroy(gameObject);
-        }
+        ////임시로 추가한 것, P을 누르면 모든 데이터 수집 개체 삭제 및 데이터 저장
+        //if (Input.GetKeyDown(KeyCode.P))
+        //{
+        //    Destroy(gameObject);
+        //}
 
         float dummy = 0f;
+        float curDist = Vector3.Distance(transform.position, enemyController.playerTransform.position);
+
+        if (beforeBehaveID == "N_U_L_L")
+        {
+            beforeBehaveID = "NULL";
+
+            beforeDist = curDist;
+            beforeAngleComp = enemyController._GET__ENE_AI_Engine.angleComp;
+            beforeVec2 = new Vector2(transform.position.x, transform.position.z);
+        }
 
         if (isbehaveCoolTimeOn)
         {
-            float curDist = Vector3.Distance(transform.position, enemyController.playerTransform.position);
+            bool isCloser = false;   
+            float time = sitCUR._time;
 
-            //if (hitCounter != 0 && curDist <= 17f && sitCUR._doing.vecZ != 0)
-            if (hitCounter != 0 && sitCUR._doing.vecZ != 0)
-            {
-                enemyCollector.listSitCUR.Add(sitCUR);
-                //Debug.Log(enemyCollector.listSitCUR[(enemyCollector.listSitCUR.Count - 1)]._id);
-            }
+            behaveID = System.DateTime.Now.ToString() + ": " + gameObject.GetInstanceID().ToString();
+            if (beforeDist > curDist) isCloser = true;
 
-            sitCUR = enemyCollector.SearchGoodSitCUR(curDist, enemyController._GET__ENE_AI_Engine.angleComp);
+            int behaveScore = (hitCounter * 2) - getDamagedCounter;
+
+            if (curDist > 50f && enemyController.__ENE_Stat.__PUB__Health_Point > 5)
+                behaveScore -= (int)((curDist - 50) / 10);
+            else if(curDist > 50f && enemyController.__ENE_Stat.__PUB__Health_Point <= 5)
+                behaveScore += (int)((curDist - 50) / 10);
+
+            IntVector3 forSave = new IntVector3(sitCUR._doing.vecX, sitCUR._doing.vecY, sitCUR._doing.vecZ);
+
+            //enemyCollector.listSitCUR.Add(new SituationCUR(behaveID, beforeVec2.x, beforeVec2.y, beforeDist, beforeAngleComp, forSave, time));
+            //enemyCollector.listSitAFT.Add(new SituationAFT(behaveID, transform.position.x, transform.position.z, curDist, enemyController._GET__ENE_AI_Engine.angleComp, beforeBehaveID, behaveScore, hitCounter, isCloser));
+
+            bool isHPLOW = enemyController.__ENE_Stat.__PUB__Health_Point < enemyController.__ENE_Stat.half_HP;
+
+            sitCUR = enemyCollector.SearchGoodSitCUR(curDist, enemyController._GET__ENE_AI_Engine.angleComp, isHPLOW);
 
             //DataBase에서 긁어온 정보의 time동안 행동한다.
             StartCoroutine(enemyController.enemyCoolTimer.Timer(sitCUR._time, (input) => { isbehaveCoolTimeOn = input; }, true, (input) => { dummy = input; }));
+
+            beforeBehaveID = behaveID;
+            beforeDist = curDist;
+            beforeAngleComp = enemyController._GET__ENE_AI_Engine.angleComp;
+            beforeVec2 = new Vector2(transform.position.x, transform.position.z);
+
             hitCounter = 0;
+            getDamagedCounter = 0;
         }
 
         //1차적으로 일반 공격만 생각하도록 한다.
@@ -663,6 +704,101 @@ public class EnemyAI : MonoBehaviour {
         behaveList_Move[sitCUR._doing.vecX]();
         //주어진 회전 수행
         behaveList_Rotate[sitCUR._doing.vecY]();
+    }
+
+    //제대로된 강화학습을 위한 랜덤행동 버전
+    public void AI_ReinforceLearn_RandomBehave_Ver()
+    {
+        //임시로 추가한 것, P를 누르면 모든 데이터 수집 개체 삭제 및 데이터 저장
+        if (Input.GetKeyDown(KeyCode.P))
+        {
+            Destroy(gameObject);
+        }
+
+        float curDist = Vector3.Distance(transform.position, enemyController.playerTransform.position);
+        //Timer 코루틴을 돌리기 위한 더미 변수
+        float dummy = 0.0f;
+
+        int listIndex_Move = (int)(Random.Range(0.0f, (float)(behaveList_Move.Count - 0.1f)));
+        int listIndex_Rotate = (int)(Random.Range(0.0f, (float)(behaveList_Rotate.Count - 0.1f)));
+        int listIndex_Attack = (int)(Random.Range(0.0f, (float)(behaveList_Attack.Count - 0.1f)));
+
+        if (beforeBehaveID == "N_U_L_L")
+        {
+            float time = 0.5f + Random.Range(0.0f, 1.0f);
+
+            beforeDist = curDist;
+            beforeAngleComp = enemyController._GET__ENE_AI_Engine.angleComp;
+            beforeVec2 = new Vector2(transform.position.x, transform.position.z);
+
+            realIndex.InitIntVector3(listIndex_Move, listIndex_Rotate, listIndex_Attack);
+
+            StartCoroutine(enemyController.enemyCoolTimer.Timer(time, (input) => { isbehaveCoolTimeOn = input; }, true, (input) => { dummy = input; }));
+            beforeBehaveID = "NULL";
+        }
+
+        if (isbehaveCoolTimeOn)
+        {
+            float time = 0.5f + Random.Range(0.0f, 1.0f);
+            bool isCloser = false;
+
+            behaveID = System.DateTime.Now.ToString() + ": " + gameObject.GetInstanceID().ToString();
+            if (beforeDist > curDist) isCloser = true;
+
+            if (realIndex.vecZ == 0)
+            {
+                hitCounter = 0;
+            }
+
+
+            int behaveScore = (hitCounter * 2) - getDamagedCounter;
+
+            if (curDist > 50f && enemyController.__ENE_Stat.__PUB__Health_Point > 5)
+                behaveScore -= (int)((curDist - 50) / 10);
+            else if (curDist > 50f && enemyController.__ENE_Stat.__PUB__Health_Point <= 5)
+                behaveScore += (int)((curDist - 50) / 10);
+
+            IntVector3 forSave = new IntVector3(realIndex.vecX, realIndex.vecY, realIndex.vecZ);
+            //Debug.Log(behaveScore);
+
+            //모든 데이터 통합 관리
+            if (enemyController.__ENE_Stat.__PUB__Health_Point <= 5)
+            {
+                enemyCollector.listSitCUR0.Add(new SituationCUR(behaveID, beforeVec2.x, beforeVec2.y, beforeDist, beforeAngleComp, forSave, time));
+                enemyCollector.listSitAFT0.Add(new SituationAFT(behaveID, transform.position.x, transform.position.z, curDist, enemyController._GET__ENE_AI_Engine.angleComp, beforeBehaveID, behaveScore, hitCounter, isCloser));
+            }
+            else
+            {
+                enemyCollector.listSitCUR.Add(new SituationCUR(behaveID, beforeVec2.x, beforeVec2.y, beforeDist, beforeAngleComp, forSave, time));
+                enemyCollector.listSitAFT.Add(new SituationAFT(behaveID, transform.position.x, transform.position.z, curDist, enemyController._GET__ENE_AI_Engine.angleComp, beforeBehaveID, behaveScore, hitCounter, isCloser));
+            }
+
+            realIndex.InitIntVector3(listIndex_Move, listIndex_Rotate, listIndex_Attack);
+
+            beforeBehaveID = behaveID;
+            beforeDist = curDist;
+            beforeAngleComp = enemyController._GET__ENE_AI_Engine.angleComp;
+            beforeVec2 = new Vector2(transform.position.x, transform.position.z);
+
+            //0.5~1.5초 마다 행동을 갱신한다 (값 변경될 수 있음)
+            StartCoroutine(enemyController.enemyCoolTimer.Timer(time, (input) => { isbehaveCoolTimeOn = input; }, true, (input) => { dummy = input; }));
+
+            hitCounter = 0;
+            getDamagedCounter = 0;
+        }
+
+        //1차적으로 일반 공격만 생각하도록 한다.
+        //공격 쿨타임도 끝났고 공격을 하려는 경우
+        if (__ENE_AI_Engine._PUB_enemy_Is_ON_CoolTime[1] && realIndex.vecZ != 0)
+        {
+            //주어진 공격 수행
+            behaveList_Attack[realIndex.vecZ]();
+        }
+
+        //주어진 이동 수행
+        behaveList_Move[realIndex.vecX]();
+        //주어진 회전 수행
+        behaveList_Rotate[realIndex.vecY]();
     }
 
     //랜덤 행동 중 아무것도 안 하는 함수

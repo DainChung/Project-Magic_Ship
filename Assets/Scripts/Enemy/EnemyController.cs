@@ -416,7 +416,8 @@ public class EnemyController : MonoBehaviour {
         _AI_FuncList.Add(() => __ENE_AI.AI_Simple_Level0());
         _AI_FuncList.Add(() => __ENE_AI.AI_Simple_Level0_WITH_BOSS());
         _AI_FuncList.Add(() => __ENE_AI.AI_Simple_Level0_BOSS());
-        _AI_FuncList.Add(() => __ENE_AI.AI_DeapLearning__Random_Ver());
+        _AI_FuncList.Add(() => __ENE_AI.AI_ReinforceLearn_RandomBehave_Ver());
+        //_AI_FuncList.Add(() => __ENE_AI.AI_DeapLearning__Random_Ver());
         _AI_FuncList.Add(() => __ENE_AI.AI_DeapLearning__BigData_Ver());
     }
 

@@ -122,6 +122,10 @@ public class AmmoBase : MonoBehaviour {
             //넉백
             other.GetComponent<Rigidbody>().AddForce(transform.forward * 7.0f, ForceMode.Impulse);
 
+            //0.5 ~ 1.5초 간 얼마나 많이 피격되었는지 알려준다.
+            //행동을 갱신하는 동안은 예외로 둔다.
+            if (!(other.GetComponent<EnemyAI>().__GET_isbehaveCoolTimeOn)) other.GetComponent<EnemyAI>().getDamagedCounter++;
+
             //디버프가 딸린 투사체의 경우
             if (whichSkill != null && whichSkill.__GET_Skill_Code_S != SkillBaseCode._SKILL_CODE_Sub.NULL)
             {
