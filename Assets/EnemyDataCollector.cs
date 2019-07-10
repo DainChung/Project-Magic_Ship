@@ -10,6 +10,10 @@ using File_IO;
 //한 스크립트에서 저장 총괄하기
 public class EnemyDataCollector : MonoBehaviour {
 
+    //20190606 임시
+    [HideInInspector]
+    public List<int> listScore_FOR_PPT = new List<int>();
+
     public List<SituationCUR> listSitCUR = new List<SituationCUR>();
     public List<SituationCUR> listSitCUR0 = new List<SituationCUR>();
     public List<SituationCUR> listSitCUR1 = new List<SituationCUR>();
@@ -26,6 +30,11 @@ public class EnemyDataCollector : MonoBehaviour {
     public List<SituationCUR> goodBehaveListLOW = new List<SituationCUR>();
 
     public int mod = 0;
+    public int sampleFileString = 0;
+
+    private int coroutineLocker = 0;
+
+    public float sigmaValue = 0.0f;
 
     void swap(int a, int b)
     {
@@ -452,11 +461,29 @@ public class EnemyDataCollector : MonoBehaviour {
         }
         else if (mod == 1)
         {
-            goodBehaveList = IO_SqlDB.ReadSitCUR_FROM_DB("behaveDataScored");
+            if (sampleFileString == 2)
+            {
+                //List<AIData> tempAIData = IO_SqlDB.ReadAIData_FROM_DB("behaveDataScored");
+                goodBehaveList = IO_SqlDB.ReadSitCUR_FROM_DB("behaveDataScored");
+
+                //for (int i = 0; i < goodBehaveList.Count; i++)
+                //{
+                //    goodBehaveList[i]._posX = tempAIData[i].sitAFT._beforeDB;
+                //    goodBehaveList[i]._posZ = tempAIData[i].sitAFT._hitCounter;
+                //}
+            }
+            else if (sampleFileString == 1)
+            {
+                goodBehaveList = IO_SqlDB.ReadSitCUR_FROM_DB("behaveDataScored_2_3");
+            }
+            else
+            {
+                goodBehaveList = IO_SqlDB.ReadSitCUR_FROM_DB("behaveDataScored_2_0");
+            }
             quickSort(0, goodBehaveList.Count - 1);
 
-            goodBehaveListLOW = IO_SqlDB.ReadSitCUR_FROM_DB("behaveDataScoredLOW");
-            quickSortLOW(0, goodBehaveListLOW.Count - 1);
+            //goodBehaveListLOW = IO_SqlDB.ReadSitCUR_FROM_DB("behaveDataScoredLOW");
+            //quickSortLOW(0, goodBehaveListLOW.Count - 1);
         }
         //else if (mod == 2)
         //{
@@ -596,212 +623,277 @@ public class EnemyDataCollector : MonoBehaviour {
         //학습 모드 - 행동 학습 준비 - 각도별 분류
         else if (mod == 5)
         {
-            //listSitCUR0 = IO_SqlDB.ReadSitCUR_FROM_DB("behaveDataGreatATK");
-            //listSitAFT = IO_SqlDB.ReadSitAFT_FROM_DB("behaveDataGreatATK");
-            //listSitAFT0 = IO_SqlDB.ReadSitAFT_FROM_DB("behaveDataGreatATK_AFT");
-
-            //Debug.Log(aiDatas[15].sitCUR._id + ": " + aiDatas[15].sitCUR._angleComp);
-
-            //StartCoroutine("SampleIE");
-
-            //각도별 분류 (10도를 단위로 나눔, 각 리스트 당 평균 5500개로 추정됨)
-            //양수
-            List<AIData> pAngle170 = new List<AIData>();
-            List<AIData> pAngle160 = new List<AIData>();
-            List<AIData> pAngle150 = new List<AIData>();
-            List<AIData> pAngle140 = new List<AIData>();
-            List<AIData> pAngle130 = new List<AIData>();
-            List<AIData> pAngle120 = new List<AIData>();
-            List<AIData> pAngle110 = new List<AIData>();
-            List<AIData> pAngle100 = new List<AIData>();
-
-            List<AIData> pAngle90 = new List<AIData>();
-            List<AIData> pAngle80 = new List<AIData>();
-            List<AIData> pAngle70 = new List<AIData>();
-            List<AIData> pAngle60 = new List<AIData>();
-            List<AIData> pAngle50 = new List<AIData>();
-            List<AIData> pAngle40 = new List<AIData>();
-            List<AIData> pAngle30 = new List<AIData>();
-            List<AIData> pAngle20 = new List<AIData>();
-            List<AIData> pAngle10 = new List<AIData>();
-            List<AIData> pAngle0 = new List<AIData>();
-
-            //음수
-            List<AIData> mAngle10 = new List<AIData>();
-            List<AIData> mAngle20 = new List<AIData>();
-            List<AIData> mAngle30 = new List<AIData>();
-            List<AIData> mAngle40 = new List<AIData>();
-            List<AIData> mAngle50 = new List<AIData>();
-            List<AIData> mAngle60 = new List<AIData>();
-            List<AIData> mAngle70 = new List<AIData>();
-            List<AIData> mAngle80 = new List<AIData>();
-            List<AIData> mAngle90 = new List<AIData>();
-
-            List<AIData> mAngle100 = new List<AIData>();
-            List<AIData> mAngle110 = new List<AIData>();
-            List<AIData> mAngle120 = new List<AIData>();
-            List<AIData> mAngle130 = new List<AIData>();
-            List<AIData> mAngle140 = new List<AIData>();
-            List<AIData> mAngle150 = new List<AIData>();
-            List<AIData> mAngle160 = new List<AIData>();
-            List<AIData> mAngle170 = new List<AIData>();
-            List<AIData> mAngle180 = new List<AIData>();
-
-            //aiDatas = IO_SqlDB.ReadAIData_FROM_DB_FOR_Learning("behaveDataReinforceLOWPart3");
-            aiDatas = IO_SqlDB.ReadAIData_FROM_DB("behaveDataReinforceLOWPart4");
-
-            //aiDatas[i].sitCUR._angleComp 오름차순 정렬 (-180부터 180까지)
-            quickSort_AIData(0, aiDatas.Count - 1);
-
-            float angle = -180f;
-
-            for (int i = 0; i < aiDatas.Count; i++)
-            {
-                if (aiDatas[i].sitCUR._id == "NULL")
-                    continue;
-
-                if (angle <= aiDatas[i].sitCUR._angleComp && aiDatas[i].sitCUR._angleComp < angle + 10)
-                {
-                    if (angle == -180f) { mAngle180.Add(aiDatas[i]); }
-                    else if (angle == -170f) { mAngle170.Add(aiDatas[i]); }
-                    else if (angle == -160f) { mAngle160.Add(aiDatas[i]); }
-                    else if (angle == -150f) { mAngle150.Add(aiDatas[i]); }
-                    else if (angle == -140f) { mAngle140.Add(aiDatas[i]); }
-                    else if (angle == -130f) { mAngle130.Add(aiDatas[i]); }
-                    else if (angle == -120f) { mAngle120.Add(aiDatas[i]); }
-                    else if (angle == -110f) { mAngle110.Add(aiDatas[i]); }
-                    else if (angle == -100f) { mAngle100.Add(aiDatas[i]); }
-                    else if (angle == -90f) { mAngle90.Add(aiDatas[i]); }
-                    else if (angle == -80f) { mAngle80.Add(aiDatas[i]); }
-                    else if (angle == -70f) { mAngle70.Add(aiDatas[i]); }
-                    else if (angle == -60f) { mAngle60.Add(aiDatas[i]); }
-                    else if (angle == -50f) { mAngle50.Add(aiDatas[i]); }
-                    else if (angle == -40f) { mAngle40.Add(aiDatas[i]); }
-                    else if (angle == -30f) { mAngle30.Add(aiDatas[i]); }
-                    else if (angle == -20f) { mAngle20.Add(aiDatas[i]); }
-                    else if (angle == -10f) { mAngle10.Add(aiDatas[i]); }
-                    else if (angle == 0f) { pAngle0.Add(aiDatas[i]); }
-                    else if (angle == 10f) { pAngle10.Add(aiDatas[i]); }
-                    else if (angle == 20f) { pAngle20.Add(aiDatas[i]); }
-                    else if (angle == 30f) { pAngle30.Add(aiDatas[i]); }
-                    else if (angle == 40f) { pAngle40.Add(aiDatas[i]); }
-                    else if (angle == 50f) { pAngle50.Add(aiDatas[i]); }
-                    else if (angle == 60f) { pAngle60.Add(aiDatas[i]); }
-                    else if (angle == 70f) { pAngle70.Add(aiDatas[i]); }
-                    else if (angle == 80f) { pAngle80.Add(aiDatas[i]); }
-                    else if (angle == 90f) { pAngle90.Add(aiDatas[i]); }
-                    else if (angle == 100f) { pAngle100.Add(aiDatas[i]); }
-                    else if (angle == 110f) { pAngle110.Add(aiDatas[i]); }
-                    else if (angle == 120f) { pAngle120.Add(aiDatas[i]); }
-                    else if (angle == 130f) { pAngle130.Add(aiDatas[i]); }
-                    else if (angle == 140f) { pAngle140.Add(aiDatas[i]); }
-                    else if (angle == 150f) { pAngle150.Add(aiDatas[i]); }
-                    else if (angle == 160f) { pAngle160.Add(aiDatas[i]); }
-                    else if (angle == 170f) { pAngle170.Add(aiDatas[i]); }
-                    else if (angle >= 180f)
-                    {
-                        break;
-                    }
-                }
-                else
-                {
-                    angle += 10f;
-                    i--;
-                }
-            }
-
-            aiDatas.RemoveRange(0, aiDatas.Count);
-
-            Debug.Log("Writing Start");
-
-            IO_SqlDB.WriteDB_AIDatas("behaveDataAngleM18", mAngle180);
-            IO_SqlDB.WriteDB_AIDatas("behaveDataAngleM17", mAngle170);
-            IO_SqlDB.WriteDB_AIDatas("behaveDataAngleM16", mAngle160);
-            IO_SqlDB.WriteDB_AIDatas("behaveDataAngleM15", mAngle150);
-            IO_SqlDB.WriteDB_AIDatas("behaveDataAngleM14", mAngle140);
-            IO_SqlDB.WriteDB_AIDatas("behaveDataAngleM13", mAngle130);
-            IO_SqlDB.WriteDB_AIDatas("behaveDataAngleM12", mAngle120);
-            IO_SqlDB.WriteDB_AIDatas("behaveDataAngleM11", mAngle110);
-            IO_SqlDB.WriteDB_AIDatas("behaveDataAngleM10", mAngle100);
-
-            IO_SqlDB.WriteDB_AIDatas("behaveDataAngleM9", mAngle90);
-            IO_SqlDB.WriteDB_AIDatas("behaveDataAngleM8", mAngle80);
-            IO_SqlDB.WriteDB_AIDatas("behaveDataAngleM7", mAngle70);
-            IO_SqlDB.WriteDB_AIDatas("behaveDataAngleM6", mAngle60);
-            IO_SqlDB.WriteDB_AIDatas("behaveDataAngleM5", mAngle50);
-            IO_SqlDB.WriteDB_AIDatas("behaveDataAngleM4", mAngle40);
-            IO_SqlDB.WriteDB_AIDatas("behaveDataAngleM3", mAngle30);
-            IO_SqlDB.WriteDB_AIDatas("behaveDataAngleM2", mAngle20);
-            IO_SqlDB.WriteDB_AIDatas("behaveDataAngleM1", mAngle10);
-
-            Debug.Log("Writing Half Done");
-
-            IO_SqlDB.WriteDB_AIDatas("behaveDataAngleP0", pAngle0);
-            IO_SqlDB.WriteDB_AIDatas("behaveDataAngleP1", pAngle10);
-            IO_SqlDB.WriteDB_AIDatas("behaveDataAngleP2", pAngle20);
-            IO_SqlDB.WriteDB_AIDatas("behaveDataAngleP3", pAngle30);
-            IO_SqlDB.WriteDB_AIDatas("behaveDataAngleP4", pAngle40);
-            IO_SqlDB.WriteDB_AIDatas("behaveDataAngleP5", pAngle50);
-            IO_SqlDB.WriteDB_AIDatas("behaveDataAngleP6", pAngle60);
-            IO_SqlDB.WriteDB_AIDatas("behaveDataAngleP7", pAngle70);
-            IO_SqlDB.WriteDB_AIDatas("behaveDataAngleP8", pAngle80);
-            IO_SqlDB.WriteDB_AIDatas("behaveDataAngleP9", pAngle90);
-
-            IO_SqlDB.WriteDB_AIDatas("behaveDataAngleP10", pAngle100);
-            IO_SqlDB.WriteDB_AIDatas("behaveDataAngleP11", pAngle110);
-            IO_SqlDB.WriteDB_AIDatas("behaveDataAngleP12", pAngle120);
-            IO_SqlDB.WriteDB_AIDatas("behaveDataAngleP13", pAngle130);
-            IO_SqlDB.WriteDB_AIDatas("behaveDataAngleP14", pAngle140);
-            IO_SqlDB.WriteDB_AIDatas("behaveDataAngleP15", pAngle150);
-            IO_SqlDB.WriteDB_AIDatas("behaveDataAngleP16", pAngle160);
-            IO_SqlDB.WriteDB_AIDatas("behaveDataAngleP17", pAngle170);
-
-            Debug.Log("Writing Done");
+            
         }
         //학습 모드 - 강화학습
         //체력이 낮은 경우에 대해서도 학습할 것
         //
         else if (mod == 6)
         {
-            for (int angle = -18; angle <= 17; angle++)
-            {
-                for (int angleSUB = 0; angleSUB <= 9; angleSUB++)
-                {
-                    for (float dist = 0f; dist <= 50f; dist+=0.5f)
-                    {
-                        data_FOR_Learn.Add(LearnHighScoreBehave(angle, angleSUB, dist, true));
-                    }
-                }
-                aiDatas.RemoveRange(0, aiDatas.Count);
-            }
-
-            for (int i = 0; i < data_FOR_Learn.Count; i++)
-            {
-                if (data_FOR_Learn[i].sitCUR._doing.vecX == -1)
-                {
-                    data_FOR_Learn.RemoveAt(i);
-                    i--;
-                }
-            }
-
-            //IO_SqlDB.WriteDB_AIDatas("behaveDataScored", data_FOR_Learn);
-            IO_SqlDB.WriteDB_AIDatas("behaveDataScoredLOW", data_FOR_Learn);
-
-            Debug.Log("Save Done");
+            StartCoroutine(AllDataLearning());
         }
-        ////특정상황에서의 유리한 표준행동 학습
-        //else if (mod == 7)
-        //{
+        //분류가 되지 않은 AIData들을 각도별로 분류하는 모드
+        else if (mod == 7)
+        {
+            //aiDatas = IO_SqlDB.ReadAIData_FORM_DB("______Sample", -180);
 
-        //}
+            //for (int i = 0; i < aiDatas.Count; i++)
+            //{
+            //    Debug.Log(i + ": " + aiDatas[i].sitCUR._dist + ", " + aiDatas[i].sitCUR._angleComp + ", " + aiDatas[i].sitAFT._dist);
+            //}
+
+            //aiDatas.RemoveRange(0, aiDatas.Count);
+
+            //aiDatas = IO_SqlDB.ReadAIData_FORM_DB("______Sample", -179);
+
+            //for (int i = 0; i < aiDatas.Count; i++)
+            //{
+            //    Debug.Log(i + ": " + aiDatas[i].sitCUR._dist + ", " + aiDatas[i].sitCUR._angleComp + ", " + aiDatas[i].sitAFT._dist);
+            //}
+            //aiDatas.RemoveRange(0, aiDatas.Count);
+
+            StartCoroutine(Div_BY_Angle_HugeBehaveData());
+        }
         else
         { }
     }
 
+    IEnumerator Div_BY_Angle_HugeBehaveData()
+    {
+        int startRowID, endRowID;
+
+        //20만개씩 끊어서 수행한다.
+        for (int i = 20; i < 40; i++)
+        {
+            startRowID = i * 200000 + 1;
+            endRowID = (i + 1) * 200000;
+
+            Debug.Log(startRowID + " ~ " + endRowID);
+
+            aiDatas = IO_SqlDB.ReadAIData_FROM_DB("behaveData", startRowID, endRowID);
+            yield return null;
+            Debug.Log("Read Done");
+            SaveDatas_Div_BY_Angle(true);
+            aiDatas.RemoveRange(0, aiDatas.Count);
+
+            yield return null;
+        }
+
+        Debug.Log("All Working Done");
+        yield break;
+    }
+
+    void SaveDatas_Div_BY_Angle(bool isDB_behaveData)
+    {
+        //각도별 분류 (10도를 단위로 나눔, 각 리스트 당 평균 5500개로 추정됨)
+        //양수
+        List<AIData> pAngle170 = new List<AIData>();
+        List<AIData> pAngle160 = new List<AIData>();
+        List<AIData> pAngle150 = new List<AIData>();
+        List<AIData> pAngle140 = new List<AIData>();
+        List<AIData> pAngle130 = new List<AIData>();
+        List<AIData> pAngle120 = new List<AIData>();
+        List<AIData> pAngle110 = new List<AIData>();
+        List<AIData> pAngle100 = new List<AIData>();
+
+        List<AIData> pAngle90 = new List<AIData>();
+        List<AIData> pAngle80 = new List<AIData>();
+        List<AIData> pAngle70 = new List<AIData>();
+        List<AIData> pAngle60 = new List<AIData>();
+        List<AIData> pAngle50 = new List<AIData>();
+        List<AIData> pAngle40 = new List<AIData>();
+        List<AIData> pAngle30 = new List<AIData>();
+        List<AIData> pAngle20 = new List<AIData>();
+        List<AIData> pAngle10 = new List<AIData>();
+        List<AIData> pAngle0 = new List<AIData>();
+
+        //음수
+        List<AIData> mAngle10 = new List<AIData>();
+        List<AIData> mAngle20 = new List<AIData>();
+        List<AIData> mAngle30 = new List<AIData>();
+        List<AIData> mAngle40 = new List<AIData>();
+        List<AIData> mAngle50 = new List<AIData>();
+        List<AIData> mAngle60 = new List<AIData>();
+        List<AIData> mAngle70 = new List<AIData>();
+        List<AIData> mAngle80 = new List<AIData>();
+        List<AIData> mAngle90 = new List<AIData>();
+
+        List<AIData> mAngle100 = new List<AIData>();
+        List<AIData> mAngle110 = new List<AIData>();
+        List<AIData> mAngle120 = new List<AIData>();
+        List<AIData> mAngle130 = new List<AIData>();
+        List<AIData> mAngle140 = new List<AIData>();
+        List<AIData> mAngle150 = new List<AIData>();
+        List<AIData> mAngle160 = new List<AIData>();
+        List<AIData> mAngle170 = new List<AIData>();
+        List<AIData> mAngle180 = new List<AIData>();
+
+        //aiDatas[i].sitCUR._angleComp 오름차순 정렬 (-180부터 180까지)
+        quickSort_AIData(0, aiDatas.Count - 1);
+
+        float angle = -180f;
+
+        for (int i = 0; i < aiDatas.Count; i++)
+        {
+            if(isDB_behaveData)
+                aiDatas[i].sitAFT._beforeDB = aiDatas[i].sitAFT._hitCounter;
+
+            if (aiDatas[i].sitCUR._id == "NULL")
+                continue;
+
+            if (angle <= aiDatas[i].sitCUR._angleComp && aiDatas[i].sitCUR._angleComp < angle + 10)
+            {
+                if (angle == -180f) { mAngle180.Add(aiDatas[i]); }
+                else if (angle == -170f) { mAngle170.Add(aiDatas[i]); }
+                else if (angle == -160f) { mAngle160.Add(aiDatas[i]); }
+                else if (angle == -150f) { mAngle150.Add(aiDatas[i]); }
+                else if (angle == -140f) { mAngle140.Add(aiDatas[i]); }
+                else if (angle == -130f) { mAngle130.Add(aiDatas[i]); }
+                else if (angle == -120f) { mAngle120.Add(aiDatas[i]); }
+                else if (angle == -110f) { mAngle110.Add(aiDatas[i]); }
+                else if (angle == -100f) { mAngle100.Add(aiDatas[i]); }
+                else if (angle == -90f) { mAngle90.Add(aiDatas[i]); }
+                else if (angle == -80f) { mAngle80.Add(aiDatas[i]); }
+                else if (angle == -70f) { mAngle70.Add(aiDatas[i]); }
+                else if (angle == -60f) { mAngle60.Add(aiDatas[i]); }
+                else if (angle == -50f) { mAngle50.Add(aiDatas[i]); }
+                else if (angle == -40f) { mAngle40.Add(aiDatas[i]); }
+                else if (angle == -30f) { mAngle30.Add(aiDatas[i]); }
+                else if (angle == -20f) { mAngle20.Add(aiDatas[i]); }
+                else if (angle == -10f) { mAngle10.Add(aiDatas[i]); }
+                else if (angle == 0f) { pAngle0.Add(aiDatas[i]); }
+                else if (angle == 10f) { pAngle10.Add(aiDatas[i]); }
+                else if (angle == 20f) { pAngle20.Add(aiDatas[i]); }
+                else if (angle == 30f) { pAngle30.Add(aiDatas[i]); }
+                else if (angle == 40f) { pAngle40.Add(aiDatas[i]); }
+                else if (angle == 50f) { pAngle50.Add(aiDatas[i]); }
+                else if (angle == 60f) { pAngle60.Add(aiDatas[i]); }
+                else if (angle == 70f) { pAngle70.Add(aiDatas[i]); }
+                else if (angle == 80f) { pAngle80.Add(aiDatas[i]); }
+                else if (angle == 90f) { pAngle90.Add(aiDatas[i]); }
+                else if (angle == 100f) { pAngle100.Add(aiDatas[i]); }
+                else if (angle == 110f) { pAngle110.Add(aiDatas[i]); }
+                else if (angle == 120f) { pAngle120.Add(aiDatas[i]); }
+                else if (angle == 130f) { pAngle130.Add(aiDatas[i]); }
+                else if (angle == 140f) { pAngle140.Add(aiDatas[i]); }
+                else if (angle == 150f) { pAngle150.Add(aiDatas[i]); }
+                else if (angle == 160f) { pAngle160.Add(aiDatas[i]); }
+                else if (angle == 170f) { pAngle170.Add(aiDatas[i]); }
+                else if (angle >= 180f)
+                {
+                    break;
+                }
+            }
+            else
+            {
+                angle += 10f;
+                i--;
+            }
+        }
+
+        IO_SqlDB.WriteDB_AIDatas("behaveDataAngleM18", mAngle180);
+        IO_SqlDB.WriteDB_AIDatas("behaveDataAngleM17", mAngle170);
+        IO_SqlDB.WriteDB_AIDatas("behaveDataAngleM16", mAngle160);
+        IO_SqlDB.WriteDB_AIDatas("behaveDataAngleM15", mAngle150);
+        IO_SqlDB.WriteDB_AIDatas("behaveDataAngleM14", mAngle140);
+        IO_SqlDB.WriteDB_AIDatas("behaveDataAngleM13", mAngle130);
+        IO_SqlDB.WriteDB_AIDatas("behaveDataAngleM12", mAngle120);
+        IO_SqlDB.WriteDB_AIDatas("behaveDataAngleM11", mAngle110);
+        IO_SqlDB.WriteDB_AIDatas("behaveDataAngleM10", mAngle100);
+
+        IO_SqlDB.WriteDB_AIDatas("behaveDataAngleM9", mAngle90);
+        IO_SqlDB.WriteDB_AIDatas("behaveDataAngleM8", mAngle80);
+        IO_SqlDB.WriteDB_AIDatas("behaveDataAngleM7", mAngle70);
+        IO_SqlDB.WriteDB_AIDatas("behaveDataAngleM6", mAngle60);
+        IO_SqlDB.WriteDB_AIDatas("behaveDataAngleM5", mAngle50);
+        IO_SqlDB.WriteDB_AIDatas("behaveDataAngleM4", mAngle40);
+        IO_SqlDB.WriteDB_AIDatas("behaveDataAngleM3", mAngle30);
+        IO_SqlDB.WriteDB_AIDatas("behaveDataAngleM2", mAngle20);
+        IO_SqlDB.WriteDB_AIDatas("behaveDataAngleM1", mAngle10);
+
+        IO_SqlDB.WriteDB_AIDatas("behaveDataAngleP0", pAngle0);
+        IO_SqlDB.WriteDB_AIDatas("behaveDataAngleP1", pAngle10);
+        IO_SqlDB.WriteDB_AIDatas("behaveDataAngleP2", pAngle20);
+        IO_SqlDB.WriteDB_AIDatas("behaveDataAngleP3", pAngle30);
+        IO_SqlDB.WriteDB_AIDatas("behaveDataAngleP4", pAngle40);
+        IO_SqlDB.WriteDB_AIDatas("behaveDataAngleP5", pAngle50);
+        IO_SqlDB.WriteDB_AIDatas("behaveDataAngleP6", pAngle60);
+        IO_SqlDB.WriteDB_AIDatas("behaveDataAngleP7", pAngle70);
+        IO_SqlDB.WriteDB_AIDatas("behaveDataAngleP8", pAngle80);
+        IO_SqlDB.WriteDB_AIDatas("behaveDataAngleP9", pAngle90);
+
+        IO_SqlDB.WriteDB_AIDatas("behaveDataAngleP10", pAngle100);
+        IO_SqlDB.WriteDB_AIDatas("behaveDataAngleP11", pAngle110);
+        IO_SqlDB.WriteDB_AIDatas("behaveDataAngleP12", pAngle120);
+        IO_SqlDB.WriteDB_AIDatas("behaveDataAngleP13", pAngle130);
+        IO_SqlDB.WriteDB_AIDatas("behaveDataAngleP14", pAngle140);
+        IO_SqlDB.WriteDB_AIDatas("behaveDataAngleP15", pAngle150);
+        IO_SqlDB.WriteDB_AIDatas("behaveDataAngleP16", pAngle160);
+        IO_SqlDB.WriteDB_AIDatas("behaveDataAngleP17", pAngle170);
+
+        Debug.Log("Writing Done");
+    }
+
+    IEnumerator AllDataLearning()
+    {
+        bool saveLocker = true;
+
+        for (int angle = -18; angle < 18; angle++)
+        {
+            for (int angleSUB = 0; angleSUB <= 9; angleSUB++)
+            {
+                for (float dist = 0f; dist <= 50f; dist += 2.0f)
+                {
+                    yield return null;
+                    AIData data = new AIData();
+
+                    StartCoroutine(LearnHighScoreBehave(angle, angleSUB, dist, false, (input) => { data = input; }));
+
+                    data_FOR_Learn.Add(data);
+                }
+                aiDatas.RemoveRange(0, aiDatas.Count);
+            }
+        }
+
+        while (saveLocker)
+        {
+            if (coroutineLocker >= 102)
+            {
+                StartCoroutine(Save_DataFORLearn());
+                saveLocker = false;
+            }
+
+            yield return null;
+        }
+        yield break;
+    }
+
+    IEnumerator Save_DataFORLearn()
+    {
+        List<AIData> saveData = new List<AIData>();
+
+        for (int i = 0; i < data_FOR_Learn.Count; i++)
+        {
+            if (data_FOR_Learn[i].sitCUR._doing.vecX != -1)
+            {
+                saveData.Add(data_FOR_Learn[i]);
+            }
+        }
+
+        Debug.Log(saveData.Count);
+        //IO_SqlDB.WriteDB_AIDatas("behaveDataScored", data_FOR_Learn);
+        IO_SqlDB.WriteDB_AIDatas("behaveDataScored", saveData);
+
+        Debug.Log("Save Done");
+
+        yield break;
+    }
+
     //AIData 
-    AIData LearnHighScoreBehave(int angleNum, int angleNUM, float distNum, bool isLOW_HP_Behave)
+    IEnumerator LearnHighScoreBehave(int angleNum, int angleSUB, float distNum, bool isLOW_HP_Behave, Action<AIData> result)
     {
         string fileName = "behaveDataAngle";
+        int angle = angleNum * 10 + angleSUB;
 
         if (isLOW_HP_Behave)
             fileName = fileName + "LOW";
@@ -819,8 +911,8 @@ public class EnemyDataCollector : MonoBehaviour {
 
         if (aiDatas.Count == 0)
         {
-            Debug.Log("New File Read");
-            aiDatas = IO_SqlDB.ReadAIData_FROM_DB(fileName);
+            Debug.Log("New Read " + angle);
+            aiDatas = IO_SqlDB.ReadAIData_FROM_DB(fileName, angle);
             quickSort_AIData(0, aiDatas.Count - 1);
         }
 
@@ -847,133 +939,121 @@ public class EnemyDataCollector : MonoBehaviour {
             float angleData = aiDatas[i].sitCUR._angleComp;
             float distData = aiDatas[i].sitCUR._dist;
 
-            if (angleData >= angleNum * 10 + 2f)
-                break;
+            if (angleData >= angle + 1)
+                continue;
 
             //불량 데이터 무시
             if (aiDatas[i].sitCUR._doing.vecX == -1)
                 continue;
 
-            if (distNum < 50f)
+            if (distData >= 50.5f)
+                distData = 50f;
+
+            if ((angle <= angleData && angleData < angle + 1f) && (distNum <= distData && distData < distNum + 0.5f))
             {
-                if ((angleNum * 10 + angleNUM <= angleData && angleData < angleNum * 10 + angleNUM + 1f) && (distNum <= distData && distData < distNum + 0.5f))
+                //체력 절반 이하, 절반 초과에 따라 다른 행동점수 가산점 OR 불이익 정책 사용
+                //체력이 절반을 초과할 때
+                if (!isLOW_HP_Behave)
                 {
-                    //체력 절반 이하, 절반 초과에 따라 다른 행동점수 가산점 OR 불이익 정책 사용
-                    if (!isLOW_HP_Behave)
+                    aiDatas[i].sitAFT._beforeDB += aiDatas[i].sitAFT._hitCounter;
+
+                    //if (aiDatas[i].sitCUR._doing.vecX != 0 && aiDatas[i].sitCUR._doing.vecY != 0)
+                    //    aiDatas[i].sitAFT._beforeDB += aiDatas[i].sitAFT._hitCounter; //(aiDatas[i].sitAFT._hitCounter * 11);
+
+                    if (distNum >= 30f && aiDatas[i].sitCUR._doing.vecX != 0 && aiDatas[i].sitCUR._doing.vecY != 0
+                        && aiDatas[i].sitAFT._closer == true && aiDatas[i].sitAFT._dist + 10f < distNum)
                     {
-                        if (aiDatas[i].sitCUR._doing.vecX != 0 && aiDatas[i].sitCUR._doing.vecY != 0)
-                            aiDatas[i].sitAFT._beforeDB += aiDatas[i].sitAFT._hitCounter;
-
-                        if (distNum >= 30f && aiDatas[i].sitCUR._doing.vecX != 0 && aiDatas[i].sitCUR._doing.vecY != 0
-                            && aiDatas[i].sitAFT._closer == true && aiDatas[i].sitAFT._dist < distNum)
-                        {
-                            aiDatas[i].sitAFT._beforeDB += 3;
-                        }
-
-                        if (distNum >= 30f && aiDatas[i].sitCUR._doing.vecX == 0 && aiDatas[i].sitCUR._doing.vecY == 0
-                            && aiDatas[i].sitAFT._closer == false && aiDatas[i].sitAFT._dist >= distNum)
-                        {
-                            aiDatas[i].sitAFT._beforeDB -= 3;
-                        }
-                    }
-                    else
-                    {
-                        if (aiDatas[i].sitCUR._doing.vecX != 0 && aiDatas[i].sitCUR._doing.vecY != 0)
-                            aiDatas[i].sitAFT._beforeDB--;
-
-                        if (aiDatas[i].sitAFT._dist > distData)
-                            aiDatas[i].sitAFT._beforeDB++;
-
-                        if (distNum >= 30f && aiDatas[i].sitCUR._doing.vecX == 0 && aiDatas[i].sitCUR._doing.vecY == 0
-                            && aiDatas[i].sitAFT._closer == true && aiDatas[i].sitAFT._dist <= distNum)
-                        {
-                            aiDatas[i].sitAFT._beforeDB -= 3;
-                        }
-
-                        if (distNum >= 30f && aiDatas[i].sitCUR._doing.vecX != 0 && aiDatas[i].sitCUR._doing.vecY != 0
-                            && aiDatas[i].sitAFT._closer == false && aiDatas[i].sitAFT._dist > distNum)
-                        {
-                            aiDatas[i].sitAFT._beforeDB += 3;
-                        }
-
-                        if (distNum <= 30f && aiDatas[i].sitCUR._doing.vecX == 0 && aiDatas[i].sitCUR._doing.vecY == 0
-                            && aiDatas[i].sitAFT._closer == true && aiDatas[i].sitAFT._dist <= distNum)
-                        {
-                            aiDatas[i].sitAFT._beforeDB -= 3;
-                        }
-
-                        if (distNum <= 30f && aiDatas[i].sitCUR._doing.vecX != 0 && aiDatas[i].sitCUR._doing.vecY != 0
-                            && aiDatas[i].sitAFT._closer == true && aiDatas[i].sitAFT._dist > distNum)
-                        {
-                            aiDatas[i].sitAFT._beforeDB += 3;
-                        }
+                        aiDatas[i].sitAFT._beforeDB += 3;// 10;
                     }
 
-                    if (aiDatas[i].sitCUR._doing.vecX == 0 && aiDatas[i].sitCUR._doing.vecY == 0 && aiDatas[i].sitCUR._doing.vecZ == 0)
+                    if (distNum >= 30f && aiDatas[i].sitCUR._doing.vecX == 0 && aiDatas[i].sitCUR._doing.vecY == 0
+                        && aiDatas[i].sitAFT._closer == false && aiDatas[i].sitAFT._dist >= distNum)
+                    {
+                        aiDatas[i].sitAFT._beforeDB -= (int)(20 + aiDatas[i].sitAFT._dist);//3;
+                    }
+
+                    //if (distNum < 30f && aiDatas[i].sitAFT._hitCounter > 0)
+                    //{
+                    //    aiDatas[i].sitAFT._beforeDB += 40;
+                    //}
+
+                    if (aiDatas[i].sitAFT._hitCounter == 0 && aiDatas[i].sitCUR._doing.vecZ != 0)
+                    {
+                        //aiDatas[i].sitAFT._beforeDB -= 5;
+                        aiDatas[i].sitCUR._doing.vecZ = 0;
+                    }
+                }
+                //체력이 절반 이하일 때
+                else
+                {
+                    if (aiDatas[i].sitCUR._doing.vecX != 0 && aiDatas[i].sitCUR._doing.vecY != 0)
+                        aiDatas[i].sitAFT._beforeDB--;
+
+                    if (aiDatas[i].sitAFT._dist > distData)
+                        aiDatas[i].sitAFT._beforeDB++;
+
+                    if (distNum >= 30f && aiDatas[i].sitCUR._doing.vecX == 0 && aiDatas[i].sitCUR._doing.vecY == 0
+                        && aiDatas[i].sitAFT._closer == true && aiDatas[i].sitAFT._dist <= distNum)
                     {
                         aiDatas[i].sitAFT._beforeDB -= 3;
                     }
 
-                    int mov = aiDatas[i].sitCUR._doing.vecX;
-                    int rot = aiDatas[i].sitCUR._doing.vecY;
-                    int atk = aiDatas[i].sitCUR._doing.vecZ;
+                    if (distNum >= 30f && aiDatas[i].sitCUR._doing.vecX != 0 && aiDatas[i].sitCUR._doing.vecY != 0
+                        && aiDatas[i].sitAFT._closer == false && aiDatas[i].sitAFT._dist > distNum)
+                    {
+                        aiDatas[i].sitAFT._beforeDB += 3;
+                    }
 
-                    SituationCUR curBowl = new SituationCUR("NULL", 0f, 0f, 0f, 0f, new IntVector3(-1, -1, -1), 0f);
-                    SituationAFT aftBowl = new SituationAFT("NULL", 0f, 0f, 0f, 0f, "NULL", 0, 0, false);
+                    if (distNum <= 30f && aiDatas[i].sitCUR._doing.vecX == 0 && aiDatas[i].sitCUR._doing.vecY == 0
+                        && aiDatas[i].sitAFT._closer == true && aiDatas[i].sitAFT._dist <= distNum)
+                    {
+                        aiDatas[i].sitAFT._beforeDB -= 3;
+                    }
 
-                    curBowl._id = "Input";
-                    curBowl._angleComp = angleData + dataCollections[mov, rot, atk].sitCUR._angleComp;
-                    curBowl._dist = distData + dataCollections[mov, rot, atk].sitCUR._dist;
-                    curBowl._doing = new IntVector3(mov, rot, atk);
-                    curBowl._time = aiDatas[i].sitCUR._time + dataCollections[mov, rot, atk].sitCUR._time;
-                    curBowl._posX = 1 + dataCollections[mov, rot, atk].sitCUR._posX;
-
-                    aftBowl._angleComp = aiDatas[i].sitAFT._angleComp + dataCollections[mov, rot, atk].sitAFT._angleComp;
-                    aftBowl._dist = aiDatas[i].sitAFT._dist + dataCollections[mov, rot, atk].sitAFT._dist;
-                    aftBowl._beforeDB = aiDatas[i].sitAFT._beforeDB + dataCollections[mov, rot, atk].sitAFT._beforeDB;
-                    aftBowl._hitCounter = aiDatas[i].sitAFT._hitCounter + dataCollections[mov, rot, atk].sitAFT._hitCounter;
-
-                    if (aiDatas[i].sitAFT._closer)
-                        aftBowl._posX = 1 + dataCollections[mov, rot, atk].sitAFT._posX;
-                    else
-                        aftBowl._posZ = 1 + dataCollections[mov, rot, atk].sitAFT._posZ;
-
-                    dataCollections[mov, rot, atk].sitCUR = curBowl;
-                    dataCollections[mov, rot, atk].sitAFT = aftBowl;
+                    if (distNum <= 30f && aiDatas[i].sitCUR._doing.vecX != 0 && aiDatas[i].sitCUR._doing.vecY != 0
+                        && aiDatas[i].sitAFT._closer == true && aiDatas[i].sitAFT._dist > distNum)
+                    {
+                        aiDatas[i].sitAFT._beforeDB += 3;
+                    }
                 }
-            }
-            else
-            {
-                if ((angleNum <= angleData && angleData < angleNum + 2f) && (distNum <= distData))
+
+                //아무것도 안 했으면 감점
+                if (aiDatas[i].sitCUR._doing.vecX == 0)
                 {
-                    int mov = aiDatas[i].sitCUR._doing.vecX;
-                    int rot = aiDatas[i].sitCUR._doing.vecY;
-                    int atk = aiDatas[i].sitCUR._doing.vecZ;
+                    aiDatas[i].sitAFT._beforeDB -= 10;
 
-                    SituationCUR curBowl = new SituationCUR("NULL", 0f, 0f, 0f, 0f, new IntVector3(-1, -1, -1), 0f);
-                    SituationAFT aftBowl = new SituationAFT("NULL", 0f, 0f, 0f, 0f, "NULL", 0, 0, false);
-
-                    curBowl._id = "Input";
-                    curBowl._angleComp = angleData + dataCollections[mov, rot, atk].sitCUR._angleComp;
-                    curBowl._dist = distData + dataCollections[mov, rot, atk].sitCUR._dist;
-                    curBowl._doing = new IntVector3(mov, rot, atk);
-                    curBowl._time = aiDatas[i].sitCUR._time + dataCollections[mov, rot, atk].sitCUR._time;
-                    curBowl._posX = 1 + dataCollections[mov, rot, atk].sitCUR._posX;
-
-                    aftBowl._angleComp = aiDatas[i].sitAFT._angleComp + dataCollections[mov, rot, atk].sitAFT._angleComp;
-                    aftBowl._dist = aiDatas[i].sitAFT._dist + dataCollections[mov, rot, atk].sitAFT._dist;
-                    aftBowl._beforeDB = aiDatas[i].sitAFT._beforeDB + dataCollections[mov, rot, atk].sitAFT._beforeDB;
-                    aftBowl._hitCounter = aiDatas[i].sitAFT._hitCounter + dataCollections[mov, rot, atk].sitAFT._hitCounter;
-
-                    if (aiDatas[i].sitAFT._closer)
-                        aftBowl._posX = 1 + dataCollections[mov, rot, atk].sitAFT._posX;
-                    else
-                        aftBowl._posZ = 1 + dataCollections[mov, rot, atk].sitAFT._posZ;
-
-                    dataCollections[mov, rot, atk].sitCUR = curBowl;
-                    dataCollections[mov, rot, atk].sitCUR._doing.vecZ = 0;
-                    dataCollections[mov, rot, atk].sitAFT = aftBowl;
+                    if (aiDatas[i].sitCUR._doing.vecY == 0 && aiDatas[i].sitCUR._doing.vecZ == 0)
+                        aiDatas[i].sitAFT._beforeDB -= 10;
                 }
+
+                //dataCollections 중 올바른 위치에 값 저장
+                int mov = aiDatas[i].sitCUR._doing.vecX;
+                int rot = aiDatas[i].sitCUR._doing.vecY;
+                int atk = aiDatas[i].sitCUR._doing.vecZ;
+
+                SituationCUR curBowl = new SituationCUR("NULL", 0f, 0f, 0f, 0f, new IntVector3(-1, -1, -1), 0f);
+                SituationAFT aftBowl = new SituationAFT("NULL", 0f, 0f, 0f, 0f, "NULL", 0, 0, false);
+
+                curBowl._id = angle + ", " + distNum;
+                curBowl._angleComp = angleData + dataCollections[mov, rot, atk].sitCUR._angleComp;
+                curBowl._dist = distData + dataCollections[mov, rot, atk].sitCUR._dist;
+                curBowl._doing = new IntVector3(mov, rot, atk);
+                curBowl._time = aiDatas[i].sitCUR._time + dataCollections[mov, rot, atk].sitCUR._time;
+                curBowl._posX = 1 + dataCollections[mov, rot, atk].sitCUR._posX;
+
+                aftBowl._id = angle + ", " + distNum;
+                aftBowl._angleComp = aiDatas[i].sitAFT._angleComp + dataCollections[mov, rot, atk].sitAFT._angleComp;
+                aftBowl._dist = aiDatas[i].sitAFT._dist + dataCollections[mov, rot, atk].sitAFT._dist;
+                aftBowl._beforeDB = aiDatas[i].sitAFT._beforeDB + dataCollections[mov, rot, atk].sitAFT._beforeDB;
+                aftBowl._hitCounter = aiDatas[i].sitAFT._hitCounter + dataCollections[mov, rot, atk].sitAFT._hitCounter;
+
+                if (aiDatas[i].sitAFT._closer)
+                    aftBowl._posX = 1 + dataCollections[mov, rot, atk].sitAFT._posX;
+                else
+                    aftBowl._posZ = 1 + dataCollections[mov, rot, atk].sitAFT._posZ;
+
+                dataCollections[mov, rot, atk].sitCUR = curBowl;
+                dataCollections[mov, rot, atk].sitAFT = aftBowl;
             }
         }
 
@@ -1007,7 +1087,7 @@ public class EnemyDataCollector : MonoBehaviour {
             }
         }
         //통계 결과 가장 높은 dataCollections[i, j, k].sitCUR._posZ (행동점수를 임시로 저장한 변수) 값을 추적
-        double maxScore = -1;
+        double maxScore = -999999;
         IntVector3 maxScoreIndex = new IntVector3(-1,-1,-1);
 
         for (int i = 0; i < 3; i++)
@@ -1025,8 +1105,10 @@ public class EnemyDataCollector : MonoBehaviour {
             }
         }
 
-
-        AIData result = new AIData(curInit, aftInit);
+        if (maxScoreIndex == new IntVector3(0, 0, 0))
+        {
+            maxScoreIndex.vecX = -1;
+        }
 
         if (maxScoreIndex.vecX != -1)
         {
@@ -1037,14 +1119,15 @@ public class EnemyDataCollector : MonoBehaviour {
             dataCollections[maxScoreIndex.vecX, maxScoreIndex.vecY, maxScoreIndex.vecZ].sitAFT._posX = 0f;
             dataCollections[maxScoreIndex.vecX, maxScoreIndex.vecY, maxScoreIndex.vecZ].sitAFT._posZ = 0f;
 
-            result = dataCollections[maxScoreIndex.vecX, maxScoreIndex.vecY, maxScoreIndex.vecZ];
+            result(dataCollections[maxScoreIndex.vecX, maxScoreIndex.vecY, maxScoreIndex.vecZ]);
         }
-        else
-        {
-            result.sitCUR._doing = new IntVector3(-1, -1, -1);
-        }
+        //else
+        //{
+        //    result.sitCUR._doing = new IntVector3(-1, -1, -1);
+        //}
 
-        return result;
+        coroutineLocker++;
+        yield break;
     }
 
     void Update()
@@ -1057,6 +1140,12 @@ public class EnemyDataCollector : MonoBehaviour {
         if (Input.GetKeyDown(KeyCode.P))
         {
             StartCoroutine(Saver());
+        }
+
+        //20190606 임시
+        if (Input.GetKeyDown(KeyCode.L))
+        {
+            IO_CSV.Writer_CSV("/ScoreCAL.csv", listScore_FOR_PPT);
         }
 
         ////BigData 유닛이 검증한 우수 행동 별도 저장
@@ -1143,15 +1232,6 @@ public class EnemyDataCollector : MonoBehaviour {
             }
         }
 
-        for (int i = 0; i < listSitCUR0.Count; i++)
-        {
-            if ((listSitCUR0[i]._doing.vecX == -1) || (listSitCUR0[i]._doing.vecY == -1) || (listSitCUR0[i]._doing.vecZ == -1))
-            {
-                listSitCUR0.RemoveAt(i);
-                i--;
-            }
-        }
-
         if (listSitCUR.Count != listSitAFT.Count)
         {
             Debug.Log("ERROR");
@@ -1161,21 +1241,22 @@ public class EnemyDataCollector : MonoBehaviour {
 
         if (listSitCUR.Count != 0)
         {
+
+            //for (int i = 0; i < listSitCUR.Count; i++)
+            //{
+            //    aiDatas.Add(new AIData(listSitCUR[i], listSitAFT[i]));
+            //}
+
+            //yield return null;
+            //SaveDatas_Div_BY_Angle(true);
+
             IO_SqlDB.WriteDB_CUR("behaveDataReinforce", listSitCUR);
             yield return null;
             IO_SqlDB.WriteDB_AFT("behaveDataReinforce", listSitAFT);
             yield return null;
         }
 
-        if (listSitCUR0.Count != 0)
-        {
-            IO_SqlDB.WriteDB_CUR("behaveDataReinforceLOW", listSitCUR0);
-            yield return null;
-            IO_SqlDB.WriteDB_AFT("behaveDataReinforceLOW", listSitAFT0);
-        }
-
         Debug.Log("HP HIGH Data " + listSitCUR.Count + " Save Complete");
-        Debug.Log("HP LOW Data " + listSitCUR0.Count + " Save Complete");
         yield break;
     }
 

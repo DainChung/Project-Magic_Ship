@@ -203,14 +203,14 @@ public class UnitBaseEngine : MonoBehaviour
 
             //읽으려는게 "Assets/Resources" 안에 있지만 그 하위 폴더에 없는 거면
             //Resources.Load("<읽으려는거>") as <자료형> 이렇게 쓰면 된다.
-            GameObject threw_Ammo = Resources.Load(prefabBulletPath + "SampleBullet") as GameObject;
+            //GameObject threw_Ammo = ;
             //나중에는 SkillBaseStat에 private string bulletName 변수를 만들고 그것을 읽어오도록 할 것
             //예시)  GameObject threw_Ammo = Resources.Load(prefabBulletPath + whichSkill.bulletName) as GameObject;
 
             //private string bulletName 변수는 Sample__SkillDataBase.csv에서 읽어오도록 만들것
 
             GameObject spawned_OBJ;
-            spawned_OBJ = (GameObject)(MonoBehaviour.Instantiate(threw_Ammo, spawnPosition, spawnRotation));
+            spawned_OBJ = (GameObject)(MonoBehaviour.Instantiate(Resources.Load(prefabBulletPath + "SampleBullet") as GameObject, spawnPosition, spawnRotation));
             //투사체가 날아가는 속도를 특정 값으로 설정. 나중엔 DB에서 긁어올 것
             if (unit_Base_Engine.enemyController != null)
             {
@@ -241,10 +241,10 @@ public class UnitBaseEngine : MonoBehaviour
         //투사체를 발사할 때 발사 위치와 발사 방향을 따로 지정할 필요가 없는 경우
         public void Default_ATK(ref Transform attacker, SkillBaseStat whichSkill)
         {
-            GameObject threw_Ammo = Resources.Load(prefabBulletPath + "SampleBullet") as GameObject;
+            //GameObject threw_Ammo =;
 
             GameObject spawned_OBJ;
-            spawned_OBJ = (GameObject)(MonoBehaviour.Instantiate(threw_Ammo, attacker.position, attacker.rotation));
+            spawned_OBJ = (GameObject)(MonoBehaviour.Instantiate(Resources.Load(prefabBulletPath + "SampleBullet") as GameObject, attacker.position, attacker.rotation));
             //투사체가 날아가는 속도를 특정 값으로 설정. 나중엔 DB에서 긁어올 것
             if (unit_Base_Engine.enemyController != null)
             {

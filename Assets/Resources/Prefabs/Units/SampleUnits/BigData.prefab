@@ -49,7 +49,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!1 &1000011645031238
 GameObject:
   m_ObjectHideFlags: 1
@@ -302,7 +302,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1000011490286722}
   m_LocalRotation: {x: -0, y: -0.7113016, z: -0, w: 0.702887}
-  m_LocalPosition: {x: 31.7, y: 1.09, z: 8.7}
+  m_LocalPosition: {x: 26.9, y: 1.09, z: 47.5}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_LocalEulerAnglesHint: {x: 0, y: -90.662, z: 0}
   m_Children:
@@ -544,13 +544,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3139962b824d7a94a9d150371ed89829, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  mapManager: {fileID: 0}
   enemyCoolTimer: {fileID: 114000010459566596}
   enemyTransform: {fileID: 4000013330328064}
   playerTransform: {fileID: 0}
   enemy_Front: {fileID: 4000011561047180}
   enemy_Right: {fileID: 4000013316454746}
   enemy_Left: {fileID: 4000011277965812}
-  sampleUnitID: BigData
+  unitID: BigData
 --- !u!114 &114000011760181492
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -564,6 +565,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   hitCounter: 0
   getDamagedCounter: 0
+  simpleSpining: 0
 --- !u!114 &114000011900000392
 MonoBehaviour:
   m_ObjectHideFlags: 1

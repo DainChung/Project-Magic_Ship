@@ -513,6 +513,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   hitCounter: 0
+  getDamagedCounter: 0
+  simpleSpining: 0
 --- !u!114 &114000012568921166
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -600,7 +602,7 @@ MonoBehaviour:
   enemy_Front: {fileID: 4000010932150966}
   enemy_Right: {fileID: 4000014034018194}
   enemy_Left: {fileID: 4000012971145744}
-  sampleUnitID: Stage_0_BOSS
+  unitID: Stage_0_BOSS
 --- !u!114 &114000013508232576
 MonoBehaviour:
   m_ObjectHideFlags: 1

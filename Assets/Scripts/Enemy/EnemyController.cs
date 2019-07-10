@@ -149,64 +149,12 @@ public class EnemyAIEngine {
     //destinationDir 방향으로 회전하는 함수
     public void Rotate_TO_Direction(float rotate_Speed, ref Transform rotated_OBJ, Transform destiTrn, bool is_RunAway)
     {
-        //두 지점 사이의 각도 구하기 (도달해야 되는 각도 => 목표 각도)
-        //일단 플레이어를 향하는 각도를 구한다.
-        float _destiAngle = Mathf.Atan2(destiTrn.position.x - rotated_OBJ.position.x, destiTrn.position.z - rotated_OBJ.position.z) * Mathf.Rad2Deg;
-
-        //어떤 방향으로 돌아야 목표 각도에 빠르게 도달할 수 있는지를 계산하기 위한 변수들 => dir값을 1 또는 -1로 결정
-        //현재 Enemy가 바라보고 있는 방향의 각도를 구한다.
-        float curAngle = rotated_OBJ.rotation.eulerAngles.y;
-
-        float destiAngle_FOR_dir = 0.0f;
-
-        float destiAngle;
-
         //시계방향 회전을 기본값으로 한다.
-        int dir = 1;
-
-        //curAngle은 0 <= curAgnle < 360 (destiAngle은 -180 < destiAngle <= 180)이기 떄문에 curAngle > 180인 경우 curAngle 값을 보정하도록 한다.
-        //curAngle도 -180 < curAngle <= 180으로 변경한다.
-        curAngle = Rotation_Math.Angle360_TO_Angle180(curAngle);
-
-        if (is_RunAway)
-        {
-            _destiAngle = Rotation_Math.Get_Opposite_Direction_Angle(_destiAngle);
-        }
-        //방향 계산을 위해 값을 그대로 가져온다.
-        destiAngle_FOR_dir = _destiAngle;
-
-        //아래 Debug.Log를 통해 확인할 수 있다.
-        //Debug.Log(destiAngle);
-
-        //destiAngle_FOR_dir와 curAngle의 부호가 다른 경우
-        if ((destiAngle_FOR_dir < 0 && curAngle >= 0) || (destiAngle_FOR_dir >= 0 && curAngle < 0))
-        {
-            //destiAngle_FOR_dir의 반대방향으로 계산하도록 조정한다.
-            destiAngle_FOR_dir = Rotation_Math.Get_Opposite_Direction_Angle(destiAngle_FOR_dir);
-
-            //dir값을 보정한다.
-            dir *= (-1);
-        }
-
-        //dir값을 결정한다.
-        //각도 차를 구하여 시계방향으로 돌지 반시계방향으로 돌지 결정한다. (1이 시계 방향)
-        if (  !( GET_RotataionDir(curAngle, destiAngle_FOR_dir) )  )
-        {
-            dir *= (-1);
-        }
-
-        destiAngle = _destiAngle;
-        //목표 각도를 Quaternion으로 바꿔준다.
-        destiQT = Quaternion.Euler(0, _destiAngle, 0);
-
-        //rotated_OBJ.rotation = destiQT;
-
-        //호출될 때마다 목표 각도와 현재 각도 차 구하기
-        float angleComparison = Quaternion.Angle(rotated_OBJ.rotation, destiQT);
+        int dir = GetAngleComp(rotated_OBJ, destiTrn);
 
         //약간의 오차를 허용한다.
         //목표지점을 바라볼 때까지 회전한다.
-        if ( !( (angleComparison < 1.0f) && (angleComparison > - 1.0f) ) )
+        if ( !( (angleComp < 1.0f) && (angleComp > - 1.0f) ) )
         {
             __ENE_Engine._unit_Move_Engine.Rotate_OBJ(rotate_Speed, ref rotated_OBJ, dir);
         }
@@ -217,61 +165,12 @@ public class EnemyAIEngine {
     //측면으로 목표를 바라보도록 하는 함수
     public void Rotate_TO_Direction(float rotate_Speed, ref Transform rotated_OBJ, Transform destiTrn, bool is_Left_OR_Right, Transform right_Side)
     {
-        //두 지점 사이의 각도 구하기 (도달해야 되는 각도 => 목표 각도)
-        //일단 플레이어를 향하는 각도를 구한다.
-        float destiAngle = Mathf.Atan2(destiTrn.position.x - right_Side.position.x, destiTrn.position.z - right_Side.position.z) * Mathf.Rad2Deg;
-
-        //어떤 방향으로 돌아야 목표 각도에 빠르게 도달할 수 있는지를 계산하기 위한 변수들 => dir값을 1 또는 -1로 결정
-        //현재 Enemy가 바라보고 있는 방향의 각도를 구한다.
-        float curAngle = right_Side.rotation.eulerAngles.y;
-
-        float destiAngle_FOR_dir = 0.0f;
-
         //시계방향 회전을 기본값으로 한다.
-        int dir = 1;
-
-        //curAngle은 0 <= curAgnle < 360 (destiAngle은 -180 < destiAngle <= 180)이기 떄문에 curAngle > 180인 경우 curAngle 값을 보정하도록 한다.
-        //curAngle도 -180 < curAngle <= 180으로 변경한다.
-        curAngle = Rotation_Math.Angle360_TO_Angle180(curAngle);
-
-        if (is_Left_OR_Right)
-        {
-            destiAngle = Rotation_Math.Get_Opposite_Direction_Angle(destiAngle);
-        }
-        //방향 계산을 위해 값을 그대로 가져온다.
-        destiAngle_FOR_dir = destiAngle;
-
-        //아래 Debug.Log를 통해 확인할 수 있다.
-        //Debug.Log(destiAngle);
-
-        //destiAngle_FOR_dir와 curAngle의 부호가 다른 경우
-        if ((destiAngle_FOR_dir < 0 && curAngle >= 0) || (destiAngle_FOR_dir >= 0 && curAngle < 0))
-        {
-            //destiAngle_FOR_dir의 반대방향으로 계산하도록 조정한다.
-            destiAngle_FOR_dir = Rotation_Math.Get_Opposite_Direction_Angle(destiAngle_FOR_dir);
-
-            //dir값을 보정한다.
-            dir *= (-1);
-        }
-
-        //dir값을 결정한다.
-        //각도 차를 구하여 시계방향으로 돌지 반시계방향으로 돌지 결정한다. (1이 시계 방향)
-        if (!(GET_RotataionDir(curAngle, destiAngle_FOR_dir)))
-        {
-            dir *= (-1);
-        }
-
-        //목표 각도를 Quaternion으로 바꿔준다.
-        destiQT = Quaternion.Euler(0, destiAngle, 0);
-
-        //rotated_OBJ.rotation = destiQT;
-
-        //호출될 때마다 목표 각도와 현재 각도 차 구하기
-        float angleComparison = Quaternion.Angle(right_Side.rotation, destiQT);
+        int dir = GetAngleComp(right_Side, destiTrn);
 
         //약간의 오차를 허용한다.
         //목표지점을 바라볼 때까지 회전한다.
-        if (!((angleComparison < 1.0f) && (angleComparison > -1.0f)))
+        if (!((angleComp < 1.0f) && (angleComp > -1.0f)))
         {
             __ENE_Engine._unit_Move_Engine.Rotate_OBJ(rotate_Speed, ref rotated_OBJ, dir);
         }
@@ -279,7 +178,7 @@ public class EnemyAIEngine {
         //Debug.Log(angleComparison);
     }
 
-    public void GetAngleComp(Transform enemy, Transform destiTrn)
+    public int GetAngleComp(Transform enemy, Transform destiTrn)
     {
         //두 지점 사이의 각도 구하기 (도달해야 되는 각도 => 목표 각도)
         //일단 플레이어를 향하는 각도를 구한다.
@@ -287,25 +186,24 @@ public class EnemyAIEngine {
 
         //어떤 방향으로 돌아야 목표 각도에 빠르게 도달할 수 있는지를 계산하기 위한 변수들 => dir값을 1 또는 -1로 결정
         //현재 Enemy가 바라보고 있는 방향의 각도를 구한다.
-        float curAngle = enemy.rotation.eulerAngles.y;
+        //curAngle은 0 <= curAgnle < 360 (destiAngle은 -180 < destiAngle <= 180)이기 떄문에 curAngle > 180인 경우 curAngle 값을 보정하도록 한다.
+        //curAngle도 -180 < curAngle <= 180으로 변경한다.
+        float curAngle = Rotation_Math.Angle360_TO_Angle180(enemy.rotation.eulerAngles.y);
 
-        float destiAngle_FOR_dir = 0.0f;
+        //float destiAngle_FOR_dir = 0.0f;
 
-        float destiAngle;
+        float dirAngle;
 
         int dir = 1;
 
-        //curAngle은 0 <= curAgnle < 360 (destiAngle은 -180 < destiAngle <= 180)이기 떄문에 curAngle > 180인 경우 curAngle 값을 보정하도록 한다.
-        //curAngle도 -180 < curAngle <= 180으로 변경한다.
-        curAngle = Rotation_Math.Angle360_TO_Angle180(curAngle);
         //방향 계산을 위해 값을 그대로 가져온다.
-        destiAngle_FOR_dir = _destiAngle;
+        dirAngle = _destiAngle;
 
         //destiAngle_FOR_dir와 curAngle의 부호가 다른 경우
-        if ((destiAngle_FOR_dir < 0 && curAngle >= 0) || (destiAngle_FOR_dir >= 0 && curAngle < 0))
+        if ((dirAngle < 0 && curAngle >= 0) || (dirAngle >= 0 && curAngle < 0))
         {
             //destiAngle_FOR_dir의 반대방향으로 계산하도록 조정한다.
-            destiAngle_FOR_dir = Rotation_Math.Get_Opposite_Direction_Angle(destiAngle_FOR_dir);
+            dirAngle = Rotation_Math.Get_Opposite_Direction_Angle(dirAngle);
 
             //dir값을 보정한다.
             dir *= (-1);
@@ -313,17 +211,17 @@ public class EnemyAIEngine {
 
         //dir값을 결정한다.
         //각도 차를 구하여 시계방향으로 돌지 반시계방향으로 돌지 결정한다. (1이 시계 방향)
-        if (!(GET_RotataionDir(curAngle, destiAngle_FOR_dir)))
+        if (!(GET_RotataionDir(curAngle, dirAngle)))
         {
             dir *= (-1);
         }
-
-        destiAngle = _destiAngle;
         //목표 각도를 Quaternion으로 바꿔준다.
         destiQT = Quaternion.Euler(0, _destiAngle, 0);
 
         //호출될 때마다 목표 각도와 현재 각도 차 구하기
         angleComp = Quaternion.Angle(enemy.rotation, destiQT) * dir;
+
+        return dir;
     }
 
     //충분히 가까울 때까지 앞으로 이동하는 함수
@@ -379,7 +277,8 @@ public class EnemyController : MonoBehaviour {
     public Transform enemy_Right;
     public Transform enemy_Left;
 
-    public string sampleUnitID;
+    public string unitID;
+    private int aiLV;
 
     //AI 레벨에 따라 완벽하게 다른 행동을 할 수 있도록 밑작업
     private List<System.Action> _AI_FuncList = new List<System.Action>();
@@ -388,7 +287,7 @@ public class EnemyController : MonoBehaviour {
         //이속, 회전속도, 체력, 마나, 파워 게이지, 공격력, 크리확률, 크리계수, AI레벨
         //__ENE_Stat.SampleInit(10.0f, 30.0f, 10, 10, 10, 1, 0.1f, 2.0f, 0);
         //__ENE_Stat.SampleInit(10.0f, 30.0f, 10, 10, 10, 1, 0.1f, 2.0f, sample_AI_Level);
-        __ENE_Stat.InitialLize_Enemy_Stat(IO_CSV.__Get_Searched_EnemyBaseStat(sampleUnitID));
+        __ENE_Stat.InitialLize_Enemy_Stat(IO_CSV.__Get_Searched_EnemyBaseStat(unitID));
 
         //UnitBaseEngine에 Enemy라고 알려준다.
         __ENE_AI_Engine.__ENE_Engine = transform.GetComponent<UnitBaseEngine>();
@@ -418,7 +317,10 @@ public class EnemyController : MonoBehaviour {
         _AI_FuncList.Add(() => __ENE_AI.AI_Simple_Level0_BOSS());
         _AI_FuncList.Add(() => __ENE_AI.AI_ReinforceLearn_RandomBehave_Ver());
         //_AI_FuncList.Add(() => __ENE_AI.AI_DeapLearning__Random_Ver());
-        _AI_FuncList.Add(() => __ENE_AI.AI_DeapLearning__BigData_Ver());
+        _AI_FuncList.Add(() => __ENE_AI.AI_DeapLearning__BigData_Ver()); //Reinforce를 기반으로 하는 MDP 초기형
+        //_AI_FuncList.Add(() => __ENE_AI.__OLD__AI_DeapLearning__BigData_Ver()); //GreatATK를 기반으로 하는 빅데이터
+
+        aiLV = __ENE_Stat._GET_ai_Level;
     }
 
 	// Use this for initialization
@@ -430,71 +332,82 @@ public class EnemyController : MonoBehaviour {
         sEnemyUI = GetComponent<EnemyUI>();
 
         //생성된 후 자동으로 플레이어를 추적
-        playerTransform = GameObject.FindGameObjectWithTag("Player").transform;
+        while (playerTransform == null)
+        {
+            playerTransform = GameObject.FindGameObjectWithTag("Player").transform;
+        }
     }
 	
 	// Update is called once per frame
 	void Update () {
 
-        __ENE_AI_Engine.GetAngleComp(transform, playerTransform);
-
-        //아직 살아있을 때
-        if (__ENE_Stat.__PUB__Health_Point > 0)
+        try
         {
-            //나중에 EnemyAI 클래스를 따로 만들어서 이하 내용과 같은 기능을 하도록 넣을 것.
-            _AI_FuncList[__ENE_Stat._GET_ai_Level]();
+            __ENE_AI_Engine.GetAngleComp(transform, playerTransform);
 
-            //스피드 버프 OR 디버프 지속시간 종료 여부
-            if (__ENE_Stat.__PUB_Stat_IsCoolTimeOn[0])
+            //아직 살아있을 때
+            if (__ENE_Stat.__PUB__Health_Point > 0)
             {
-                //스피드 버프 OR 디버프 해제
-                __ENE_AI_Engine.__ENE_Engine._unit_Move_Engine.Init_Speed_BUF_Amount();
-                //스피드 버프 해제로 일단 간주
-                __ENE_Stat.__PUB_Stat_IsCoolTimeOn[0] = false;
+                //나중에 EnemyAI 클래스를 따로 만들어서 이하 내용과 같은 기능을 하도록 넣을 것.
+                _AI_FuncList[aiLV]();
+
+                //스피드 버프 OR 디버프 지속시간 종료 여부
+                if (__ENE_Stat.__PUB_Stat_IsCoolTimeOn[0])
+                {
+                    //스피드 버프 OR 디버프 해제
+                    __ENE_AI_Engine.__ENE_Engine._unit_Move_Engine.Init_Speed_BUF_Amount();
+                    //스피드 버프 해제로 일단 간주
+                    __ENE_Stat.__PUB_Stat_IsCoolTimeOn[0] = false;
+                }
+
+                //체력 버프 OR 디버프 지속시간 종료 여부
+                if (__ENE_Stat.__PUB_Stat_IsCoolTimeOn[1])
+                {
+
+                }
+
+                //기본 마나 회복 지속시간 종료 여부
+                if (__ENE_Stat.__PUB_Stat_IsCoolTimeOn[2])
+                {
+                    //일단 1씩 회복한다.
+                    __ENE_Stat.__Get_HIT__About_Mana(1, -1);
+                    //다음 기본 마나 회복 시간까지 대기 
+                    __ENE_Stat.__PUB_Stat_IsCoolTimeOn[2] = false;
+
+                    //일단 10초마다 마나를 회복하도록 결정
+                    __ENE_AI_Engine.enemyCoolTimer.StartCoroutine(
+                        __ENE_AI_Engine.enemyCoolTimer.Timer_Do_Once(10.0f,
+                        (input) => { __ENE_Stat.__PUB_Stat_IsCoolTimeOn[2] = input; },
+                        false)
+                        );
+                }
+
+                //PP 버프 OR 디버프 지속시간 종료 여부
+                if (__ENE_Stat.__PUB_Stat_IsCoolTimeOn[3])
+                {
+
+                }
+
+                //크리티컬 버프 OR 디버프 지속시간 종료 여부
+                if (__ENE_Stat.__PUB_Stat_IsCoolTimeOn[4])
+                {
+
+                }
             }
-
-            //체력 버프 OR 디버프 지속시간 종료 여부
-            if (__ENE_Stat.__PUB_Stat_IsCoolTimeOn[1])
+            //죽었을 때
+            else
             {
+                //남아있는 적의 수를 확인한다.
+                GameObject.Find("GameManager").GetComponent<MapManager>().__SET_remainedEnemys();
 
-            }
-
-            //기본 마나 회복 지속시간 종료 여부
-            if (__ENE_Stat.__PUB_Stat_IsCoolTimeOn[2])
-            {
-                //일단 1씩 회복한다.
-                __ENE_Stat.__Get_HIT__About_Mana(1, -1);
-                //다음 기본 마나 회복 시간까지 대기 
-                __ENE_Stat.__PUB_Stat_IsCoolTimeOn[2] = false;
-
-                //일단 10초마다 마나를 회복하도록 결정
-                __ENE_AI_Engine.enemyCoolTimer.StartCoroutine(
-                    __ENE_AI_Engine.enemyCoolTimer.Timer_Do_Once(10.0f,
-                    (input) => { __ENE_Stat.__PUB_Stat_IsCoolTimeOn[2] = input; },
-                    false)
-                    );
-            }
-
-            //PP 버프 OR 디버프 지속시간 종료 여부
-            if (__ENE_Stat.__PUB_Stat_IsCoolTimeOn[3])
-            {
-
-            }
-
-            //크리티컬 버프 OR 디버프 지속시간 종료 여부
-            if (__ENE_Stat.__PUB_Stat_IsCoolTimeOn[4])
-            {
-
+                //파괴
+                Destroy(gameObject.GetComponent<MeshFilter>().mesh);
+                Destroy(gameObject);
             }
         }
-        //죽었을 때
-        else
+        catch (System.Exception)
         {
-            //남아있는 적의 수를 확인한다.
-            GameObject.Find("GameManager").GetComponent<MapManager>().__SET_remainedEnemys();
 
-            //파괴
-            Destroy(gameObject);
         }
     }
 

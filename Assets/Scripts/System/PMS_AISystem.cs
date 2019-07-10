@@ -81,6 +81,17 @@ namespace PMS_AISystem
             _doing = behave.Doing;
             _time = behave.Time;
         }
+
+        public SituationCUR()
+        {
+            _id = "NULL";
+            _posX = -1f;
+            _posZ = -1f;
+            _dist = -1f;
+            _angleComp = -1f;
+            _doing = new IntVector3(-1,-1,-1);
+            _time = -1f;
+        }
     }
 
     public class SituationAFT {
@@ -112,6 +123,19 @@ namespace PMS_AISystem
             _hitCounter = hitCounter;
             _closer = closer;
         }
+
+        public SituationAFT()
+        {
+            _id = "NULL";
+            _posX = -1f;
+            _posZ = -1f;
+            _dist = -1f;
+            _angleComp = -1f;
+            _beforeID = "NULL";
+            _beforeDB = -1;
+            _hitCounter = -1;
+            _closer = false;
+        }
     }
 
     public class AIData
@@ -123,6 +147,12 @@ namespace PMS_AISystem
         {
             sitCUR = cur;
             sitAFT = aft;
+        }
+
+        public AIData()
+        {
+            sitCUR = new SituationCUR("NULL", -1f, -1f, -1f, -1f, new IntVector3(-1,-1,-1), -1f);
+            sitAFT = new SituationAFT("NULL", -1f, -1f, -1f, -1f, "NULL", -1, -1 , false);
         }
     }
 }

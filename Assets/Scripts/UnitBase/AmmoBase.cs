@@ -8,6 +8,8 @@ public class AmmoBase : MonoBehaviour {
     //누가 쐈냐
     protected string __Who_Shot = "";
 
+    string whoHit;
+
     protected int __Ammo_Damage;
     public int _GET__Ammo_Damage
     {
@@ -107,13 +109,16 @@ public class AmmoBase : MonoBehaviour {
 
     protected void OnTriggerEnter(Collider other)
     {
-        if(other.transform.tag == "SampleObstacle")
+        whoHit = other.transform.tag;
+
+        if (whoHit == "SampleObstacle")
         {
+            Destroy(gameObject.GetComponent<MeshFilter>().mesh);
             Destroy(gameObject);
         }
 
         //쏜 애가 Player고 맞은 애가 Enemy면
-        if (__Who_Shot == "PlayerAttack" && other.transform.tag == "SampleEnemy")
+        if (__Who_Shot == "PlayerAttack" && whoHit == "SampleEnemy")
         {
             //피격 관련 연산을 하고
             other.GetComponent<EnemyController>()._Enemy_Get_Hit(__Ammo_Damage, isItCritical);
@@ -140,12 +145,14 @@ public class AmmoBase : MonoBehaviour {
             //}
 
             other.GetComponent<Rigidbody>().drag = 5;
+
             //투사체를 제거한다.
+            Destroy(gameObject.GetComponent<MeshFilter>().mesh);
             Destroy(gameObject);
         }
 
         //쏜 애가 Enemy고 맞은 애가 Player면
-        if (__Who_Shot == "EnemyAttack" && other.transform.tag == "Player")
+        if (__Who_Shot == "EnemyAttack" && whoHit == "Player")
         {
             //피격 관련 연산을 하고 (아직 구현 안 함)
             //Debug.Log("Player Get Hit");
@@ -170,6 +177,7 @@ public class AmmoBase : MonoBehaviour {
 
             other.GetComponent<Rigidbody>().drag = 5;
             //투사체를 제거한다.
+            Destroy(gameObject.GetComponent<MeshFilter>().mesh);
             Destroy(gameObject);
         }
     }

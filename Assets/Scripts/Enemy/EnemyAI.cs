@@ -9,7 +9,8 @@ using PMS_Math;
 using PMS_AISystem;
 
 //EnemyAI에 직접적으로 관련된 클래스를 새로 생성함
-public class EnemyAI : MonoBehaviour {
+public class EnemyAI : MonoBehaviour
+{
 
     private EnemyController enemyController;
 
@@ -17,6 +18,7 @@ public class EnemyAI : MonoBehaviour {
 
     private EnemyStat __ENE_Stat;
     private EnemyAIEngine __ENE_AI_Engine;
+    private UnitBaseEngine __ENE_Engine;
 
     //나중엔 파일에서 읽어오도록 변경될 수도 있음.
     //외부의 딥러닝 프로그램이 함수를 호출할 때 사용하기 위한 함수 List
@@ -32,8 +34,8 @@ public class EnemyAI : MonoBehaviour {
     private bool isbehaveCoolTimeOn = true;
     public bool __GET_isbehaveCoolTimeOn { get { return isbehaveCoolTimeOn; } }
 
-    private IntVector3 realIndex = new IntVector3(-1,-1,-1);
-    private SituationCUR sitCUR = new SituationCUR("NULL", -1f, -1f, -1f, -1f, new IntVector3(-1,-1,-1), -1f);
+    private IntVector3 realIndex = new IntVector3(-1, -1, -1);
+    private SituationCUR sitCUR = new SituationCUR("NULL", -1f, -1f, -1f, -1f, new IntVector3(-1, -1, -1), -1f);
 
     private bool isEnd_OF_Stage = false;
     private Transform middle_OF_Stage;
@@ -42,12 +44,28 @@ public class EnemyAI : MonoBehaviour {
     string beforeBehaveID = "N_U_L_L";
     int beforeDistTOInt = -1;
     float beforeAngleComp = 0.0f;
-    Vector2 beforeVec2 = new Vector2(-1f,-1f);
+    Vector2 beforeVec2 = new Vector2(-1f, -1f);
     string behaveID = "NULL";
+    [HideInInspector]
     public int hitCounter = 0;
-    public int getDamagedCounter = 0;
-    bool isHitB = false;
+    [HideInInspector]
+    int behaveCount_FOR_PPT = 0;
+    [HideInInspector]
+    int scoreCount_FOR_PPT = 0;
+    [HideInInspector]
+    public int getDamagedCounter = 0; bool isHitB = false;
     public bool _SET_isHitB { set { isHitB = value; } }
+
+    public int simpleSpining = 0;
+
+    private float sigma = 0.0f;
+    private float moveSpeed = 0.0f;
+    private float rotSpeed = 0.0f;
+    private bool isHPLOW = false;
+
+    IntVector3 __OLD__forSave = new IntVector3(-1, -1, -1);
+
+    float curDist;
 
     //SituationCUR sitCUR = new SituationCUR("NULL", -1, -1, -1, -1, new IntVector3(-1, -1, -1), false);
     //SituationAFT sitAFT = new SituationAFT("NULL", -1, -1, -1, -1, "NULL", -1, -1, false, false);
@@ -59,11 +77,13 @@ public class EnemyAI : MonoBehaviour {
     //private bool sampleSkillCoolTime;
 
     // Use this for initialization
-    void Awake () {
+    void Awake()
+    {
         enemyController = transform.GetComponent<EnemyController>();
 
         __ENE_Stat = enemyController.__ENE_Stat;
         __ENE_AI_Engine = enemyController._GET__ENE_AI_Engine;
+        __ENE_Engine = __ENE_AI_Engine.__ENE_Engine;
 
         middle_OF_Stage = GameObject.Find("Middle_OF_Stage").transform;
 
@@ -72,30 +92,43 @@ public class EnemyAI : MonoBehaviour {
         ////이속 디버프 스킬을 기본으로 사용하도록 임시로 지정한다.
         //sampleSkillTest = IO_CSV.__Get_Searched_SkillBaseStat("00000003");
         //sampleSkillCoolTime = true;
+    }
+
+    void Start()
+    {
+        enemyCollector = GameObject.FindGameObjectWithTag("GameController").GetComponent<EnemyDataCollector>();
+
+        sigma = enemyCollector.sigmaValue;
+        //체력 관리
+        //enemyController.__ENE_Stat.__PUB__Health_Point = 4;
+
+
+        moveSpeed = __ENE_Stat.__PUB_Move_Speed;
+        rotSpeed = __ENE_Stat.__PUB_Rotation_Speed;
 
         //이동에 관한 함수 리스트
         //이동 없음
         behaveList_Move.Add(() => AI_DO_Nothing());
         //전방이동
-        behaveList_Move.Add(() => __ENE_AI_Engine.__ENE_Engine._unit_Move_Engine.Move_OBJ(__ENE_Stat.__PUB_Move_Speed, ref enemyController.enemyTransform, 1));
+        behaveList_Move.Add(() => __ENE_AI_Engine.__ENE_Engine._unit_Move_Engine.Move_OBJ(moveSpeed, ref enemyController.enemyTransform, 1));
         //후방이동
-        behaveList_Move.Add(() => __ENE_AI_Engine.__ENE_Engine._unit_Move_Engine.Move_OBJ(__ENE_Stat.__PUB_Move_Speed, ref enemyController.enemyTransform, -1));
+        behaveList_Move.Add(() => __ENE_AI_Engine.__ENE_Engine._unit_Move_Engine.Move_OBJ(moveSpeed, ref enemyController.enemyTransform, -1));
 
         //회전에 관한 함수 리스트
         //회전 없음
         behaveList_Rotate.Add(() => AI_DO_Nothing());
         //시계방향 회전
-        behaveList_Rotate.Add(() => __ENE_AI_Engine.__ENE_Engine._unit_Move_Engine.Rotate_OBJ(__ENE_Stat.__PUB_Rotation_Speed, ref enemyController.enemyTransform, 1));
+        behaveList_Rotate.Add(() => __ENE_AI_Engine.__ENE_Engine._unit_Move_Engine.Rotate_OBJ(rotSpeed, ref enemyController.enemyTransform, 1));
         //반시계방향 회전
-        behaveList_Rotate.Add(() => __ENE_AI_Engine.__ENE_Engine._unit_Move_Engine.Rotate_OBJ(__ENE_Stat.__PUB_Rotation_Speed, ref enemyController.enemyTransform, -1));
+        behaveList_Rotate.Add(() => __ENE_AI_Engine.__ENE_Engine._unit_Move_Engine.Rotate_OBJ(rotSpeed, ref enemyController.enemyTransform, -1));
         //플레이어를 정면으로 바라볼 때까지 회전
-        behaveList_Rotate.Add(() => __ENE_AI_Engine.Rotate_TO_Direction(__ENE_Stat.__PUB_Rotation_Speed, ref enemyController.enemyTransform, enemyController.playerTransform, false));
+        behaveList_Rotate.Add(() => __ENE_AI_Engine.Rotate_TO_Direction(rotSpeed, ref enemyController.enemyTransform, enemyController.playerTransform, false));
         //플레이어를 우측으로 바라볼 때까지 회전
-        behaveList_Rotate.Add(() => __ENE_AI_Engine.Rotate_TO_Direction(__ENE_Stat.__PUB_Rotation_Speed, ref enemyController.enemyTransform, enemyController.playerTransform, false, enemyController.enemy_Right));
+        behaveList_Rotate.Add(() => __ENE_AI_Engine.Rotate_TO_Direction(rotSpeed, ref enemyController.enemyTransform, enemyController.playerTransform, false, enemyController.enemy_Right));
         //플레이어를 좌측으로 바라볼 때까지 회전
-        behaveList_Rotate.Add(() => __ENE_AI_Engine.Rotate_TO_Direction(__ENE_Stat.__PUB_Rotation_Speed, ref enemyController.enemyTransform, enemyController.playerTransform, false, enemyController.enemy_Left));
+        behaveList_Rotate.Add(() => __ENE_AI_Engine.Rotate_TO_Direction(rotSpeed, ref enemyController.enemyTransform, enemyController.playerTransform, false, enemyController.enemy_Left));
         //플레이어 반대 방향 바라볼 때까지 회전
-        behaveList_Rotate.Add(() => __ENE_AI_Engine.Rotate_TO_Direction(__ENE_Stat.__PUB_Rotation_Speed, ref enemyController.enemyTransform, enemyController.playerTransform, true));
+        behaveList_Rotate.Add(() => __ENE_AI_Engine.Rotate_TO_Direction(rotSpeed, ref enemyController.enemyTransform, enemyController.playerTransform, true));
 
         //공격에 관한 함수 리스트
         //공격 없음
@@ -107,20 +140,31 @@ public class EnemyAI : MonoBehaviour {
         //좌측 일반 공격(3번, angleComp < 0)
         behaveList_Attack.Add(() => __ENE_AI_Engine.Attack_Default(2.0f, ref enemyController.enemy_Left, __ENE_Stat, 1));
 
-        realIndex.InitIntVector3(0,0,0);
-    }
+        realIndex.InitIntVector3(0, 0, 0);
 
-    void Start()
-    {
-        enemyCollector = GameObject.FindGameObjectWithTag("GameController").GetComponent<EnemyDataCollector>();
 
-        //체력 관리
-        //enemyController.__ENE_Stat.__PUB__Health_Point = 4;
+        beforeBehaveID = "NULL";
+
+        try
+        {   beforeDist = Vector3.Distance(transform.position, enemyController.playerTransform.position);}
+        catch (System.Exception)
+        {}
+        beforeAngleComp = enemyController._GET__ENE_AI_Engine.angleComp;
+        beforeVec2 = new Vector2(transform.position.x, transform.position.z);
     }
 
     //가장 단순한 수준의 AI
     public void AI_Simple_Level0()
     {
+        float sampleTime = 2.0f + Random.Range(0.0f, 1.0f);
+
+        isbehaveCoolTimeOn = false;
+        if (behaveCount_FOR_PPT == 100)
+        {
+            enemyCollector.listScore_FOR_PPT.Add(scoreCount_FOR_PPT);
+            Destroy(gameObject);
+        }
+
         //일반적인 상황일 때
         if (!isEnd_OF_Stage)
         {
@@ -164,7 +208,7 @@ public class EnemyAI : MonoBehaviour {
                     //플레이어를 거의 정면으로 바라보고 있을 때
                     //if(curAngleComparison <= 10.0f)
                     //쿨타임에 랜덤변수를 더해서 난이도를 조금 올린다.
-                    __ENE_AI_Engine.Attack_Default(2.0f + Random.Range(0.0f, 1.0f), ref enemyController.enemy_Front, __ENE_Stat, 1);
+                    __ENE_AI_Engine.Attack_Default(sampleTime, ref enemyController.enemy_Front, __ENE_Stat, 1);
 
                     ////20190310
                     ////이속 디버프 스킬을 기본 공격으로 사용하도록 임시로 테스트 한다.
@@ -197,7 +241,7 @@ public class EnemyAI : MonoBehaviour {
                 //{
                 //    __ENE_Engine.Attack_Default(2.0f, ref default_Ammo, ref enemy_Left, __ENE_Stat.__PUB_ATK__Val, 2);
                 //}
-            }
+            }         
         }
         //스테이지 경계선과 접촉했을 때
         else
@@ -205,6 +249,22 @@ public class EnemyAI : MonoBehaviour {
             Go_INTO_Stage();
             //7초 후엔 스테이지 경계선과 접촉하지 않은 것으로 간주한다.
             StartCoroutine(enemyController.enemyCoolTimer.Timer_Do_Once(7.0f, (input) => { isEnd_OF_Stage = input; }, true));
+        }
+
+        //20190607 임시
+        if (__ENE_AI_Engine._PUB_enemy_Is_ON_CoolTime[8])
+        {
+            behaveCount_FOR_PPT++;
+            //Debug.Log(behaveCount_FOR_PPT);
+
+            
+            if (hitCounter >= 2)
+                hitCounter = 1;
+            AI_Score_Cal(hitCounter);
+            //Debug.Log(scoreCount_FOR_PPT);
+            hitCounter = 0;
+            StartCoroutine(enemyController.enemyCoolTimer.Timer(sampleTime, (input) => { __ENE_AI_Engine._PUB_enemy_Is_ON_CoolTime[8] = input; }, true));
+
         }
     }
 
@@ -273,7 +333,7 @@ public class EnemyAI : MonoBehaviour {
     }
 
     public void AI_Simple_Level0_BOSS()
-    {  
+    {
         //일반적인 상황일 때
         if (!isEnd_OF_Stage)
         {
@@ -492,13 +552,13 @@ public class EnemyAI : MonoBehaviour {
         }
     }
 
-    void OnTriggerExit(Collider other)
-    {
-        if (other.transform.tag == "Boundary")
-        {
-            //StartCoroutine(enemyController.enemyCoolTimer.Timer_Do_Once(6.0f, (input) => { isEnd_OF_Stage = input; }, true));
-        }
-    }
+    //void OnTriggerExit(Collider other)
+    //{
+    //    if (other.transform.tag == "Boundary")
+    //    {
+    //        //StartCoroutine(enemyController.enemyCoolTimer.Timer_Do_Once(6.0f, (input) => { isEnd_OF_Stage = input; }, true));
+    //    }
+    //}
 
     private void EnemyUsingSkill(int index, Transform enemyAttacker, SkillBaseStat whichSkill)
     {
@@ -509,7 +569,7 @@ public class EnemyAI : MonoBehaviour {
             if (__ENE_Stat.__Is_Mana_Enough(whichSkill))
             {
                 //필요한 마나 또는 궁극기 게이지 소모
-                if(whichSkill.__GET_Skill_Code_M != SkillBaseCode._SKILL_CODE_Main.FIN) __ENE_Stat.__Get_HIT__About_Mana(whichSkill.__GET_Skill_Use_Amount, 1);
+                if (whichSkill.__GET_Skill_Code_M != SkillBaseCode._SKILL_CODE_Main.FIN) __ENE_Stat.__Get_HIT__About_Mana(whichSkill.__GET_Skill_Use_Amount, 1);
                 else __ENE_Stat.__Get_HIT__About_Power(whichSkill.__GET_Skill_Use_Amount, 1);
 
                 //UnitBaseEngine.Using_Skill에서 스킬 기능 처리
@@ -544,9 +604,7 @@ public class EnemyAI : MonoBehaviour {
             Destroy(gameObject);
         }
 
-        float curDist = Vector3.Distance(transform.position, enemyController.playerTransform.position);
-        //Timer 코루틴을 돌리기 위한 더미 변수
-        float dummy = 0.0f;
+        curDist = Vector3.Distance(transform.position, enemyController.playerTransform.position);
 
         int listIndex_Move = (int)(Random.Range(0.0f, (float)(behaveList_Move.Count - 0.1f)));
         int listIndex_Rotate = (int)(Random.Range(0.0f, (float)(behaveList_Rotate.Count - 0.1f)));
@@ -562,7 +620,7 @@ public class EnemyAI : MonoBehaviour {
 
             realIndex.InitIntVector3(listIndex_Move, listIndex_Rotate, listIndex_Attack);
 
-            StartCoroutine(enemyController.enemyCoolTimer.Timer(time, (input) => { isbehaveCoolTimeOn = input; }, true, (input) => { dummy = input; }));
+            StartCoroutine(enemyController.enemyCoolTimer.Timer(time, (input) => { isbehaveCoolTimeOn = input; }, true));
             beforeBehaveID = "NULL";
         }
 
@@ -603,13 +661,8 @@ public class EnemyAI : MonoBehaviour {
 
             realIndex.InitIntVector3(listIndex_Move, listIndex_Rotate, listIndex_Attack);
 
-            beforeBehaveID = behaveID;
-            beforeDist = curDist;
-            beforeAngleComp = enemyController._GET__ENE_AI_Engine.angleComp;
-            beforeVec2 = new Vector2(transform.position.x, transform.position.z);
-
             //0.5~1.5초 마다 행동을 갱신한다 (값 변경될 수 있음)
-            StartCoroutine(enemyController.enemyCoolTimer.Timer(time, (input) => { isbehaveCoolTimeOn = input; }, true, (input) => { dummy = input; }));
+            StartCoroutine(enemyController.enemyCoolTimer.Timer(time, (input) => { isbehaveCoolTimeOn = input; }, true));
 
             beforeBehaveID = behaveID;
             beforeDist = curDist;
@@ -638,11 +691,104 @@ public class EnemyAI : MonoBehaviour {
     //별도의 DB에 저장된 데이터를 일단 수동으로 학습하도록 한다.(프로그래머가 수동으로 변수나 코드를 바꿔줘야 하는 방식)
     public void AI_DeapLearning__BigData_Ver()
     {
+        //임시로 추가한 것, P을 누르면 모든 데이터 수집 개체 삭제 및 데이터 저장
+        if ((Input.GetKeyDown(KeyCode.P) || behaveCount_FOR_PPT == 10) && simpleSpining != 1)
+        {
+            enemyCollector.listScore_FOR_PPT.Add(scoreCount_FOR_PPT);
+            Destroy(gameObject);
+        }
+
+        if (isbehaveCoolTimeOn)
+        {
+            curDist = Vector3.Distance(transform.position, enemyController.playerTransform.position);
+            isHPLOW = enemyController.__ENE_Stat.__PUB__Health_Point < enemyController.__ENE_Stat.half_HP;
+            sitCUR = enemyCollector.SearchGoodSitCUR(curDist, enemyController._GET__ENE_AI_Engine.angleComp, isHPLOW);
+
+            //20190606 임시
+            if (sitCUR._doing.vecZ != 0)
+            {
+                behaveCount_FOR_PPT++;
+            }
+
+            bool isCloser = false;
+
+            behaveID = System.DateTime.Now.ToString() + ": " + gameObject.GetInstanceID().ToString();
+            if (beforeDist > curDist) isCloser = true;
+
+            if (simpleSpining == 1)
+            {
+                sitCUR._doing.vecZ = 0;
+            }
+            else
+            {
+                //이전 상황과 행동에 대한 결과 저장
+                IntVector3 forSave = new IntVector3(sitCUR._doing.vecX, sitCUR._doing.vecY, sitCUR._doing.vecZ);
+
+                SituationCUR cur_FOR_PPT = new SituationCUR(behaveID, beforeVec2.x, beforeVec2.y, beforeDist, beforeAngleComp, forSave, sitCUR._time);
+                SituationAFT aft_FOR_PPT = new SituationAFT(behaveID, transform.position.x, transform.position.z, curDist, enemyController._GET__ENE_AI_Engine.angleComp, beforeBehaveID, 0, hitCounter, isCloser);
+
+                AI_Score_Cal(hitCounter);
+                //AI_Score_Cal(isHPLOW, cur_FOR_PPT, aft_FOR_PPT);
+                //aft_FOR_PPT._beforeDB = scoreCount_FOR_PPT;
+
+                //enemyCollector.listSitCUR.Add(cur_FOR_PPT);
+                //enemyCollector.listSitAFT.Add(aft_FOR_PPT);
+
+                if (Random.Range(0.0f, 1.0f) < sigma)
+                {
+                    sitCUR._doing.InitIntVector3((int)(Random.Range(0, 2)), (int)(Random.Range(0, 6)), (int)(Random.Range(0, 3)));
+                    sitCUR._time = Random.Range(0.5f, 1.5f);
+                }
+
+                //scoreCount_FOR_PPT = 0;
+            }
+
+            //DataBase에서 긁어온 정보의 time동안 행동한다.
+            StartCoroutine(enemyController.enemyCoolTimer.Timer(sitCUR._time, (input) => { isbehaveCoolTimeOn = input; }, true));
+
+            beforeBehaveID = behaveID;
+            beforeDist = curDist;
+            beforeAngleComp = enemyController._GET__ENE_AI_Engine.angleComp;
+            beforeVec2 = new Vector2(transform.position.x, transform.position.z);
+
+            hitCounter = 0;
+            getDamagedCounter = 0;
+        }
+
+        //1차적으로 일반 공격만 생각하도록 한다.
+        //공격 쿨타임도 끝났고 공격을 하려는 경우
+        if (sitCUR._doing.vecZ != 0)
+        {
+            if (__ENE_AI_Engine._PUB_enemy_Is_ON_CoolTime[1] && sitCUR._doing.vecZ < behaveList_Attack.Count)
+            {
+                //주어진 공격 수행
+                behaveList_Attack[sitCUR._doing.vecZ]();
+            }
+        }
+
+        //주어진 이동 수행
+        if (sitCUR._doing.vecX != 0)
+            behaveList_Move[sitCUR._doing.vecX]();
+        //주어진 회전 수행
+        if(sitCUR._doing.vecY != 0)
+            behaveList_Rotate[sitCUR._doing.vecY]();
+    }
+
+    //비교를 위해 추가된 예전 버전의 Bigdata함수
+    public void __OLD__AI_DeapLearning__BigData_Ver()
+    {
         ////임시로 추가한 것, P을 누르면 모든 데이터 수집 개체 삭제 및 데이터 저장
         //if (Input.GetKeyDown(KeyCode.P))
         //{
         //    Destroy(gameObject);
         //}
+
+        //20190606 임시
+        if (behaveCount_FOR_PPT == 100)
+        {
+            enemyCollector.listScore_FOR_PPT.Add(scoreCount_FOR_PPT);
+            Destroy(gameObject);
+        }
 
         float dummy = 0f;
         float curDist = Vector3.Distance(transform.position, enemyController.playerTransform.position);
@@ -658,30 +804,30 @@ public class EnemyAI : MonoBehaviour {
 
         if (isbehaveCoolTimeOn)
         {
-            bool isCloser = false;   
+
+            //20190606 임시
+            behaveCount_FOR_PPT++;
+
             float time = sitCUR._time;
 
             behaveID = System.DateTime.Now.ToString() + ": " + gameObject.GetInstanceID().ToString();
-            if (beforeDist > curDist) isCloser = true;
+            //if (beforeDist > curDist) isCloser = true;
 
-            int behaveScore = (hitCounter * 2) - getDamagedCounter;
+            //20190606 임시
+            SituationCUR cur_FOR_PPT = new SituationCUR(behaveID, beforeVec2.x, beforeVec2.y, beforeDist, beforeAngleComp, __OLD__forSave, time);
+            SituationAFT aft_FOR_PPT = new SituationAFT(behaveID, transform.position.x, transform.position.z, curDist, enemyController._GET__ENE_AI_Engine.angleComp, beforeBehaveID, getDamagedCounter, hitCounter, false);
 
-            if (curDist > 50f && enemyController.__ENE_Stat.__PUB__Health_Point > 5)
-                behaveScore -= (int)((curDist - 50) / 10);
-            else if(curDist > 50f && enemyController.__ENE_Stat.__PUB__Health_Point <= 5)
-                behaveScore += (int)((curDist - 50) / 10);
+            enemyCollector.listSitCUR.Add(cur_FOR_PPT);
+            enemyCollector.listSitAFT.Add(aft_FOR_PPT);
 
-            IntVector3 forSave = new IntVector3(sitCUR._doing.vecX, sitCUR._doing.vecY, sitCUR._doing.vecZ);
-
-            //enemyCollector.listSitCUR.Add(new SituationCUR(behaveID, beforeVec2.x, beforeVec2.y, beforeDist, beforeAngleComp, forSave, time));
-            //enemyCollector.listSitAFT.Add(new SituationAFT(behaveID, transform.position.x, transform.position.z, curDist, enemyController._GET__ENE_AI_Engine.angleComp, beforeBehaveID, behaveScore, hitCounter, isCloser));
-
-            bool isHPLOW = enemyController.__ENE_Stat.__PUB__Health_Point < enemyController.__ENE_Stat.half_HP;
-
-            sitCUR = enemyCollector.SearchGoodSitCUR(curDist, enemyController._GET__ENE_AI_Engine.angleComp, isHPLOW);
+            sitCUR = enemyCollector.SearchGoodSitCUR(curDist, enemyController._GET__ENE_AI_Engine.angleComp, false);
 
             //DataBase에서 긁어온 정보의 time동안 행동한다.
             StartCoroutine(enemyController.enemyCoolTimer.Timer(sitCUR._time, (input) => { isbehaveCoolTimeOn = input; }, true, (input) => { dummy = input; }));
+
+            //20190606 임시
+            //AI_Score_Cal(false, cur_FOR_PPT, aft_FOR_PPT);
+            //AI_Score_Cal(hitCounter);
 
             beforeBehaveID = behaveID;
             beforeDist = curDist;
@@ -709,11 +855,11 @@ public class EnemyAI : MonoBehaviour {
     //제대로된 강화학습을 위한 랜덤행동 버전
     public void AI_ReinforceLearn_RandomBehave_Ver()
     {
-        //임시로 추가한 것, P를 누르면 모든 데이터 수집 개체 삭제 및 데이터 저장
-        if (Input.GetKeyDown(KeyCode.P))
-        {
-            Destroy(gameObject);
-        }
+        ////임시로 추가한 것, P를 누르면 모든 데이터 수집 개체 삭제 및 데이터 저장
+        //if (Input.GetKeyDown(KeyCode.P))
+        //{
+        //    Destroy(gameObject);
+        //}
 
         float curDist = Vector3.Distance(transform.position, enemyController.playerTransform.position);
         //Timer 코루틴을 돌리기 위한 더미 변수
@@ -740,60 +886,64 @@ public class EnemyAI : MonoBehaviour {
         if (isbehaveCoolTimeOn)
         {
             float time = 0.5f + Random.Range(0.0f, 1.0f);
-            bool isCloser = false;
+            //bool isCloser = false;
 
-            behaveID = System.DateTime.Now.ToString() + ": " + gameObject.GetInstanceID().ToString();
-            if (beforeDist > curDist) isCloser = true;
+            //behaveID = System.DateTime.Now.ToString() + ": " + gameObject.GetInstanceID().ToString();
+            //if (beforeDist > curDist) isCloser = true;
 
-            if (realIndex.vecZ == 0)
-            {
-                hitCounter = 0;
-            }
+            //if (realIndex.vecZ == 0)
+            //{
+            //    hitCounter = 0;
+            //}
 
 
-            int behaveScore = (hitCounter * 2) - getDamagedCounter;
+            //int behaveScore = (hitCounter * 2) - getDamagedCounter;
 
-            if (curDist > 50f && enemyController.__ENE_Stat.__PUB__Health_Point > 5)
-                behaveScore -= (int)((curDist - 50) / 10);
-            else if (curDist > 50f && enemyController.__ENE_Stat.__PUB__Health_Point <= 5)
-                behaveScore += (int)((curDist - 50) / 10);
+            //if (curDist > 50f && enemyController.__ENE_Stat.__PUB__Health_Point > 5)
+            //    behaveScore -= (int)((curDist - 50) / 10);
+            //else if (curDist > 50f && enemyController.__ENE_Stat.__PUB__Health_Point <= 5)
+            //    behaveScore += (int)((curDist - 50) / 10);
 
-            IntVector3 forSave = new IntVector3(realIndex.vecX, realIndex.vecY, realIndex.vecZ);
+            //IntVector3 forSave = new IntVector3(realIndex.vecX, realIndex.vecY, realIndex.vecZ);
             //Debug.Log(behaveScore);
 
             //모든 데이터 통합 관리
-            if (enemyController.__ENE_Stat.__PUB__Health_Point <= 5)
-            {
-                enemyCollector.listSitCUR0.Add(new SituationCUR(behaveID, beforeVec2.x, beforeVec2.y, beforeDist, beforeAngleComp, forSave, time));
-                enemyCollector.listSitAFT0.Add(new SituationAFT(behaveID, transform.position.x, transform.position.z, curDist, enemyController._GET__ENE_AI_Engine.angleComp, beforeBehaveID, behaveScore, hitCounter, isCloser));
-            }
-            else
-            {
-                enemyCollector.listSitCUR.Add(new SituationCUR(behaveID, beforeVec2.x, beforeVec2.y, beforeDist, beforeAngleComp, forSave, time));
-                enemyCollector.listSitAFT.Add(new SituationAFT(behaveID, transform.position.x, transform.position.z, curDist, enemyController._GET__ENE_AI_Engine.angleComp, beforeBehaveID, behaveScore, hitCounter, isCloser));
-            }
+            //if (enemyController.__ENE_Stat.__PUB__Health_Point <= 5)
+            //{
+            //    enemyCollector.listSitCUR0.Add(new SituationCUR(behaveID, beforeVec2.x, beforeVec2.y, beforeDist, beforeAngleComp, forSave, time));
+            //    enemyCollector.listSitAFT0.Add(new SituationAFT(behaveID, transform.position.x, transform.position.z, curDist, enemyController._GET__ENE_AI_Engine.angleComp, beforeBehaveID, behaveScore, hitCounter, isCloser));
+            //}
+            //else
+            //{
+            //    enemyCollector.listSitCUR.Add(new SituationCUR(behaveID, beforeVec2.x, beforeVec2.y, beforeDist, beforeAngleComp, forSave, time));
+            //    enemyCollector.listSitAFT.Add(new SituationAFT(behaveID, transform.position.x, transform.position.z, curDist, enemyController._GET__ENE_AI_Engine.angleComp, beforeBehaveID, behaveScore, hitCounter, isCloser));
+            //}
 
             realIndex.InitIntVector3(listIndex_Move, listIndex_Rotate, listIndex_Attack);
 
-            beforeBehaveID = behaveID;
-            beforeDist = curDist;
-            beforeAngleComp = enemyController._GET__ENE_AI_Engine.angleComp;
-            beforeVec2 = new Vector2(transform.position.x, transform.position.z);
+            //beforeBehaveID = behaveID;
+            //beforeDist = curDist;
+            //beforeAngleComp = enemyController._GET__ENE_AI_Engine.angleComp;
+            //beforeVec2 = new Vector2(transform.position.x, transform.position.z);
 
             //0.5~1.5초 마다 행동을 갱신한다 (값 변경될 수 있음)
             StartCoroutine(enemyController.enemyCoolTimer.Timer(time, (input) => { isbehaveCoolTimeOn = input; }, true, (input) => { dummy = input; }));
 
-            hitCounter = 0;
-            getDamagedCounter = 0;
+            //hitCounter = 0;
+            //getDamagedCounter = 0;
         }
+
+        ////임시
+        //if(simpleSpining == 0)
+        //    realIndex = new IntVector3(1, 1,0);
 
         //1차적으로 일반 공격만 생각하도록 한다.
         //공격 쿨타임도 끝났고 공격을 하려는 경우
-        if (__ENE_AI_Engine._PUB_enemy_Is_ON_CoolTime[1] && realIndex.vecZ != 0)
-        {
-            //주어진 공격 수행
-            behaveList_Attack[realIndex.vecZ]();
-        }
+        //if (__ENE_AI_Engine._PUB_enemy_Is_ON_CoolTime[1] && realIndex.vecZ != 0)
+        //{
+        //    //주어진 공격 수행
+        //    behaveList_Attack[realIndex.vecZ]();
+        //}
 
         //주어진 이동 수행
         behaveList_Move[realIndex.vecX]();
@@ -802,5 +952,83 @@ public class EnemyAI : MonoBehaviour {
     }
 
     //랜덤 행동 중 아무것도 안 하는 함수
-    private void AI_DO_Nothing(){}
+    private void AI_DO_Nothing() { }
+
+    //행동 점수의 총합을 구하기 위한 함수
+    //후에 행동점수를 결정하는 단일함수로 사용할 예정
+    private void AI_Score_Cal(bool isHPLOW, SituationCUR cur, SituationAFT aft)
+    {
+        int resultScore = aft._hitCounter;
+
+        //체력 절반 이하, 절반 초과에 따라 다른 행동점수 가산점 OR 불이익 정책 사용
+        if (!isHPLOW)
+        {
+            if (cur._doing.vecX != 0 && cur._doing.vecY != 0)
+                resultScore += (aft._hitCounter * 7);
+
+            if (cur._dist >= 30f && cur._doing.vecX != 0 && cur._doing.vecY != 0
+                && aft._closer == true && aft._dist + 10f < cur._dist)
+            {
+                resultScore += 10;
+            }
+
+            if (cur._dist >= 30f && cur._doing.vecX == 0 && cur._doing.vecY == 0
+                && aft._closer == false && aft._dist >= cur._dist)
+            {
+                resultScore -= (int)(20 + aft._dist);
+            }
+
+            if (cur._dist < 30f && aft._hitCounter > 0)
+            {
+                resultScore += 40;
+            }
+
+            if (aft._hitCounter == 0 && cur._doing.vecZ != 0)
+            {
+                //aft._beforeDB -= 10;
+            }
+        }
+        else
+        {
+            if (cur._doing.vecX != 0 && cur._doing.vecY != 0)
+                resultScore--;
+
+            if (aft._dist > cur._dist)
+                resultScore++;
+
+            if (cur._dist >= 30f && cur._doing.vecX == 0 && cur._doing.vecY == 0
+                && aft._closer == true && aft._dist <= cur._dist)
+            {
+                resultScore -= 3;
+            }
+
+            if (cur._dist >= 30f && cur._doing.vecX != 0 && cur._doing.vecY != 0
+                && aft._closer == false && aft._dist > cur._dist)
+            {
+                resultScore += 3;
+            }
+
+            if (cur._dist <= 30f && cur._doing.vecX == 0 && cur._doing.vecY == 0
+                && aft._closer == true && aft._dist <= cur._dist)
+            {
+                resultScore -= 3;
+            }
+
+            if (cur._dist <= 30f && cur._doing.vecX != 0 && cur._doing.vecY != 0
+                && aft._closer == true && aft._dist > cur._dist)
+            {
+                resultScore += 3;
+            }
+        }
+
+        scoreCount_FOR_PPT += resultScore;
+    }
+
+    private void AI_Score_Cal(int hitCounter)
+    {
+        if (hitCounter >= 2)
+            hitCounter = 1;
+
+        scoreCount_FOR_PPT += hitCounter;
+    }
 }
