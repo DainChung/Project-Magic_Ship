@@ -7,6 +7,7 @@ using System.Collections.Generic;
 //번거롭게 새로운 클래스를 만드는 것보다 DB에 직접 값들을 저장하고 읽어오는 것이 유용할 수 있음
 namespace PMS_AISystem
 {
+
     public class IntVector3 {
         public int vecX;
         public int vecY;

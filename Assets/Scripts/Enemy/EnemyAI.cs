@@ -704,11 +704,11 @@ public class EnemyAI : MonoBehaviour
             isHPLOW = enemyController.__ENE_Stat.__PUB__Health_Point < enemyController.__ENE_Stat.half_HP;
             sitCUR = enemyCollector.SearchGoodSitCUR(curDist, enemyController._GET__ENE_AI_Engine.angleComp, isHPLOW);
 
-            //20190606 임시
-            if (sitCUR._doing.vecZ != 0)
-            {
-                behaveCount_FOR_PPT++;
-            }
+            ////20190606 임시
+            //if (sitCUR._doing.vecZ != 0)
+            //{
+            //    behaveCount_FOR_PPT++;
+            //}
 
             bool isCloser = false;
 
@@ -729,10 +729,10 @@ public class EnemyAI : MonoBehaviour
 
                 AI_Score_Cal(hitCounter);
                 //AI_Score_Cal(isHPLOW, cur_FOR_PPT, aft_FOR_PPT);
-                //aft_FOR_PPT._beforeDB = scoreCount_FOR_PPT;
+                aft_FOR_PPT._beforeDB = scoreCount_FOR_PPT;
 
-                //enemyCollector.listSitCUR.Add(cur_FOR_PPT);
-                //enemyCollector.listSitAFT.Add(aft_FOR_PPT);
+                enemyCollector.listSitCUR.Add(cur_FOR_PPT);
+                enemyCollector.listSitAFT.Add(aft_FOR_PPT);
 
                 if (Random.Range(0.0f, 1.0f) < sigma)
                 {
@@ -740,7 +740,7 @@ public class EnemyAI : MonoBehaviour
                     sitCUR._time = Random.Range(0.5f, 1.5f);
                 }
 
-                //scoreCount_FOR_PPT = 0;
+                scoreCount_FOR_PPT = 0;
             }
 
             //DataBase에서 긁어온 정보의 time동안 행동한다.

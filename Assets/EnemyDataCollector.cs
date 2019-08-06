@@ -23,6 +23,7 @@ public class EnemyDataCollector : MonoBehaviour {
     public List<SituationAFT> listSitAFT1 = new List<SituationAFT>();
 
     public List<AIData> aiDatas = new List<AIData>();
+    public List<AIData> aiDatasGreedy = new List<AIData>();
 
     public List<AIData> data_FOR_Learn = new List<AIData>();
 
@@ -35,6 +36,7 @@ public class EnemyDataCollector : MonoBehaviour {
     private int coroutineLocker = 0;
 
     public float sigmaValue = 0.0f;
+    private SortANDSearch sortANDSearch = new SortANDSearch();
 
     void swap(int a, int b)
     {
@@ -49,6 +51,213 @@ public class EnemyDataCollector : MonoBehaviour {
         goodBehaveListLOW[a] = goodBehaveListLOW[b];
         goodBehaveListLOW[b] = t;
     }
+
+    public class SortANDSearch {
+
+        List<AIData> aiDatasSORT = new List<AIData>();
+        List<SituationCUR> sitCURSORT = new List<SituationCUR>();
+
+        AIData tempAD = new AIData();
+        SituationCUR tempsitCUR = new SituationCUR();
+
+        public List<AIData> QuickSort_AIData(List<AIData> input)
+        {
+            aiDatasSORT = input;
+
+            quicksort_AIData(0, aiDatasSORT.Count - 1);
+
+            return aiDatasSORT;
+        }
+
+        void quicksort_AIData(int l, int r)
+        {
+            int p = l;
+            int j = p;
+            int i = l + 1;
+
+            if (l < r)
+            {
+                for (; i <= r; i++)
+                {
+                    if (aiDatasSORT[i].sitCUR._angleComp < aiDatasSORT[p].sitCUR._angleComp)
+                    {
+                        j++;
+
+                        //스왑
+                        tempAD = aiDatasSORT[j];
+                        aiDatasSORT[j] = aiDatasSORT[i];
+                        aiDatasSORT[i] = tempAD;
+                    }
+                }
+                //스왑
+                tempAD = aiDatasSORT[l];
+                aiDatasSORT[l] = aiDatasSORT[j];
+                aiDatasSORT[j] = tempAD;
+
+                p = j;
+
+                quicksort_AIData(l, p - 1);
+                quicksort_AIData(p + 1, r);
+            }
+        }
+
+        public int Search_AIData(float angle, int i, int length, int j, List<AIData> input)
+        {
+            int result = 0;
+            aiDatasSORT = input;
+
+            search_AIData(angle, i, length, j, ref result);
+
+            return result;
+        }
+
+        void search_AIData(float angle, int i, int length, int j, ref int resultIndex)
+        {
+            int index = i;
+
+            if (j == 1)
+                index = (int)(length / 2);
+            else
+            {
+                if (index < 0)
+                {
+                    index *= (-1);
+                    index -= (int)(length / (j * 2));
+                }
+                else
+                {
+                    index += (int)(length / (j * 2));
+                }
+            }
+
+            if (Mathf.Abs(aiDatasSORT[index].sitCUR._angleComp - angle) >= 0.5f)
+            {
+                if (aiDatasSORT[index].sitCUR._angleComp > angle)
+                {
+                    j *= 2;
+                    search_AIData(angle, -index, length, j, ref resultIndex);
+                }
+                else if (aiDatasSORT[index].sitCUR._angleComp < angle)
+                {
+                    j *= 2;
+                    search_AIData(angle, index, length, j, ref resultIndex);
+                }
+            }
+            else
+            {
+                resultIndex = index;
+            }
+        }
+
+        public List<SituationCUR> QuickSort_SitCUR(List<SituationCUR> input)
+        {
+            sitCURSORT = input;
+
+            quicksort_SitCUR(0, sitCURSORT.Count - 1);
+
+            return sitCURSORT;
+        }
+
+        void quicksort_SitCUR(int l, int r)
+        {
+            int p = l;
+            int j = p;
+            int i = l + 1;
+
+            if (l < r)
+            {
+                for (; i <= r; i++)
+                {
+                    if (sitCURSORT[i]._angleComp < sitCURSORT[p]._angleComp)
+                    {
+                        j++;
+                        //스와핑
+                        tempsitCUR = sitCURSORT[j];
+                        sitCURSORT[j] = sitCURSORT[i];
+                        sitCURSORT[i] = tempsitCUR;
+                    }
+                }
+                //스와핑
+                tempsitCUR = sitCURSORT[l];
+                sitCURSORT[l] = sitCURSORT[j];
+                sitCURSORT[j] = tempsitCUR;
+                p = j;
+
+                quicksort_SitCUR(l, p - 1);
+                quicksort_SitCUR(p + 1, r);
+            }
+        }
+
+        public int Search_SitCUR(float dist, float angle, int i, int length, int j, List<SituationCUR> input)
+        {
+            int result = 0;
+            sitCURSORT = input;
+
+            search_SitCUR(dist, angle, i, length, j, ref result);
+
+            return result;
+        }
+
+        void search_SitCUR(float dist, float angle, int i, int length, int j, ref int result)
+        {
+            int index = i;
+
+            if (j == 1)
+                index = (int)(length / 2);
+            else
+            {
+                if (index < 0)
+                {
+                    index *= (-1);
+                    index -= (int)(length / (j * 2));
+                }
+                else
+                {
+                    index += (int)(length / (j * 2));
+                }
+            }
+
+            if ((int)(length / j) > 16)
+            {
+                if (sitCURSORT[index]._angleComp > angle)
+                {
+                    j *= 2;
+                    search_SitCUR(dist, angle, -index, length, j, ref result);
+                }
+                else if (sitCURSORT[index]._angleComp < angle)
+                {
+                    j *= 2;
+                    search_SitCUR(dist, angle, index, length, j, ref result);
+                }
+                else
+                {
+                    result = index;
+                }
+            }
+            else
+            {
+                float _dist = 999f;
+                int min = index - 15;
+                int max = index + 15;
+
+                if (max > length - 1) max = length - 1;
+                if (min < 0) min = 0;
+
+                for (int q = min; q < max; q++)
+                {
+                    float comp = Mathf.Abs(sitCURSORT[q]._dist - dist);
+
+                    if (comp < _dist)
+                    {
+                        _dist = comp;
+                        result = q;
+                    }
+                }
+            }
+        }
+    }
+
+
 
     void quickSort(int l, int r)
     {
@@ -420,18 +629,20 @@ public class EnemyDataCollector : MonoBehaviour {
     public SituationCUR SearchGoodSitCUR(float dist, float angle, bool isHPLOW)
     {
         SituationCUR result = new SituationCUR("NULL", -1f, -1, -1, -1, new IntVector3(-1, -1, -1), -1f);
-        int resultIndex = -1;
+        int index = -1;
 
         if (!isHPLOW)
         {
-            search(dist, angle, goodBehaveList.Count, goodBehaveList.Count, 1, ref resultIndex);
-            result = goodBehaveList[resultIndex];
+            //Debug.Log("CUR: " + dist + ", " + angle);
+            index = sortANDSearch.Search_SitCUR(dist, angle, goodBehaveList.Count, goodBehaveList.Count, 1, goodBehaveList);
+            result = goodBehaveList[index];
+            //Debug.Log("Result: " + result._dist + ", " + result._angleComp);
         }
-        else
-        {
-            searchLOW(dist, angle, goodBehaveListLOW.Count, goodBehaveListLOW.Count, 1, ref resultIndex);
-            result = goodBehaveListLOW[resultIndex];
-        }
+        //else
+        //{
+        //    index = sortANDSearch.Search_SitCUR(dist, angle, goodBehaveList.Count, goodBehaveList.Count, 1, goodBehaveListLOW);
+        //    result = goodBehaveListLOW[index];
+        //}
 
         //Debug.Log("CurD: "+ dist + ". CurA:"+ angle + ", DBD: "+ goodBehaveList[resultIndex]._dist + ", DBA: "+ goodBehaveList[resultIndex]._angleComp);
 
@@ -457,7 +668,7 @@ public class EnemyDataCollector : MonoBehaviour {
         if (mod == 0)
         {
             goodBehaveList = IO_SqlDB.ReadSitCUR_FROM_DB("behaveDataGreatATK");
-            quickSort(0, goodBehaveList.Count - 1);
+            goodBehaveList = sortANDSearch.QuickSort_SitCUR(goodBehaveList);
         }
         else if (mod == 1)
         {
@@ -480,7 +691,8 @@ public class EnemyDataCollector : MonoBehaviour {
             {
                 goodBehaveList = IO_SqlDB.ReadSitCUR_FROM_DB("behaveDataScored_2_0");
             }
-            quickSort(0, goodBehaveList.Count - 1);
+            goodBehaveList = sortANDSearch.QuickSort_SitCUR(goodBehaveList);
+            //quickSort(0, goodBehaveList.Count - 1);
 
             //goodBehaveListLOW = IO_SqlDB.ReadSitCUR_FROM_DB("behaveDataScoredLOW");
             //quickSortLOW(0, goodBehaveListLOW.Count - 1);
@@ -620,17 +832,17 @@ public class EnemyDataCollector : MonoBehaviour {
 
         //    StartCoroutine(SaveAFT());
         //}
-        //학습 모드 - 행동 학습 준비 - 각도별 분류
+        //학습 모드 - QLearning
         else if (mod == 5)
         {
-            
+            StartCoroutine(Q_LearningStarter());
         }
         //학습 모드 - 강화학습
         //체력이 낮은 경우에 대해서도 학습할 것
         //
         else if (mod == 6)
         {
-            StartCoroutine(AllDataLearning());
+            //StartCoroutine(AllDataLearning());
         }
         //분류가 되지 않은 AIData들을 각도별로 분류하는 모드
         else if (mod == 7)
@@ -657,6 +869,8 @@ public class EnemyDataCollector : MonoBehaviour {
         else
         { }
     }
+
+
 
     IEnumerator Div_BY_Angle_HugeBehaveData()
     {
@@ -859,7 +1073,7 @@ public class EnemyDataCollector : MonoBehaviour {
         {
             if (coroutineLocker >= 102)
             {
-                StartCoroutine(Save_DataFORLearn());
+                StartCoroutine(Save_DataFORLearn("behaveDataScored"));
                 saveLocker = false;
             }
 
@@ -868,7 +1082,41 @@ public class EnemyDataCollector : MonoBehaviour {
         yield break;
     }
 
-    IEnumerator Save_DataFORLearn()
+    IEnumerator Q_LearningStarter()
+    {
+        bool saveLocker = true;
+
+        //각 상황들에 대한 Greedy한 행동들을 모두 읽어오기
+        aiDatasGreedy = IO_SqlDB.ReadAIData_FROM_DB("behaveDataScored");
+        aiDatasGreedy = sortANDSearch.QuickSort_AIData(aiDatasGreedy);
+
+        for (int angle = -18; angle < 18; angle++)
+        {
+            for (int angleSUB = 0; angleSUB <= 9; angleSUB++)
+            {
+                for (float dist = 0f; dist <= 50f; dist += 2.0f)
+                {
+                    yield return null;
+                    StartCoroutine(QLearning(angle, angleSUB, dist, false));
+                }
+                aiDatas.RemoveRange(0, aiDatas.Count);
+            }
+        }
+
+        while (saveLocker)
+        {
+            if (coroutineLocker >= 102)
+            {
+                StartCoroutine(Save_DataFORLearn("Q_LearnedData"));
+                saveLocker = false;
+            }
+
+            yield return null;
+        }
+        yield break;
+    }
+
+    IEnumerator Save_DataFORLearn(string fileName)
     {
         List<AIData> saveData = new List<AIData>();
 
@@ -882,19 +1130,15 @@ public class EnemyDataCollector : MonoBehaviour {
 
         Debug.Log(saveData.Count);
         //IO_SqlDB.WriteDB_AIDatas("behaveDataScored", data_FOR_Learn);
-        IO_SqlDB.WriteDB_AIDatas("behaveDataScored", saveData);
+        IO_SqlDB.WriteDB_AIDatas(fileName, saveData);
 
         Debug.Log("Save Done");
 
         yield break;
     }
 
-    //AIData 
-    IEnumerator LearnHighScoreBehave(int angleNum, int angleSUB, float distNum, bool isLOW_HP_Behave, Action<AIData> result)
+    private void ReadAIData_BY_Angle(string fileName, int angle, int angleNum, bool isLOW_HP_Behave)
     {
-        string fileName = "behaveDataAngle";
-        int angle = angleNum * 10 + angleSUB;
-
         if (isLOW_HP_Behave)
             fileName = fileName + "LOW";
 
@@ -915,11 +1159,25 @@ public class EnemyDataCollector : MonoBehaviour {
             aiDatas = IO_SqlDB.ReadAIData_FROM_DB(fileName, angle);
             quickSort_AIData(0, aiDatas.Count - 1);
         }
+    }
 
-        SituationCUR curInit = new SituationCUR("NULL", 0f, 0f, 0f, 0f, new IntVector3(-1,-1,-1), 0f);
+    //AIData
+    //alpha == 0.97 && gamma == 0.9
+    //double before_Q = 0;
+    //double Q_Value = before_Q + alpha * (avg_R + gamma * GreedyResult(aft) +- before_Q); //+로 할지, -로 할지 결정해볼것
+    //before_Q = Q_Value;
+    //aft를 지금까지 했던 것처럼 평균으로 할 지 가장 가능성이 높은 aft를 사용할 지에 대해 고려해볼 것 (선 평균, 후 빈도 로 작업할 것)
+    //Q 러닝 탐색을 어디까지 할 지 정할 것(3회? 혹은 그 이상?) (3회 탐색을 먼저 구현)
+    IEnumerator LearnHighScoreBehave(int angleNum, int angleSUB, float distNum, bool isLOW_HP_Behave, Action<AIData> result)
+    {
+        int angle = angleNum * 10 + angleSUB;
+
+        ReadAIData_BY_Angle("behaveDataAngle", angle, angleNum, isLOW_HP_Behave);
+
+        SituationCUR curInit = new SituationCUR("NULL", 0f, 0f, 0f, 0f, new IntVector3(-1, -1, -1), 0f);
         SituationAFT aftInit = new SituationAFT("NULL", 0f, 0f, 0f, 0f, "NULL", 0, 0, false);
 
-        AIData[,,] dataCollections = new AIData[3,7,4];
+        AIData[,,] dataCollections = new AIData[3, 7, 4];
 
         //초기화
         for (int i = 0; i < 3; i++)
@@ -955,31 +1213,27 @@ public class EnemyDataCollector : MonoBehaviour {
                 //체력이 절반을 초과할 때
                 if (!isLOW_HP_Behave)
                 {
+                    //이 상태로 다시 돌려볼 것
                     aiDatas[i].sitAFT._beforeDB += aiDatas[i].sitAFT._hitCounter;
 
-                    //if (aiDatas[i].sitCUR._doing.vecX != 0 && aiDatas[i].sitCUR._doing.vecY != 0)
-                    //    aiDatas[i].sitAFT._beforeDB += aiDatas[i].sitAFT._hitCounter; //(aiDatas[i].sitAFT._hitCounter * 11);
+                    //NEW
+                    if (aiDatas[i].sitCUR._doing.vecX == 0 && aiDatas[i].sitAFT._hitCounter > 0)
+                        aiDatas[i].sitAFT._beforeDB += 1;
 
                     if (distNum >= 30f && aiDatas[i].sitCUR._doing.vecX != 0 && aiDatas[i].sitCUR._doing.vecY != 0
                         && aiDatas[i].sitAFT._closer == true && aiDatas[i].sitAFT._dist + 10f < distNum)
                     {
-                        aiDatas[i].sitAFT._beforeDB += 3;// 10;
+                        aiDatas[i].sitAFT._beforeDB += 3;
                     }
 
                     if (distNum >= 30f && aiDatas[i].sitCUR._doing.vecX == 0 && aiDatas[i].sitCUR._doing.vecY == 0
                         && aiDatas[i].sitAFT._closer == false && aiDatas[i].sitAFT._dist >= distNum)
                     {
-                        aiDatas[i].sitAFT._beforeDB -= (int)(20 + aiDatas[i].sitAFT._dist);//3;
+                        aiDatas[i].sitAFT._beforeDB -= (int)(20 + aiDatas[i].sitAFT._dist);
                     }
-
-                    //if (distNum < 30f && aiDatas[i].sitAFT._hitCounter > 0)
-                    //{
-                    //    aiDatas[i].sitAFT._beforeDB += 40;
-                    //}
 
                     if (aiDatas[i].sitAFT._hitCounter == 0 && aiDatas[i].sitCUR._doing.vecZ != 0)
                     {
-                        //aiDatas[i].sitAFT._beforeDB -= 5;
                         aiDatas[i].sitCUR._doing.vecZ = 0;
                     }
                 }
@@ -1088,7 +1342,7 @@ public class EnemyDataCollector : MonoBehaviour {
         }
         //통계 결과 가장 높은 dataCollections[i, j, k].sitCUR._posZ (행동점수를 임시로 저장한 변수) 값을 추적
         double maxScore = -999999;
-        IntVector3 maxScoreIndex = new IntVector3(-1,-1,-1);
+        IntVector3 maxScoreIndex = new IntVector3(-1, -1, -1);
 
         for (int i = 0; i < 3; i++)
         {
@@ -1114,6 +1368,9 @@ public class EnemyDataCollector : MonoBehaviour {
         {
             dataCollections[maxScoreIndex.vecX, maxScoreIndex.vecY, maxScoreIndex.vecZ].sitAFT._beforeDB /= (int)(dataCollections[maxScoreIndex.vecX, maxScoreIndex.vecY, maxScoreIndex.vecZ].sitCUR._posX);
 
+            dataCollections[maxScoreIndex.vecX, maxScoreIndex.vecY, maxScoreIndex.vecZ].sitAFT._dist /= (int)(dataCollections[maxScoreIndex.vecX, maxScoreIndex.vecY, maxScoreIndex.vecZ].sitCUR._posX);
+            dataCollections[maxScoreIndex.vecX, maxScoreIndex.vecY, maxScoreIndex.vecZ].sitAFT._angleComp /= (int)(dataCollections[maxScoreIndex.vecX, maxScoreIndex.vecY, maxScoreIndex.vecZ].sitCUR._posX);
+
             dataCollections[maxScoreIndex.vecX, maxScoreIndex.vecY, maxScoreIndex.vecZ].sitCUR._posX = 0f;
             dataCollections[maxScoreIndex.vecX, maxScoreIndex.vecY, maxScoreIndex.vecZ].sitCUR._posZ = 0f;
             dataCollections[maxScoreIndex.vecX, maxScoreIndex.vecY, maxScoreIndex.vecZ].sitAFT._posX = 0f;
@@ -1121,21 +1378,239 @@ public class EnemyDataCollector : MonoBehaviour {
 
             result(dataCollections[maxScoreIndex.vecX, maxScoreIndex.vecY, maxScoreIndex.vecZ]);
         }
-        //else
-        //{
-        //    result.sitCUR._doing = new IntVector3(-1, -1, -1);
-        //}
 
         coroutineLocker++;
         yield break;
     }
 
+    //Q Learning (3단계까지 검토)
+    //alpha == 0.97 && gamma == 0.9 (gamma 값은 변경될 수도 있음)
+    IEnumerator QLearning(int angleNum, int angleSUB, float distNum, bool isLOW_HP_Behave)
+    {
+        int angle = angleNum * 10 + angleSUB;
+
+        ReadAIData_BY_Angle("behaveDataAngle", angle, angleNum, isLOW_HP_Behave);
+
+        ////20190724 이 작업은 나중에
+        ////각도 및 거리 별 수집
+        ////countAFT_Trn[x, y] = new IntVector(횟수, 점수합, );
+        //IntVector3[,] countAFT_Trn = new IntVector3[360, 25];
+        ////countAFT_Trn 값 초기화
+        //for (int i = 24; i != 0; i--)
+        //{
+        //    for (int j = 359; j != 0; j--)
+        //    {
+        //        countAFT_Trn[j, i].InitIntVector3(0,0,0);
+        //    }
+        //}
+
+        SituationCUR curInit = new SituationCUR("NULL", 0f, 0f, 0f, 0f, new IntVector3(-1, -1, -1), 0f);
+        SituationAFT aftInit = new SituationAFT("NULL", 0f, 0f, 0f, 0f, "NULL", 0, 0, false);
+
+        AIData[,,] dataCollections = new AIData[3, 7, 4];
+
+        //초기화
+        for (int i = 0; i < 3; i++)
+        {
+            for (int j = 0; j < 7; j++)
+            {
+                for (int k = 0; k < 4; k++)
+                {
+                    dataCollections[i, j, k] = new AIData(curInit, aftInit);
+                }
+            }
+        }
+
+        //거리, 각도에 따른 행동별 상태값 총합
+        for (int i = 0; i < aiDatas.Count; i++)
+        {
+            float angleData = aiDatas[i].sitCUR._angleComp;
+            float distData = aiDatas[i].sitCUR._dist;
+
+            if (angleData >= angle + 1)
+                continue;
+
+            //불량 데이터 무시
+            if (aiDatas[i].sitCUR._doing.vecX == -1)
+                continue;
+
+            if (distData >= 50.5f)
+                distData = 50f;
+
+            if ((angle <= angleData && angleData < angle + 1f) && (distNum <= distData && distData < distNum + 0.5f))
+            {
+                //점수 결과를 _beforeDB에다 각각 저장
+                aiDatas[i].sitAFT._beforeDB = CalScore(angleData, distData, distNum, angle, isLOW_HP_Behave, aiDatas[i]);
+
+                //dataCollections 중 올바른 위치에 값 저장
+                int mov = aiDatas[i].sitCUR._doing.vecX;
+                int rot = aiDatas[i].sitCUR._doing.vecY;
+                int atk = aiDatas[i].sitCUR._doing.vecZ;
+
+                SituationCUR curBowl = new SituationCUR("NULL", 0f, 0f, 0f, 0f, new IntVector3(-1, -1, -1), 0f);
+                SituationAFT aftBowl = new SituationAFT("NULL", 0f, 0f, 0f, 0f, "NULL", 0, 0, false);
+                string id = angle + ", " + distNum + ": " + aiDatas[i].sitCUR._doing.IntVector3ToString();
+
+                curBowl._id = id;
+                curBowl._angleComp = angleData + dataCollections[mov, rot, atk].sitCUR._angleComp;
+                curBowl._dist = distData + dataCollections[mov, rot, atk].sitCUR._dist;
+                curBowl._doing = new IntVector3(mov, rot, atk);
+                curBowl._time = aiDatas[i].sitCUR._time + dataCollections[mov, rot, atk].sitCUR._time;
+                curBowl._posX = 1 + dataCollections[mov, rot, atk].sitCUR._posX;
+
+                aftBowl._id = id;
+                aftBowl._angleComp = aiDatas[i].sitAFT._angleComp + dataCollections[mov, rot, atk].sitAFT._angleComp;
+                aftBowl._dist = aiDatas[i].sitAFT._dist + dataCollections[mov, rot, atk].sitAFT._dist;
+                aftBowl._beforeDB = aiDatas[i].sitAFT._beforeDB + dataCollections[mov, rot, atk].sitAFT._beforeDB;
+                aftBowl._hitCounter = aiDatas[i].sitAFT._hitCounter + dataCollections[mov, rot, atk].sitAFT._hitCounter;
+
+                if (aiDatas[i].sitAFT._closer)
+                    aftBowl._posX = 1 + dataCollections[mov, rot, atk].sitAFT._posX;
+                else
+                    aftBowl._posZ = 1 + dataCollections[mov, rot, atk].sitAFT._posZ;
+
+                dataCollections[mov, rot, atk].sitCUR = curBowl;
+                dataCollections[mov, rot, atk].sitAFT = aftBowl;
+            }
+        }
+
+        //통계내기
+        for (int i = 0; i < 3; i++)
+        {
+            for (int j = 0; j < 7; j++)
+            {
+                for (int k = 0; k < 4; k++)
+                {
+                    if (dataCollections[i, j, k].sitCUR._id != "NULL")
+                    {
+                        int count = (int)(dataCollections[i, j, k].sitCUR._posX);
+
+                        dataCollections[i, j, k].sitCUR._angleComp /= count;
+                        dataCollections[i, j, k].sitCUR._dist /= count;
+                        dataCollections[i, j, k].sitCUR._time /= count;
+
+                        dataCollections[i, j, k].sitAFT._angleComp /= count;
+
+                        if (dataCollections[i, j, k].sitAFT._posX - dataCollections[i, j, k].sitAFT._posZ > 0)
+                            dataCollections[i, j, k].sitAFT._closer = true;
+                        else
+                            dataCollections[i, j, k].sitAFT._closer = false;
+
+                        dataCollections[i, j, k].sitAFT._beforeDB /= count;
+
+                        dataCollections[i, j, k].sitAFT._dist /= count;
+                        dataCollections[i, j, k].sitAFT._angleComp /= count;
+
+                        dataCollections[i, j, k].sitCUR._posX = 0f;
+                        dataCollections[i, j, k].sitCUR._posZ = 0f;
+                        dataCollections[i, j, k].sitAFT._posX = 0f;
+                        dataCollections[i, j, k].sitAFT._posZ = 0f;
+
+                        data_FOR_Learn.Add(dataCollections[i, j, k]);
+                    }
+                }
+            }
+        }
+
+        coroutineLocker++;
+        yield break;
+    }
+
+    private int CalScore(float angleData, float distData, float distNum, int angle, bool isLOW_HP_Behave, AIData data)
+    {
+        int result = 0;
+
+            //체력 절반 이하, 절반 초과에 따라 다른 행동점수 가산점 OR 불이익 정책 사용
+            //체력이 절반을 초과할 때
+            if (!isLOW_HP_Behave)
+            {
+                //이 상태로 다시 돌려볼 것
+                result += data.sitAFT._hitCounter;
+
+                //NEW
+                if (data.sitCUR._doing.vecX == 0 && data.sitAFT._hitCounter > 0)
+                    result += 1;
+
+                if (distNum >= 30f && data.sitCUR._doing.vecX != 0 && data.sitCUR._doing.vecY != 0
+                    && data.sitAFT._closer == true && data.sitAFT._dist + 10f < distNum)
+                {
+                    result += 3;
+                }
+
+                if (distNum >= 30f && data.sitCUR._doing.vecX == 0 && data.sitCUR._doing.vecY == 0
+                    && data.sitAFT._closer == false && data.sitAFT._dist >= distNum)
+                {
+                    result -= (int)(20 + data.sitAFT._dist);
+                }
+
+                if (data.sitAFT._hitCounter == 0 && data.sitCUR._doing.vecZ != 0)
+                {
+                    result = 0;
+                }
+            }
+            //체력이 절반 이하일 때
+            else
+            {
+                if (data.sitCUR._doing.vecX != 0 && data.sitCUR._doing.vecY != 0)
+                    result--;
+
+                if (data.sitAFT._dist > distData)
+                    result++;
+
+                if (distNum >= 30f && data.sitCUR._doing.vecX == 0 && data.sitCUR._doing.vecY == 0
+                    && data.sitAFT._closer == true && data.sitAFT._dist <= distNum)
+                {
+                    result -= 3;
+                }
+
+                if (distNum >= 30f && data.sitCUR._doing.vecX != 0 && data.sitCUR._doing.vecY != 0
+                    && data.sitAFT._closer == false && data.sitAFT._dist > distNum)
+                {
+                    result += 3;
+                }
+
+                if (distNum <= 30f && data.sitCUR._doing.vecX == 0 && data.sitCUR._doing.vecY == 0
+                    && data.sitAFT._closer == true && data.sitAFT._dist <= distNum)
+                {
+                    result -= 3;
+                }
+
+                if (distNum <= 30f && data.sitCUR._doing.vecX != 0 && data.sitCUR._doing.vecY != 0
+                    && data.sitAFT._closer == true && data.sitAFT._dist > distNum)
+                {
+                    result += 3;
+                }
+            }
+
+            //아무것도 안 했으면 감점
+            if (data.sitCUR._doing.vecX == 0)
+            {
+                result -= 10;
+                if (data.sitCUR._doing.vecY == 0 && data.sitCUR._doing.vecZ == 0)
+                    result -= 10;
+            }   
+       
+
+        return result;
+    }
+
+    //alpha == 0.97 && gamma == 0.9 (gamma 값은 변경될 수도 있음)
+    //result = (1 - alpha) * beforeQResult + alpha * (curReward + gamma * NextGreedyReward);
+    //curReward는 직접 받아와야
+    //NextGreedyReward는 
+    //beforeQResult는?
+    /*
+     * depth: 탐색할 깊이 
+    */
+    private int Q_Func(int depth)
+    {
+        int result = 0;
+
+        return result;
+    }
+
     void Update()
     {
-        //if (listSitCUR.Count != 0)
-        //{
-        //    Debug.Log("0: " + listSitCUR[0]._doing.vecX + ", " + listSitCUR[0]._doing.vecY + ", " + listSitCUR[0]._doing.vecZ);
-        //}
         //모두 저장
         if (Input.GetKeyDown(KeyCode.P))
         {
@@ -1147,48 +1622,7 @@ public class EnemyDataCollector : MonoBehaviour {
         {
             IO_CSV.Writer_CSV("/ScoreCAL.csv", listScore_FOR_PPT);
         }
-
-        ////BigData 유닛이 검증한 우수 행동 별도 저장
-        //if (Input.GetKeyDown(KeyCode.M))
-        //{
-        //    StartCoroutine(SaverGreat());
-        //}
-    }
-
-    //IEnumerator NULLDataSampleSaver()
-    //{
-    //    IO_SqlDB.WriteDB_CUR("behaveData_Part0", listSitCUR);
-    //    IO_SqlDB.WriteDB_AFT("behaveData_Part0", listSitAFT);
-
-    //    Debug.Log("NullDataSaveDone");
-    //    yield break;
-    //}
-
-
-    //IEnumerator SampleIE()
-    //{
-    //    SituationCUR cur = new SituationCUR("N", -1f, -1f, -1f, -1f, new IntVector3(-1, -1, -1), -1f);
-    //    SituationAFT aft = new SituationAFT("N", -1f, -1f, -1f, -1f, "NN", -1, -1, false);
-
-    //    for (int i = 0; i < 20; i++)
-    //    {
-    //        for (int j = 0; j < 10000; j++)
-    //        {
-    //            listSitCUR.Add(cur);
-    //            listSitAFT.Add(aft);
-    //        }
-
-    //        Debug.Log("*");
-    //        yield return null;
-    //    }
-
-    //    Debug.Log("Dummy Done");
-    //    StartCoroutine("NULLDataSampleSaver");
-
-    //    yield break;
-    //}
-
-    
+    } 
 
     IEnumerator SaveAFT()
     {
@@ -1241,15 +1675,6 @@ public class EnemyDataCollector : MonoBehaviour {
 
         if (listSitCUR.Count != 0)
         {
-
-            //for (int i = 0; i < listSitCUR.Count; i++)
-            //{
-            //    aiDatas.Add(new AIData(listSitCUR[i], listSitAFT[i]));
-            //}
-
-            //yield return null;
-            //SaveDatas_Div_BY_Angle(true);
-
             IO_SqlDB.WriteDB_CUR("behaveDataReinforce", listSitCUR);
             yield return null;
             IO_SqlDB.WriteDB_AFT("behaveDataReinforce", listSitAFT);
@@ -1259,34 +1684,4 @@ public class EnemyDataCollector : MonoBehaviour {
         Debug.Log("HP HIGH Data " + listSitCUR.Count + " Save Complete");
         yield break;
     }
-
-    //void InitAIDatas(List<SituationCUR> cur, List<SituationAFT> aft)
-    //{
-    //    for (int i = 0; i < cur.Count; i++)
-    //    {
-    //        if (cur[i]._doing.vecZ == 2 && cur[i]._angleComp < 0 && aft[i]._angleComp < 0)
-    //        {
-    //            aft[i]._hitCounter = 0;
-    //            continue;
-    //        }
-    //        else if (cur[i]._doing.vecZ == 3 && cur[i]._angleComp > 0 && aft[i]._angleComp > 0)
-    //        {
-    //            aft[i]._hitCounter = 0;
-    //            continue;
-    //        }
-    //        else if (cur[i]._doing.vecZ != 0 && (cur[i]._angleComp > 170f || cur[i]._angleComp < -170f) && (aft[i]._angleComp > 170f || aft[i]._angleComp < -170f))
-    //        {
-    //            Debug.Log("3");
-    //            aft[i]._hitCounter = 0;
-    //            continue;
-    //        }
-    //        else
-    //        {
-    //            if (aft[i]._hitCounter != 0 && cur[i]._doing.vecZ != 0)
-    //            {
-    //                aiDatas.Add(new AIData(cur[i], aft[i]));
-    //            }
-    //        }
-    //    }
-    //}
 }
