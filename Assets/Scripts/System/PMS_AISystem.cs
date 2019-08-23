@@ -88,10 +88,21 @@ namespace PMS_AISystem
             _id = "NULL";
             _posX = -1f;
             _posZ = -1f;
-            _dist = -1f;
-            _angleComp = -1f;
-            _doing = new IntVector3(-1,-1,-1);
+            _dist = 0f;
+            _angleComp = 0f;
+            _doing = new IntVector3(-1, -1, -1);
             _time = -1f;
+        }
+
+        public void Set(string id, float x, float z, float dist, float angleComp, IntVector3 doing, float time)
+        {
+            _id = id;
+            _posX = x;
+            _posZ = z;
+            _dist = dist;
+            _angleComp = angleComp;
+            _doing = doing;
+            _time = time;
         }
     }
 
@@ -137,6 +148,19 @@ namespace PMS_AISystem
             _hitCounter = -1;
             _closer = false;
         }
+
+        public void Set(string id, float x, float z, float dist, float angleComp, string beforeID, int beforeDB, int hitCounter, bool closer)
+        {
+            _id = id;
+            _posX = x;
+            _posZ = z;
+            _dist = dist;
+            _angleComp = angleComp;
+            _beforeID = beforeID;
+            _beforeDB = beforeDB;
+            _hitCounter = hitCounter;
+            _closer = closer;
+        }
     }
 
     public class AIData
@@ -154,6 +178,29 @@ namespace PMS_AISystem
         {
             sitCUR = new SituationCUR("NULL", -1f, -1f, -1f, -1f, new IntVector3(-1,-1,-1), -1f);
             sitAFT = new SituationAFT("NULL", -1f, -1f, -1f, -1f, "NULL", -1, -1 , false);
+        }
+    }
+
+    public class DeepAIData
+    {
+        public SituationCUR sitCUR;
+        public List<SituationAFT> sitAFTList = new List<SituationAFT>();
+
+        public DeepAIData(SituationCUR cur, List<SituationAFT> aft)
+        {
+            sitCUR = cur;
+            sitAFTList = aft;
+        }
+
+        public DeepAIData(SituationCUR cur, SituationAFT aft)
+        {
+            sitCUR = cur;
+            sitAFTList.Add(aft);
+        }
+
+        public DeepAIData(SituationAFT aft)
+        {
+            sitAFTList.Add(aft);
         }
     }
 }

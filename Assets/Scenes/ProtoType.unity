@@ -7085,8 +7085,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   listScore_FOR_PPT: 
   mod: 1
-  sampleFileString: 2
+  sampleFileString: 1
   sigmaValue: 0.03
+  sampleAlpha: 0.87
+  sampleGamma: 0.9
+  sample_Q_Depth: 3
 --- !u!4 &684319863 stripped
 Transform:
   m_PrefabParentObject: {fileID: 4000010407689320, guid: 64a133a3f03ca6744813a649fb32505b,

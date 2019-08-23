@@ -704,11 +704,11 @@ public class EnemyAI : MonoBehaviour
             isHPLOW = enemyController.__ENE_Stat.__PUB__Health_Point < enemyController.__ENE_Stat.half_HP;
             sitCUR = enemyCollector.SearchGoodSitCUR(curDist, enemyController._GET__ENE_AI_Engine.angleComp, isHPLOW);
 
-            ////20190606 임시
-            //if (sitCUR._doing.vecZ != 0)
-            //{
-            //    behaveCount_FOR_PPT++;
-            //}
+            //20190606 임시
+            if (sitCUR._doing.vecZ != 0)
+            {
+                behaveCount_FOR_PPT++;
+            }
 
             bool isCloser = false;
 
