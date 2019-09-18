@@ -4,6 +4,25 @@ using System.Collections;
 //자주 사용되는 수학적 값 보정을 위한 namespace
 namespace PMS_Math {
 
+    public class PMS_MathF {
+
+        public static float Square(float value, int exponent)
+        {
+            for (int i = 1; i < exponent; i++)
+                value *= value;
+
+            return value;
+        }
+
+        public static int Square(int value, int exponent)
+        {
+            for (int i = 1; i < exponent; i++)
+                value *= value;
+
+            return value;
+        }
+    }
+
     //UnitStat이나 SkilBaseStat 등에 의한 값 변화와는 관계없이 항상 일정한 값들을 저장해둔 클래스
     public class ConstValueCollections {
 

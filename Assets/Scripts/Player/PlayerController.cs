@@ -329,50 +329,50 @@ public class PlayerController : MonoBehaviour {
                 else
                 { }
 
-                //스피드 버프 OR 디버프 지속시간 종료 여부
-                if (__PLY_Stat.__PUB_Stat_IsCoolTimeOn[0])
-                {
-                    //스피드 버프 OR 디버프 해제
-                    //스킬 넣는 부분은 일단 저런식으로 하는 수 밖에 없음
-                    //나중에 스킬 위치를 마음대로 바꿀 수 있도록 변경할 때 고민이 필요함
-                    __PLY_Engine._unit_Move_Engine.Init_Speed_BUF_Amount();
-                    //스피드 버프 해제로 일단 간주
-                    __PLY_Stat.__PUB_Stat_IsCoolTimeOn[0] = false;
-                }
+                ////스피드 버프 OR 디버프 지속시간 종료 여부
+                //if (__PLY_Stat.__PUB_Stat_IsCoolTimeOn[0])
+                //{
+                //    //스피드 버프 OR 디버프 해제
+                //    //스킬 넣는 부분은 일단 저런식으로 하는 수 밖에 없음
+                //    //나중에 스킬 위치를 마음대로 바꿀 수 있도록 변경할 때 고민이 필요함
+                //    __PLY_Engine._unit_Move_Engine.Init_Speed_BUF_Amount();
+                //    //스피드 버프 해제로 일단 간주
+                //    __PLY_Stat.__PUB_Stat_IsCoolTimeOn[0] = false;
+                //}
 
-                //체력 버프 OR 디버프 지속시간 종료 여부
-                if (__PLY_Stat.__PUB_Stat_IsCoolTimeOn[1])
-                {
+                ////체력 버프 OR 디버프 지속시간 종료 여부
+                //if (__PLY_Stat.__PUB_Stat_IsCoolTimeOn[1])
+                //{
 
-                }
+                //}
 
-                //기본 마나 회복 지속시간 종료 여부
-                if (__PLY_Stat.__PUB_Stat_IsCoolTimeOn[2])
-                {
-                    //일단 1씩 회복한다.
-                    __PLY_Stat.__Get_HIT__About_Mana(1, -1);
-                    //다음 기본 마나 회복 시간까지 대기 
-                    __PLY_Stat.__PUB_Stat_IsCoolTimeOn[2] = false;
+                ////기본 마나 회복 지속시간 종료 여부
+                //if (__PLY_Stat.__PUB_Stat_IsCoolTimeOn[2])
+                //{
+                //    //일단 1씩 회복한다.
+                //    __PLY_Stat.__Get_HIT__About_Mana(1, -1);
+                //    //다음 기본 마나 회복 시간까지 대기 
+                //    __PLY_Stat.__PUB_Stat_IsCoolTimeOn[2] = false;
 
-                    //일단 8초마다 마나를 회복하도록 결정
-                    __PLY_CoolTimer.StartCoroutine(
-                        __PLY_CoolTimer.Timer_Do_Once(8.0f,
-                        (input) => { __PLY_Stat.__PUB_Stat_IsCoolTimeOn[2] = input; },
-                        false)
-                        );
-                }
+                //    //일단 8초마다 마나를 회복하도록 결정
+                //    __PLY_CoolTimer.StartCoroutine(
+                //        __PLY_CoolTimer.Timer_Do_Once(8.0f,
+                //        (input) => { __PLY_Stat.__PUB_Stat_IsCoolTimeOn[2] = input; },
+                //        false)
+                //        );
+                //}
 
-                //PP 버프 OR 디버프 지속시간 종료 여부
-                if (__PLY_Stat.__PUB_Stat_IsCoolTimeOn[3])
-                {
+                ////PP 버프 OR 디버프 지속시간 종료 여부
+                //if (__PLY_Stat.__PUB_Stat_IsCoolTimeOn[3])
+                //{
 
-                }
+                //}
 
-                //크리티컬 버프 OR 디버프 지속시간 종료 여부
-                if (__PLY_Stat.__PUB_Stat_IsCoolTimeOn[4])
-                {
+                ////크리티컬 버프 OR 디버프 지속시간 종료 여부
+                //if (__PLY_Stat.__PUB_Stat_IsCoolTimeOn[4])
+                //{
 
-                }
+                //}
             }
             //플레이어 체력이 0이하이면
             else

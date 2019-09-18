@@ -1148,7 +1148,7 @@ namespace File_IO {
 
             int startLine = 999999, endLine = 0;
 
-            idList = GetStart_AND_End_BY_Angle(fileName, angle, ref startLine, ref endLine);
+            idList = GetStart_AND_End_BY_Angle(fileName, angle, ref startLine, ref endLine, 1);
 
             List<SituationCUR> cur = ReadSitCUR_FROM_DB(fileName, startLine, endLine, idList);
             List<SituationAFT> aft = ReadSitAFT_FROM_DB(fileName, startLine, endLine, idList);
@@ -1162,8 +1162,60 @@ namespace File_IO {
             return result;
         }
 
+        //angle 이상, (angle+num)미만인 CUR_Trn_Angle 값을 갖는 데이터만 읽기
+        public static List<AIData> ReadAIData_FROM_DB_Angle(string fileName, int angle, int num)
+        {
+            List<AIData> result = new List<AIData>();
+            List<string> idList = new List<string>();
+
+            int startLine = 999999, endLine = 0;
+
+            Debug.Log(angle + "~" + (angle + num) + " Read");
+
+            idList = GetStart_AND_End_BY_Angle(fileName, angle, ref startLine, ref endLine, num);
+
+            List<SituationCUR> cur = ReadSitCUR_FROM_DB(fileName, startLine, endLine, idList);
+            List<SituationAFT> aft = ReadSitAFT_FROM_DB(fileName, startLine, endLine, idList);
+
+            for (int i = 0; i < cur.Count; i++)
+            {
+                result.Add(new AIData(cur[i], aft[i]));
+            }
+
+
+            return result;
+        }
+
+        //CUR_Trn_Angle 값이 angle 이상, (angle+numA)미만이고 CUR_Trn_Dist 값이 dist 이상, (dist+numD)미만인 데이터만 읽기
+        public static List<AIData> ReadAIData_FROM_DB_Angle_AND_Dist(string fileName, int angle, int numA, int dist, int numD)
+        {
+            List<AIData> result = new List<AIData>();
+            List<string> idList = new List<string>();
+
+            int startLine = 999999, endLine = 0;
+
+            idList = GetStart_AND_End_BY_Angle(fileName, angle, ref startLine, ref endLine, numA);
+
+            List<SituationCUR> cur = ReadSitCUR_FROM_DB(fileName, startLine, endLine, idList);
+            List<SituationAFT> aft = ReadSitAFT_FROM_DB(fileName, startLine, endLine, idList);
+
+            for (int i = 0; i < cur.Count; i++)
+            {
+                if (cur[i]._dist >= dist && cur[i]._dist < dist + numD)
+                    result.Add(new AIData(cur[i], aft[i]));
+            }
+
+            for (int i = 0; i < cur.Count; i++)
+            {
+                cur[i].Dispose();
+                aft[i].Dispose();
+            }
+
+            return result;
+        }
+
         //위 함수를 보조하기 위한 함수
-        private static List<string> GetStart_AND_End_BY_Angle(string fileName, int angle, ref int start, ref int end)
+        private static List<string> GetStart_AND_End_BY_Angle(string fileName, int angle, ref int start, ref int end, int num)
         {
             List<string> result = new List<string>();
 
@@ -1175,7 +1227,7 @@ namespace File_IO {
 
                 using (IDbCommand dbCommand = dbConnection.CreateCommand())
                 {
-                    string sqlQuery = "SELECT rowid, CUR_Trn_id FROM CUR_Transform WHERE CUR_Trn_angle >= " + angle + " AND CUR_Trn_angle < " + (angle+1);
+                    string sqlQuery = "SELECT rowid, CUR_Trn_id FROM CUR_Transform WHERE CUR_Trn_angle >= " + angle + " AND CUR_Trn_angle < " + (angle+num);
                     dbCommand.CommandText = sqlQuery;
 
                     IDataReader reader = dbCommand.ExecuteReader();

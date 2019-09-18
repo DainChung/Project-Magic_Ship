@@ -67,6 +67,8 @@ public class EnemyAI : MonoBehaviour
 
     float curDist;
 
+    int qDepth = 0;
+
     //SituationCUR sitCUR = new SituationCUR("NULL", -1, -1, -1, -1, new IntVector3(-1, -1, -1), false);
     //SituationAFT sitAFT = new SituationAFT("NULL", -1, -1, -1, -1, "NULL", -1, -1, false, false);
 
@@ -702,7 +704,18 @@ public class EnemyAI : MonoBehaviour
         {
             curDist = Vector3.Distance(transform.position, enemyController.playerTransform.position);
             isHPLOW = enemyController.__ENE_Stat.__PUB__Health_Point < enemyController.__ENE_Stat.half_HP;
-            sitCUR = enemyCollector.SearchGoodSitCUR(curDist, enemyController._GET__ENE_AI_Engine.angleComp, isHPLOW);
+
+            //sitCUR = enemyCollector.SearchGoodSitCUR(curDist, enemyController._GET__ENE_AI_Engine.angleComp, isHPLOW, true);
+
+            if (qDepth >= 1)
+            {
+                sitCUR = enemyCollector.SearchGoodSitCUR(curDist, enemyController._GET__ENE_AI_Engine.angleComp, isHPLOW, true);
+                if (qDepth >= 3) qDepth = -1;
+            }
+            else
+                sitCUR = enemyCollector.SearchGoodSitCUR(curDist, enemyController._GET__ENE_AI_Engine.angleComp, isHPLOW, false);
+
+            qDepth++;
 
             //20190606 임시
             if (sitCUR._doing.vecZ != 0)
@@ -820,7 +833,7 @@ public class EnemyAI : MonoBehaviour
             enemyCollector.listSitCUR.Add(cur_FOR_PPT);
             enemyCollector.listSitAFT.Add(aft_FOR_PPT);
 
-            sitCUR = enemyCollector.SearchGoodSitCUR(curDist, enemyController._GET__ENE_AI_Engine.angleComp, false);
+            sitCUR = enemyCollector.SearchGoodSitCUR(curDist, enemyController._GET__ENE_AI_Engine.angleComp, false, false);
 
             //DataBase에서 긁어온 정보의 time동안 행동한다.
             StartCoroutine(enemyController.enemyCoolTimer.Timer(sitCUR._time, (input) => { isbehaveCoolTimeOn = input; }, true, (input) => { dummy = input; }));
