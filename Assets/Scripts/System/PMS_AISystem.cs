@@ -341,6 +341,13 @@ namespace PMS_AISystem
             sitAFTList.Add(new SituationAFT(data.sitAFT));
         }
     }
+
+    public struct NeuronAIData
+    {
+        public IntVector3 doing;
+        public float dist, angle, time;
+        public int bia;
+    }
  
     public class Neuron
     {
@@ -350,53 +357,119 @@ namespace PMS_AISystem
         //bia는 aft.dist에 따라 결정된다.
         //alpha값은 0.01f
 
-        
-        public double weight_R, weight_H, weight_D, bias;
-        public int input_H, input_D;
-        public double input_R, output;
+        public double[] weights = new double[6];
 
-        double m = 0.5, v = 0.5;
+        public double doM, doR, doA, dist, angle, time, bia;
 
-        public Neuron(double w0, double w1, double w2, double b)
+        public double output_PUB;
+        bool isNegative = false;
+        double output;
+
+        double m = 0.0, v = 0.0;
+
+        public Neuron(double wDM, double wDR, double wDA, double wD, double wA, double wT)
         {
-            weight_R = w0;
-            weight_H = w1;
-            weight_D = w2;
-            bias = b;
+            weights[0] = wDM;
+            weights[1] = wDR;
+            weights[2] = wDA;
+
+            weights[3] = wD;
+            weights[4] = wA;
+            weights[5] = wT;
         }
 
-        public double Feed_Forward(double reward, int hitCounter, int dist)
+        public Neuron(List<Neuron> neurons)
         {
-            input_R = reward;
-            input_H = hitCounter;
-            input_D = dist;
+            for (int i = 0; i < neurons.Count; i++)
+            {
+                weights[0] += neurons[i].weights[0];
+                weights[1] += neurons[i].weights[1];
+                weights[2] += neurons[i].weights[2];
 
-            output = Get_ELU(input_R, input_H, input_D);
+                weights[3] += neurons[i].weights[3];
+                weights[4] += neurons[i].weights[4];
+                weights[5] += neurons[i].weights[5];
+            }
+
+            weights[0] /= neurons.Count;
+            weights[1] /= neurons.Count;
+            weights[2] /= neurons.Count;
+            weights[3] /= neurons.Count;
+            weights[4] /= neurons.Count;
+            weights[5] /= neurons.Count;
+        }
+
+        public void NeuronLOG(int num)
+        {
+            if (num == 0)
+                Debug.Log("Dist: " + output_PUB);
+            else if (num == 1)
+                Debug.Log("Angle: " + output_PUB);
+            else if (num == 2)
+                Debug.Log("Reward: " + output_PUB);
+
+            Debug.Log("wDM: " + weights[0] + ", wDR: " + weights[1] + ", wDA: " + weights[2] + ", wD: " + weights[3] + ", wA: " + weights[4] + ", wT: " + weights[5]);
+        }
+
+        public double FF(IntVector3 _doing, double _dist, double _angle, double _time, double _bia)
+        {
+            doM = (double)(_doing.vecX);
+            doR = (double)(_doing.vecY);
+            doA = (double)(_doing.vecZ);
+
+            dist = _dist;
+            angle = _angle;
+            time = _time;
+            bia = _bia;
+
+            output = Get_ELU();
+            output_PUB = output;
+            if (isNegative)
+                output_PUB *= (-1);
+
             return output;
         }
 
         public void ADAM(double target)
         {
-            double grad = (output - target) * GradELU();
+            if (target < 0)
+            {
+                target *= (-1);
+                isNegative = true;
+            }
 
-            m = 0.9f * m + 0.1f * grad;
-            v = 0.999f * v + 0.001f * grad * grad;
+            double grad = (output - target) * Grad_ELU();
 
-            weight_H -= 0.1f * m / (Mathf.Sqrt((float)(v)) + 0.00000001f) * input_H;
-            weight_R -= 0.1f * m / (Mathf.Sqrt((float)(v)) + 0.00000001f) * input_R;
-            weight_D -= 0.1f * m / (Mathf.Sqrt((float)(v)) + 0.00000001f) * input_D;
+            m = 0.9 * m + 0.1 * grad;
+            v = 0.999 * v + 0.001 * grad * grad;
 
-            bias -= 0.1f * m / (Mathf.Sqrt((float)(v)) + 0.00000001f) * 1.0;
-        } 
+            weights[0] -= 0.1 * m / (Mathf.Sqrt((float)(v)) + 0.00000001) * doM;
+            weights[1] -= 0.1 * m / (Mathf.Sqrt((float)(v)) + 0.00000001) * doR;
+            weights[2] -= 0.1 * m / (Mathf.Sqrt((float)(v)) + 0.00000001) * doA;
 
-        public double Get_ELU(double reward, int hitCounter, int dist)
+            weights[3] -= 0.1 * m / (Mathf.Sqrt((float)(v)) + 0.00000001) * dist * 0.001;
+            //angle의 경우 최대 3자리 수인 관계로 절대값을 줄여줘야 됨(음수일 경우도 고려 필요)
+            //angle 값을 축소해서 곱해주면 제대로 수렴, 그냥 곱해주면 무조건 -0.01로 수렴하려고 함, 음수 또는 양수 인 경우 모두 적합함
+            weights[4] -= 0.1 * m / (Mathf.Sqrt((float)(v)) + 0.00000001) * angle * 0.0002;
+            weights[5] -= 0.1 * m / (Mathf.Sqrt((float)(v)) + 0.00000001) * time * 0.0005;
+
+            bia -= 0.1 * m / (Mathf.Sqrt((float)(v)) + 0.00000001);
+        }
+
+        double _ADAM(double m, double v, double val)
         {
-            double result = reward * weight_R + hitCounter * weight_H + dist * weight_D - 3 * bias;
+            return 0.1 * m / (Mathf.Sqrt((float)(v)) + 0.00000001) * val;
+        }
+
+        public double Get_ELU()
+        {
+            double result = doM * weights[0] + doR * weights[1] + doA * weights[2] +
+                dist * weights[3] + angle * weights[4] + time * weights[5] - 6 * bia;
 
             return result > 0.0 ? result : 0.01 * (Mathf.Exp((float)(result)) - 1);
         }
 
-        public double GradELU()
+        double Grad_ELU()
         {
             return output > 0.0 ? 1.0 : 0.01 * Mathf.Exp((float)(output));
         }

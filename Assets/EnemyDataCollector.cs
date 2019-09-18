@@ -730,6 +730,11 @@ public class EnemyDataCollector : MonoBehaviour {
         //하지만
         //내가 필요한 건 주어진 특정 상황에서 어떤 행동이 유리한가를 판별하는 것, 지금하고 있는 건 weight 값을 변화시키는 것뿐임
         //위의 내용에 대해 자세한 조사가 필요함, 영상 강좌의 이론 부분을 좀 더 자세히 공부해 볼것
+
+        //현재 Neuron을 역할별로 Dist, Angle, Time 별로 나누고
+        //(Do.m, Do.r, Dist, Angle, Time, bia) -> DistNeuron -> dist 이런식으로 나눠서 수행을 시도해볼것
+
+        //target이 firstOutput * 0.1 즈음이면 무조건 -0.01로 수렴하는 것으로 보임
         else if (mod == 1)
         {
             if (sampleFileString == 0)
@@ -742,14 +747,40 @@ public class EnemyDataCollector : MonoBehaviour {
                 aiDatasGreedy = IO_SqlDB.ReadAIData_FROM_DB("behaveDataScored");
                 sortANDSearch.QuickSort_AIData(aiDatasGreedy);
 
-                Neuron sample = new Neuron(1, 1, 1, 1);
+                double sample0Init = 1.0;
 
-                for (int i = 0; i < 100; i++)
+                Neuron sample00 = new Neuron(sample0Init, sample0Init, sample0Init, sample0Init, sample0Init, sample0Init);
+                Neuron sample01 = new Neuron(sample0Init, sample0Init, sample0Init, sample0Init, sample0Init, sample0Init);
+                Neuron sample02 = new Neuron(sample0Init, sample0Init, sample0Init, sample0Init, sample0Init, sample0Init);
+                Neuron sampleFIN = new Neuron(sample0Init, sample0Init, sample0Init, sample0Init, sample0Init, sample0Init);
+                IntVector3 vv = new IntVector3(0,0,0);
+
+                for (int i = 0; i < 200; i++)
                 {
-                    sample.Feed_Forward(1, 1, 5);
-                    Debug.Log("WR: " + sample.weight_R + ", WH: " + sample.weight_H + ", O: " + sample.output);
-                    sample.ADAM(10.0);
+                    sample00.FF(vv, 20, 180, 0.1, 1.0);
+                    sample00.ADAM(10);
+
+                    if(i == 199)
+                        sample00.NeuronLOG(0);
                 }
+                Debug.Log("======");
+                for (int i = 0; i < 200; i++)
+                {
+                    sample01.FF(vv, 1, 90, 1.5, 1.0);
+                    sample01.ADAM(10);
+
+                    if (i == 199)
+                        sample01.NeuronLOG(0);
+                }
+                Debug.Log("======");
+                List<Neuron> asdf = new List<Neuron>();
+                asdf.Add(sample00);
+                asdf.Add(sample01);
+
+                sampleFIN = new Neuron(0, 0, 0, 0, 0, 0);
+                sampleFIN = new Neuron(asdf);
+                sampleFIN.FF(vv, 20, 180, 0.1, 1.0);
+                sampleFIN.NeuronLOG(0);
 
                 //List<AIData> sampleAIDATA = new List<AIData>();
                 //SituationCUR sample = new SituationCUR(" ", 10, 0, 6, 180, new IntVector3(1, 2, 1), 6.2f);
