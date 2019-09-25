@@ -769,7 +769,6 @@ public class EnemyDataCollector : MonoBehaviour {
 
                 NeuronNetwork sample0 = new NeuronNetwork(4, 4, 5);
                 List<double> sampleInput = new List<double>();
-                List<double> output = new List<double>();
 
                 List<double> sampleWeights = new List<double>();
 
@@ -786,16 +785,19 @@ public class EnemyDataCollector : MonoBehaviour {
                 target.Add(5.2);
                 target.Add(0.215);
 
-                for (int i = 0; i < sample0.layers.Count; i++)
+                //무조건 outputLayer의 모든 weights 값이 1로 수렴하는 알 수 없는 현상이 일어나고 있음
+                //=> 이 알 수 없는 것 떄문에 outputLayer의 출력 값이 모두 동일한 값을 가지고 있음
+                //거기에 주어진 target 값 중 그 어떤 것에도 수렴하지 않음
+                for (int i = 0; i < 200; i++)
                 {
-                    sample0.layers[i].SetValue(0.1);
-                }
-
-                sample0.ForwardProp(sampleInput);
-
-                for (int i = 0; i < output.Count; i++)
-                {
-                    Debug.Log(i+": "+output[i]);
+                    sample0.ForwardProp(sampleInput);
+                    sample0.ADAM(target);
+                    //Debug.Log(i);
+                    if (i == 199)
+                    {
+                        //sample0.layers[sample0.layers.Count - 1].DebugMat();
+                        sample0.layersOutput[sample0.outputLayerIndex].DebugMat();
+                    }
                 }
 
 

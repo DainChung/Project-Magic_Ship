@@ -361,7 +361,7 @@ namespace PMS_AISystem
 
             for (int i = 0; i < row * col; i++)
             {
-                if (doRandomInit) { values.Add((double)(UnityEngine.Random.Range(0.0f, 1.0f))); }
+                if (doRandomInit) { values.Add((double)(UnityEngine.Random.Range(0.0f, 1.0f) * 0.01)); }
                 else { values.Add(0.0); }
             }
         }
@@ -387,6 +387,7 @@ namespace PMS_AISystem
         {
             double result = 0.0;
 
+            
             for (int i = 0; i < this.col; i++)
                 result += this.values[this.col * _r + i] * other.values[other.col * i + _c];
 
@@ -404,7 +405,6 @@ namespace PMS_AISystem
             return result;
         }
 
-        //col == 5로 가정
         public void DebugMat()
         {  
             for (int i = 0; i < this.row; i++)
@@ -417,7 +417,9 @@ namespace PMS_AISystem
     {
         public Matrix inputLayer;
         public List<Matrix> layers = new List<Matrix>();
-        List<Matrix> layersOutput = new List<Matrix>();
+        public List<Matrix> layersOutput = new List<Matrix>();
+
+        public int outputLayerIndex = 0;
         List<double> grad = new List<double>();
 
         int depth;
@@ -433,12 +435,13 @@ namespace PMS_AISystem
                 //하나는 bia
                 inputLayer = new Matrix(1, numOFInput, false);
 
-                layers.Add(new Matrix(numOFInput, depth * numOFInput, false));
+                layers.Add(new Matrix(numOFInput, depth * numOFInput, true));
                 for (int i = 1; i < depth - 2; i++)
-                    layers.Add(new Matrix(depth * numOFInput, depth * depth * numOFInput * numOFInput, false));
-                layers.Add(new Matrix(depth * depth * numOFInput * numOFInput, depth * (numOFInput - 1), false));
+                    layers.Add(new Matrix(depth * numOFInput, depth * numOFInput, true));
+                layers.Add(new Matrix(depth * numOFInput, depth * (numOFInput - 1), true));
 
-                layers.Add(new Matrix(depth * (numOFInput - 1), numOFOutput, false));
+                layers.Add(new Matrix(depth * (numOFInput - 1), numOFOutput, true));
+                outputLayerIndex = layers.Count - 1;
 
                 for (int j = 0; j < numOFOutput; j++)
                     grad.Add(0.0);
@@ -454,7 +457,7 @@ namespace PMS_AISystem
 
         public void ForwardProp(List<double> inputVal)
         {
-            Matrix mul = inputLayer;
+            Matrix result = inputLayer;
 
             if(inputLayer.values.Count == inputVal.Count)
                 inputLayer.values = inputVal;
@@ -463,9 +466,10 @@ namespace PMS_AISystem
                 for (int i = 0; i < this.depth; i++)
                 {
                     //행렬 곱셈
-                    layersOutput[i] = mul.Mul(layers[i]);
+                    result = result.Mul(layers[i]);
                     //ELU(행렬 곱 결과)
-                    layersOutput[i].values = ELU(mul.values);
+                    result.values = ELU(result.values);
+                    layersOutput[i] = result;
                 }
             }
             catch (Exception)
@@ -490,7 +494,17 @@ namespace PMS_AISystem
             return vals;
         }
 
-        public void ADAM(List<double> target, int layerNum)
+        public void ADAM(List<double> target)
+        {
+            ADAM(target, layers.Count - 1);
+            //layers[layers.Count - 1].DebugMat();
+
+            for (int i = layers.Count - 2; i >= 0; i--)
+                ADAM(layersOutput[i].values, i); 
+
+        }
+
+        void ADAM(List<double> target, int layerNum)
         {
             List<double> gradELU = GradELU(layers[layers.Count - 1].values);
             List<double> m = new List<double>();
@@ -507,21 +521,27 @@ namespace PMS_AISystem
 
                     m[i] = 0.9 * m[i] + 0.1 * grad[i];
                     v[i] = 0.999 * v[i] + 0.001 * grad[i] * grad[i];
+
+                    //Debug.Log("ADAM: "+grad[i] + ", " + m[i] + ", " + v[i]);
                 }
 
-                if (layerNum != 0)
+
+                int j = 0;
+
+                for (j = 0; j < layers[layerNum].values.Count - 1; j++)
                 {
-                    int j = 0;
-                    
-                    for (j = 0; j < layers[layerNum].values.Count - 1; j++)
-                        layersOutput[layerNum - 1].values[j] -= 0.1 * m[j] / (Mathf.Sqrt((float)(v[j])) + 0.00000001) * layersOutput[layerNum].values[j] * 0.001;
+                    layers[layerNum].values[j] -= 0.1 * m[j] / (Mathf.Sqrt((float)(v[j])) + 0.00000001) * layersOutput[layerNum].values[j] * 0.0001;
+                    //Debug.Log(layerNum+": "+layers[layerNum].values[j] +", " + layersOutput[layerNum].values[j]);
 
-                    layersOutput[layerNum - 1].values[j] -= 0.1 * m[j] / (Mathf.Sqrt((float)(v[j])) + 0.00000001) * layersOutput[layerNum].values[j];
+                    if (layerNum >= 1)
+                        layersOutput[layerNum - 1].values[j] -= 0.1 * m[j] / (Mathf.Sqrt((float)(v[j])) + 0.00000001) * layersOutput[layerNum].values[j] * 0.001;
                 }
+
+                //layers[layerNum].values[j] -= 0.1 * m[j] / (Mathf.Sqrt((float)(v[j])) + 0.00000001) * layersOutput[layerNum].values[j];
             }
             catch (Exception e)
             {
-                Debug.Log(e);
+                //Debug.Log(e);
             }
         }
     }
