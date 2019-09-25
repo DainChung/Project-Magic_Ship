@@ -1849,7 +1849,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 14bd975b12cd2ee4b9d3060218bf5791, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  mod: 7
+  listScore_FOR_PPT: 
+  mod: 1
+  sampleFileString: 1
+  sigmaValue: 0
+  sampleAlpha: 0
+  sampleGamma: 0
+  sample_Q_Depth: 3
 --- !u!1001 &688283570
 Prefab:
   m_ObjectHideFlags: 0

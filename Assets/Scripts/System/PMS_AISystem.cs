@@ -348,7 +348,184 @@ namespace PMS_AISystem
         public float dist, angle, time;
         public int bia;
     }
- 
+
+    public class Matrix
+    {
+        public List<double> values = new List<double>();
+        public int row, col;
+
+        public Matrix(int r, int c, bool doRandomInit)
+        {
+            row = r;
+            col = c;
+
+            for (int i = 0; i < row * col; i++)
+            {
+                if (doRandomInit) { values.Add((double)(UnityEngine.Random.Range(0.0f, 1.0f))); }
+                else { values.Add(0.0); }
+            }
+        }
+
+        public void SetValue(double val)
+        {
+            for (int i = 0; i < values.Count; i++)
+                values[i] = val;
+        }
+
+        // [0,0]부터 세는 것을 전제로 함
+        public void Set(int r, int c, double val)
+        {
+            values[this.col * r + c] = val;
+        }
+
+        public void Set(List<double> val)
+        {
+            values = val;
+        }
+
+        double mul(int _r, int _c, Matrix other)
+        {
+            double result = 0.0;
+
+            for (int i = 0; i < this.col; i++)
+                result += this.values[this.col * _r + i] * other.values[other.col * i + _c];
+
+            return result;
+        }
+
+        public Matrix Mul(Matrix other)
+        {
+            Matrix result = new Matrix(this.row, other.col, false);
+
+            for (int r = 0; r < result.row; r++)
+                for (int c = 0; c < result.col; c++)
+                    result.values[result.col * r + c] += mul(r, c, other);
+
+            return result;
+        }
+
+        //col == 5로 가정
+        public void DebugMat()
+        {  
+            for (int i = 0; i < this.row; i++)
+                for(int  j = 0; j < this.col; j++)
+                    Debug.Log("("+i+ ", " + j+")=>" + (this.col * i + j) + " : " + values[this.col * i + j]);
+        }
+    }
+
+    public class NeuronNetwork
+    {
+        public Matrix inputLayer;
+        public List<Matrix> layers = new List<Matrix>();
+        List<Matrix> layersOutput = new List<Matrix>();
+        List<double> grad = new List<double>();
+
+        int depth;
+
+        //numOFInput은 2 이상의 양수가 권장됨, depth는 3이상이 권장됨 (depth == 3이면 for문 작동 안 함)
+        //input 중 하나는 bia로 사용해야 됨, inputLayer를 제외한 각 Layer에서 bia를 고려해서 지정된 값을 넣어줘야 됨(ex) numOFInput == 2이면 -2)
+        public NeuronNetwork(int depth, int numOFInput, int numOFOutput)
+        {
+            if (depth >= 3)
+            {
+                this.depth = depth;
+
+                //하나는 bia
+                inputLayer = new Matrix(1, numOFInput, false);
+
+                layers.Add(new Matrix(numOFInput, depth * numOFInput, false));
+                for (int i = 1; i < depth - 2; i++)
+                    layers.Add(new Matrix(depth * numOFInput, depth * depth * numOFInput * numOFInput, false));
+                layers.Add(new Matrix(depth * depth * numOFInput * numOFInput, depth * (numOFInput - 1), false));
+
+                layers.Add(new Matrix(depth * (numOFInput - 1), numOFOutput, false));
+
+                for (int j = 0; j < numOFOutput; j++)
+                    grad.Add(0.0);
+
+                for (int k = 0; k < layers.Count; k++)
+                    layersOutput.Add(new Matrix(1, layers[k].col, false));
+            }
+            else
+            {
+                Debug.Log("Depth는 3 이상의 양수만 허용");
+            }
+        }
+
+        public void ForwardProp(List<double> inputVal)
+        {
+            Matrix mul = inputLayer;
+
+            if(inputLayer.values.Count == inputVal.Count)
+                inputLayer.values = inputVal;
+
+            try {
+                for (int i = 0; i < this.depth; i++)
+                {
+                    //행렬 곱셈
+                    layersOutput[i] = mul.Mul(layers[i]);
+                    //ELU(행렬 곱 결과)
+                    layersOutput[i].values = ELU(mul.values);
+                }
+            }
+            catch (Exception)
+            {
+                Debug.Log("ERROR");
+            }
+        }
+
+        List<double> ELU(List<double> vals)
+        {
+            for (int i = 0; i < vals.Count; i++)
+                vals[i] = vals[i] > 0.0 ? vals[i] : 0.01 * (Mathf.Exp((float)(vals[i])) - 1);
+
+            return vals;
+        }
+
+        List<double> GradELU(List<double> vals)
+        {
+            for (int i = 0; i < vals.Count; i++)
+                vals[i] = vals[i] > 0.0 ? 1 : 0.01 * Mathf.Exp((float)(vals[i]));
+
+            return vals;
+        }
+
+        public void ADAM(List<double> target, int layerNum)
+        {
+            List<double> gradELU = GradELU(layers[layers.Count - 1].values);
+            List<double> m = new List<double>();
+            List<double> v = new List<double>();
+
+            try
+            {
+                for (int i = 0; i < grad.Count; i++)
+                {
+                    m.Add(0.0);
+                    v.Add(0.0);
+
+                    grad[i] = (layers[layerNum].values[i] - target[i]) * gradELU[i];
+
+                    m[i] = 0.9 * m[i] + 0.1 * grad[i];
+                    v[i] = 0.999 * v[i] + 0.001 * grad[i] * grad[i];
+                }
+
+                if (layerNum != 0)
+                {
+                    int j = 0;
+                    
+                    for (j = 0; j < layers[layerNum].values.Count - 1; j++)
+                        layersOutput[layerNum - 1].values[j] -= 0.1 * m[j] / (Mathf.Sqrt((float)(v[j])) + 0.00000001) * layersOutput[layerNum].values[j] * 0.001;
+
+                    layersOutput[layerNum - 1].values[j] -= 0.1 * m[j] / (Mathf.Sqrt((float)(v[j])) + 0.00000001) * layersOutput[layerNum].values[j];
+                }
+            }
+            catch (Exception e)
+            {
+                Debug.Log(e);
+            }
+        }
+    }
+
     public class Neuron
     {
         //reward의 weight는 2.4
@@ -356,7 +533,6 @@ namespace PMS_AISystem
         //input은 reward와 hitcounter
         //bia는 aft.dist에 따라 결정된다.
         //alpha값은 0.01f
-
         public double[] weights = new double[6];
 
         public double doM, doR, doA, dist, angle, time, bia;
@@ -432,16 +608,20 @@ namespace PMS_AISystem
 
         public void ADAM(double target)
         {
-            if (target < 0)
-            {
-                target *= (-1);
-                isNegative = true;
-            }
-
             double grad = (output - target) * Grad_ELU();
 
             m = 0.9 * m + 0.1 * grad;
             v = 0.999 * v + 0.001 * grad * grad;
+
+            //hiddenLayer의 output값들을 먼저 변경시키고 weight에 대한 값 조정을 할 것
+            //단, inputLayer의 input값들은 변경하지 않도록 해야함
+            //doM -= 0.1 * m / (Mathf.Sqrt((float)(v)) + 0.00000001) * doM;
+            //doR -= 0.1 * m / (Mathf.Sqrt((float)(v)) + 0.00000001) * doR;
+            //doA -= 0.1 * m / (Mathf.Sqrt((float)(v)) + 0.00000001) * doA;
+
+            //dist = 0.1 * m / (Mathf.Sqrt((float)(v)) + 0.00000001) * dist * 0.001;
+            //angle -= 0.1 * m / (Mathf.Sqrt((float)(v)) + 0.00000001) * angle * 0.0002;
+            //time -= 0.1 * m / (Mathf.Sqrt((float)(v)) + 0.00000001) * time * 0.0005;
 
             weights[0] -= 0.1 * m / (Mathf.Sqrt((float)(v)) + 0.00000001) * doM;
             weights[1] -= 0.1 * m / (Mathf.Sqrt((float)(v)) + 0.00000001) * doR;
@@ -463,8 +643,7 @@ namespace PMS_AISystem
 
         public double Get_ELU()
         {
-            double result = doM * weights[0] + doR * weights[1] + doA * weights[2] +
-                dist * weights[3] + angle * weights[4] + time * weights[5] - 6 * bia;
+            double result = doM * weights[0] + doR * weights[1] + doA * weights[2] + dist * weights[3] + angle * weights[4] + time * weights[5] - 6 * bia;
 
             return result > 0.0 ? result : 0.01 * (Mathf.Exp((float)(result)) - 1);
         }

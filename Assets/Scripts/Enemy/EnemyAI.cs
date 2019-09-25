@@ -693,13 +693,6 @@ public class EnemyAI : MonoBehaviour
     //별도의 DB에 저장된 데이터를 일단 수동으로 학습하도록 한다.(프로그래머가 수동으로 변수나 코드를 바꿔줘야 하는 방식)
     public void AI_DeapLearning__BigData_Ver()
     {
-        //임시로 추가한 것, P을 누르면 모든 데이터 수집 개체 삭제 및 데이터 저장
-        if ((Input.GetKeyDown(KeyCode.P) || behaveCount_FOR_PPT == 10) && simpleSpining != 1)
-        {
-            enemyCollector.listScore_FOR_PPT.Add(scoreCount_FOR_PPT);
-            Destroy(gameObject);
-        }
-
         if (isbehaveCoolTimeOn)
         {
             curDist = Vector3.Distance(transform.position, enemyController.playerTransform.position);
@@ -740,12 +733,15 @@ public class EnemyAI : MonoBehaviour
                 SituationCUR cur_FOR_PPT = new SituationCUR(behaveID, beforeVec2.x, beforeVec2.y, beforeDist, beforeAngleComp, forSave, sitCUR._time);
                 SituationAFT aft_FOR_PPT = new SituationAFT(behaveID, transform.position.x, transform.position.z, curDist, enemyController._GET__ENE_AI_Engine.angleComp, beforeBehaveID, 0, hitCounter, isCloser);
 
-                AI_Score_Cal(hitCounter);
-                //AI_Score_Cal(isHPLOW, cur_FOR_PPT, aft_FOR_PPT);
+                //AI_Score_Cal(hitCounter);
+                AI_Score_Cal(isHPLOW, cur_FOR_PPT, aft_FOR_PPT);
                 aft_FOR_PPT._beforeDB = scoreCount_FOR_PPT;
 
-                enemyCollector.listSitCUR.Add(cur_FOR_PPT);
-                enemyCollector.listSitAFT.Add(aft_FOR_PPT);
+                if (forSave.vecZ != 0)
+                {
+                    enemyCollector.listSitCUR.Add(cur_FOR_PPT);
+                    enemyCollector.listSitAFT.Add(aft_FOR_PPT);
+                }
 
                 if (Random.Range(0.0f, 1.0f) < sigma)
                 {
@@ -772,7 +768,7 @@ public class EnemyAI : MonoBehaviour
         //공격 쿨타임도 끝났고 공격을 하려는 경우
         if (sitCUR._doing.vecZ != 0)
         {
-            if (__ENE_AI_Engine._PUB_enemy_Is_ON_CoolTime[1] && sitCUR._doing.vecZ < behaveList_Attack.Count)
+            if (__ENE_AI_Engine._PUB_enemy_Is_ON_CoolTime[1] && sitCUR._doing.vecZ < behaveList_Attack.Count && curDist < 30f)
             {
                 //주어진 공격 수행
                 behaveList_Attack[sitCUR._doing.vecZ]();
@@ -785,6 +781,13 @@ public class EnemyAI : MonoBehaviour
         //주어진 회전 수행
         if(sitCUR._doing.vecY != 0)
             behaveList_Rotate[sitCUR._doing.vecY]();
+
+        //임시로 추가한 것, P을 누르면 모든 데이터 수집 개체 삭제 및 데이터 저장
+        if ((Input.GetKeyDown(KeyCode.P) || behaveCount_FOR_PPT == 10) && simpleSpining != 1)
+        {
+            enemyCollector.listScore_FOR_PPT.Add(scoreCount_FOR_PPT);
+            Destroy(gameObject);
+        }
     }
 
     //비교를 위해 추가된 예전 버전의 Bigdata함수

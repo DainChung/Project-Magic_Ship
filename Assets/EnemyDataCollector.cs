@@ -744,69 +744,94 @@ public class EnemyDataCollector : MonoBehaviour {
             else if (sampleFileString == 1)
             {
                 //goodBehaveList = IO_SqlDB.ReadSitCUR_FROM_DB("Q_LearnedData");
-                aiDatasGreedy = IO_SqlDB.ReadAIData_FROM_DB("behaveDataScored");
-                sortANDSearch.QuickSort_AIData(aiDatasGreedy);
+                //aiDatasGreedy = IO_SqlDB.ReadAIData_FROM_DB("behaveDataScored");
+                //sortANDSearch.QuickSort_AIData(aiDatasGreedy);
 
-                double sample0Init = 1.0;
+                //Matrix sample0 = new Matrix(3, 5, false);
+                //Matrix sample1 = new Matrix(5, 3, false);
 
-                Neuron sample00 = new Neuron(sample0Init, sample0Init, sample0Init, sample0Init, sample0Init, sample0Init);
-                Neuron sample01 = new Neuron(sample0Init, sample0Init, sample0Init, sample0Init, sample0Init, sample0Init);
-                Neuron sample02 = new Neuron(sample0Init, sample0Init, sample0Init, sample0Init, sample0Init, sample0Init);
-                Neuron sampleFIN = new Neuron(sample0Init, sample0Init, sample0Init, sample0Init, sample0Init, sample0Init);
-                IntVector3 vv = new IntVector3(0,0,0);
+                //for (int i = 0; i < 3; i++)
+                //    for (int j = 0; j < 5; j++)
+                //        sample0.Set(i, j, (i - 1) * (j + 1));
 
-                for (int i = 0; i < 200; i++)
+                //Debug.Log("Sample0");
+                //sample0.DebugMat();
+
+                //for (int i = 0; i < 5; i++)
+                //    for (int j = 0; j < 3; j++)
+                //        sample1.Set(i,j, (i + 1) * (j+1));
+
+                //Debug.Log("Sample1");
+                //sample1.DebugMat();
+
+                //Debug.Log("Result");
+                //sample0.Mul(sample1).DebugMat();
+
+                NeuronNetwork sample0 = new NeuronNetwork(4, 4, 5);
+                List<double> sampleInput = new List<double>();
+                List<double> output = new List<double>();
+
+                List<double> sampleWeights = new List<double>();
+
+                List<double> target = new List<double>();
+
+                sampleInput.Add(20.0);
+                sampleInput.Add(36.0);
+                sampleInput.Add(1.2);
+                sampleInput.Add(-1.0);
+
+                target.Add(1.0);
+                target.Add(5.263);
+                target.Add(4.261);
+                target.Add(5.2);
+                target.Add(0.215);
+
+                for (int i = 0; i < sample0.layers.Count; i++)
                 {
-                    sample00.FF(vv, 20, 180, 0.1, 1.0);
-                    sample00.ADAM(10);
-
-                    if(i == 199)
-                        sample00.NeuronLOG(0);
+                    sample0.layers[i].SetValue(0.1);
                 }
-                Debug.Log("======");
-                for (int i = 0; i < 200; i++)
+
+                sample0.ForwardProp(sampleInput);
+
+                for (int i = 0; i < output.Count; i++)
                 {
-                    sample01.FF(vv, 1, 90, 1.5, 1.0);
-                    sample01.ADAM(10);
-
-                    if (i == 199)
-                        sample01.NeuronLOG(0);
+                    Debug.Log(i+": "+output[i]);
                 }
-                Debug.Log("======");
-                List<Neuron> asdf = new List<Neuron>();
-                asdf.Add(sample00);
-                asdf.Add(sample01);
-
-                sampleFIN = new Neuron(0, 0, 0, 0, 0, 0);
-                sampleFIN = new Neuron(asdf);
-                sampleFIN.FF(vv, 20, 180, 0.1, 1.0);
-                sampleFIN.NeuronLOG(0);
-
-                //List<AIData> sampleAIDATA = new List<AIData>();
-                //SituationCUR sample = new SituationCUR(" ", 10, 0, 6, 180, new IntVector3(1, 2, 1), 6.2f);
-
-                //sampleAIDATA.Add(new AIData(sample, new SituationAFT(" ", 6, 0, 20, 0, " ", 10, 1, false)));
-                //sampleAIDATA.Add(new AIData(sample, new SituationAFT(" ", 1, 0, 50, 90, " ", 3, 1, true)));
-                //sampleAIDATA.Add(new AIData(sample, new SituationAFT(" ", 2, 0, 30, 90, " ", 7, 1, false)));
-
-                //List<AIData> sampleAIDATA2 = new List<AIData>();
-                //SituationCUR sample2 = new SituationCUR(" ", 10, 0, 6, 180, new IntVector3(0, 0, 0), 6.2f);
-
-                //sampleAIDATA2.Add(new AIData(sample2, new SituationAFT(" ", 3, 0, 50, 0, " ", -5, 0, false)));
-                //sampleAIDATA2.Add(new AIData(sample2, new SituationAFT(" ", 1, 0, 48, 90, " ", -10, 0, true)));
-                //sampleAIDATA2.Add(new AIData(sample2, new SituationAFT(" ", 1, 0, 50, 90, " ", -10, 0, false)));
-
-                //List<AIData> sampleAIDATA20 = new List<AIData>();
-
-                //sampleAIDATA20.Add(new AIData(sample2, new SituationAFT(" ", 1, 0, 50, 0, " ", -5, 0, false)));
-                //sampleAIDATA20.Add(new AIData(sample2, new SituationAFT(" ", 5, 0, 48, 90, " ", -10, 0, true)));
-                //sampleAIDATA20.Add(new AIData(sample2, new SituationAFT(" ", 4, 0, 50, 90, " ", -10, 0, false)));
 
 
-                //Debug.Log("good start0: " + ADAM(sampleAIDATA, 1));
-                //Debug.Log("bed start0: " + ADAM(sampleAIDATA2, 1));
-                //Debug.Log("bed start1: " + ADAM(sampleAIDATA20, 1));
+                //double sample0Init = 1.0;
 
+                //Neuron sample00 = new Neuron(sample0Init, sample0Init, sample0Init, sample0Init, sample0Init, sample0Init);
+                //Neuron sample01 = new Neuron(sample0Init, sample0Init, sample0Init, sample0Init, sample0Init, sample0Init);
+                //Neuron sample02 = new Neuron(sample0Init, sample0Init, sample0Init, sample0Init, sample0Init, sample0Init);
+                //Neuron sampleFIN = new Neuron(sample0Init, sample0Init, sample0Init, sample0Init, sample0Init, sample0Init);
+                //IntVector3 vv = new IntVector3(0, 0, 0);
+
+                //double aaaa = 0.0;
+
+                //do
+                //{
+                //    aaaa = sample00.FF(vv, 20, 180, 0.1, 1.0);
+                //    sample00.ADAM(190);
+
+                //    sample00.NeuronLOG(0);
+                //    Debug.Log("0: " + sample00.doM + ", 1: " + sample00.doR + ", 2: " + sample00.doA);
+                //    Debug.Log("0: " + sample00.dist + ", 1: " + sample00.angle + ", 2: " + sample00.time);
+
+                //} while (Mathf.Sqrt((float)((aaaa - 190) * (aaaa - 190))) > 0.1);
+
+                //do
+                //{
+                //    aaaa = sample00.FF(vv, 15, 90, 0.1, 1.0);
+                //    sample00.ADAM(180);
+
+                //    sample00.NeuronLOG(0);
+                //    Debug.Log("0: " + sample00.doM + ", 1: " + sample00.doR + ", 2: " + sample00.doA);
+                //    Debug.Log("0: " + sample00.dist + ", 1: " + sample00.angle + ", 2: " + sample00.time);
+
+                //} while (Mathf.Sqrt((float)((aaaa - 180) * (aaaa - 180))) > 0.1);
+
+                //Debug.Log(sample00.FF(vv, 20, 180, 0.1, 1.0));
             }
             else
             {
@@ -1621,51 +1646,6 @@ public class EnemyDataCollector : MonoBehaviour {
                 yield break;
             }
         }
-
-        //string id;
-
-        ////거리, 각도에 따른 행동별 상태값 총합
-        //for (int i = 0; i < aiDatas.Count; i++)
-        //{
-        //    float angleData = aiDatas[i].sitCUR._angleComp;
-        //    float distData = aiDatas[i].sitCUR._dist;
-
-        //    if (angleData >= angle + 1)
-        //        continue;
-
-        //    //불량 데이터 무시
-        //    if (aiDatas[i].sitCUR._doing.vecX == -1)
-        //        continue;
-
-        //    if (distData >= 50.5f)
-        //        distData = 50f;
-
-        //    //dataColletions의 sitAFTList에 값을 추가할 때 특정 데이터만 중복해서 넣는 경우가 있음.
-        //    //sitAFTList 초기화 과정에서 발생하는 문제로 추정됨.
-        //    if ((angle <= angleData && angleData < angle + 1f) && (distNum <= distData && distData < distNum + 2.0f))
-        //    {
-        //        //점수 결과를 _posZ에 저장 (이미 해서 필요없음, 일반 Q러닝 전용)
-        //        //aiDatas[i].sitAFT._posZ = CalScore(angleData, distData, distNum, angle, isLOW_HP_Behave, aiDatas[i]);
-
-        //        id = angle + ", " + distNum + ": " + aiDatas[i].sitCUR._doing.IntVector3ToString();
-
-        //        for (dataColCount = 0; dataColCount < dataCollections.Count; dataColCount++)
-        //        {
-        //            if (dataCollections[dataColCount].sitCUR._id != id
-        //                && dataCollections[dataColCount].sitAFT._dist != aiDatas[i].sitAFT._dist
-        //                && dataCollections[dataColCount].sitAFT._angleComp != aiDatas[i].sitAFT._angleComp)
-        //                isNewData++;
-        //        }
-
-        //        if (isNewData == dataCollections.Count || dataCollections.Count == 0)
-        //        {
-        //            dataCollections.Add(new AIData(aiDatas[i]));
-        //            isNewData = 0;
-        //        }
-
-        //        yield return null;
-        //    }
-        //}
 
         //통계내기
         for (int i = 0; i < aiDatas.Count; i++)
