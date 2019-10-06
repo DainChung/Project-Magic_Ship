@@ -722,19 +722,8 @@ public class EnemyDataCollector : MonoBehaviour {
 
             aiDatasGreedy = IO_SqlDB.ReadAIData_FROM_DB("behaveDataScored");
         }
-        //제한적이지만 수렴이 되기는 하는데 이게 무슨 의미인지는 잘 모르겠음.
-        //지금 내가 짠 건 Reward, HitCounter, Dist 값을 넣었을 때 뉴런의 output값이 특정 값에 근사하도록 하는 weight_R, weight_H, weight_D, bias 값을 구하는 것
-        //이게 나한테 필요한 거랑 큰 연관이 있나? 게다가 초기 weight들, bias 값에 따라 target에 수렴하는 정도가 다름. 어떤 경우엔 target이 무조건 -0.01로 수렴하는가 하면 어떤 경우엔 제대로 수렴함
-        //초기값이 1,1,1,1이면 왠만해선 제대로 수렴하는 것으로 보임
-        //
-        //하지만
-        //내가 필요한 건 주어진 특정 상황에서 어떤 행동이 유리한가를 판별하는 것, 지금하고 있는 건 weight 값을 변화시키는 것뿐임
-        //위의 내용에 대해 자세한 조사가 필요함, 영상 강좌의 이론 부분을 좀 더 자세히 공부해 볼것
-
-        //현재 Neuron을 역할별로 Dist, Angle, Time 별로 나누고
-        //(Do.m, Do.r, Dist, Angle, Time, bia) -> DistNeuron -> dist 이런식으로 나눠서 수행을 시도해볼것
-
-        //target이 firstOutput * 0.1 즈음이면 무조건 -0.01로 수렴하는 것으로 보임
+        //수렴 완벽에 가깝게 잘 됨
+        //이제 전체 데이터 학습에 대해 어떻게 할 것인지 고찰이 필요함
         else if (mod == 1)
         {
             if (sampleFileString == 0)
@@ -747,93 +736,34 @@ public class EnemyDataCollector : MonoBehaviour {
                 //aiDatasGreedy = IO_SqlDB.ReadAIData_FROM_DB("behaveDataScored");
                 //sortANDSearch.QuickSort_AIData(aiDatasGreedy);
 
-                //Matrix sample0 = new Matrix(3, 5, false);
-                //Matrix sample1 = new Matrix(5, 3, false);
 
-                //for (int i = 0; i < 3; i++)
-                //    for (int j = 0; j < 5; j++)
-                //        sample0.Set(i, j, (i - 1) * (j + 1));
-
-                //Debug.Log("Sample0");
-                //sample0.DebugMat();
-
-                //for (int i = 0; i < 5; i++)
-                //    for (int j = 0; j < 3; j++)
-                //        sample1.Set(i,j, (i + 1) * (j+1));
-
-                //Debug.Log("Sample1");
-                //sample1.DebugMat();
-
-                //Debug.Log("Result");
-                //sample0.Mul(sample1).DebugMat();
-
-                NeuronNetwork sample0 = new NeuronNetwork(4, 4, 5);
-                List<double> sampleInput = new List<double>();
-
-                List<double> sampleWeights = new List<double>();
-
+                NeuralNetwork sampleNet = new NeuralNetwork(4, 3, 4, 0.0015);
+                List<double> inputput = new List<double>();
                 List<double> target = new List<double>();
 
-                sampleInput.Add(20.0);
-                sampleInput.Add(36.0);
-                sampleInput.Add(1.2);
-                sampleInput.Add(-1.0);
+                inputput.Add(1.0);
+                inputput.Add(2.0);
+                inputput.Add(3.0);
+                sampleNet.SetInput(inputput);
 
-                target.Add(1.0);
-                target.Add(5.263);
-                target.Add(4.261);
-                target.Add(5.2);
-                target.Add(0.215);
+                target.Add(10.0);
+                target.Add(8.0);
+                target.Add(5.0);
+                target.Add(2.0);
 
-                //무조건 outputLayer의 모든 weights 값이 1로 수렴하는 알 수 없는 현상이 일어나고 있음
-                //=> 이 알 수 없는 것 떄문에 outputLayer의 출력 값이 모두 동일한 값을 가지고 있음
-                //거기에 주어진 target 값 중 그 어떤 것에도 수렴하지 않음
-                for (int i = 0; i < 200; i++)
+                //수렴 하기는 하는데 이상함
+                //대부분의 경우 target[0]으로 output[0]이 수렴하지만, (k > 0) output[k]는 output[0] * (k+1)에 수렴함. 예외는 없음
+                //수렴 부분에 대해 좀 더 자세히 살펴보아야 할것 
+                for (int i = 0; i <= 30; i++)
                 {
-                    sample0.ForwardProp(sampleInput);
-                    sample0.ADAM(target);
-                    //Debug.Log(i);
-                    if (i == 199)
-                    {
-                        //sample0.layers[sample0.layers.Count - 1].DebugMat();
-                        sample0.layersOutput[sample0.outputLayerIndex].DebugMat();
-                    }
+                    sampleNet.ForwardProp();
+                    if (i % 10 == 0)
+                        Debug.Log(i + ": " + sampleNet.output[0] + ", " + sampleNet.output[1] + ", " + sampleNet.output[2] + ", " + sampleNet.output[3]);
+                    sampleNet.BackProp(target);
                 }
 
 
-                //double sample0Init = 1.0;
 
-                //Neuron sample00 = new Neuron(sample0Init, sample0Init, sample0Init, sample0Init, sample0Init, sample0Init);
-                //Neuron sample01 = new Neuron(sample0Init, sample0Init, sample0Init, sample0Init, sample0Init, sample0Init);
-                //Neuron sample02 = new Neuron(sample0Init, sample0Init, sample0Init, sample0Init, sample0Init, sample0Init);
-                //Neuron sampleFIN = new Neuron(sample0Init, sample0Init, sample0Init, sample0Init, sample0Init, sample0Init);
-                //IntVector3 vv = new IntVector3(0, 0, 0);
-
-                //double aaaa = 0.0;
-
-                //do
-                //{
-                //    aaaa = sample00.FF(vv, 20, 180, 0.1, 1.0);
-                //    sample00.ADAM(190);
-
-                //    sample00.NeuronLOG(0);
-                //    Debug.Log("0: " + sample00.doM + ", 1: " + sample00.doR + ", 2: " + sample00.doA);
-                //    Debug.Log("0: " + sample00.dist + ", 1: " + sample00.angle + ", 2: " + sample00.time);
-
-                //} while (Mathf.Sqrt((float)((aaaa - 190) * (aaaa - 190))) > 0.1);
-
-                //do
-                //{
-                //    aaaa = sample00.FF(vv, 15, 90, 0.1, 1.0);
-                //    sample00.ADAM(180);
-
-                //    sample00.NeuronLOG(0);
-                //    Debug.Log("0: " + sample00.doM + ", 1: " + sample00.doR + ", 2: " + sample00.doA);
-                //    Debug.Log("0: " + sample00.dist + ", 1: " + sample00.angle + ", 2: " + sample00.time);
-
-                //} while (Mathf.Sqrt((float)((aaaa - 180) * (aaaa - 180))) > 0.1);
-
-                //Debug.Log(sample00.FF(vv, 20, 180, 0.1, 1.0));
             }
             else
             {
@@ -848,6 +778,25 @@ public class EnemyDataCollector : MonoBehaviour {
         //학습 모드 - QLearning
         else if (mod == 5)
         {
+            aiDatasGreedy = IO_SqlDB.ReadAIData_FROM_DB("behaveDataScored");
+            aiDatasGreedy = sortANDSearch.QuickSort_AIData(aiDatasGreedy);
+
+            Debug.Log("Start");
+            for (int angleM = 0; angleM <= 0; angleM++)
+            {
+                for (int angleS = 0; angleS < 10; angleS += 2)
+                {
+                    for (int d = 0; d <= 50; d += 2)
+                    {
+                        for (float t = 0.5f; t < 1.5f; t += 0.25f)
+                        {
+                            GetQValue(angleM, angleS, d, t);
+                        }
+                    }
+                    aiDatas.Clear();
+                }
+            }
+            Debug.Log("Fin");
             //if (sampleFileString != 1)
             //    StartCoroutine(GetQBaseDataStarter(-18, -15));
             //else
@@ -856,7 +805,7 @@ public class EnemyDataCollector : MonoBehaviour {
         //Deep - ADAM
         else if (mod == 6)
         {
-            StartCoroutine(DQNStarter());
+
         }
         //분류가 되지 않은 AIData들을 각도별로 분류하는 모드
         else if (mod == 7)
@@ -1063,163 +1012,6 @@ public class EnemyDataCollector : MonoBehaviour {
         yield break;
     }
 
-    //일단 DQN이라고 하고 나중에 자세하게 분석해보자, 암만 생각해도 DQN은 아닌거 같음
-    //DQN 시작 전에 각 상황별 행동에 대한 Q값 계산(Depth == 3)
-
-    //DQN 아님. 매우 복잡한 Q러닝
-    IEnumerator DQNStarter()
-    {
-        //각 상황들에 대한 Greedy한 행동들을 모두 읽어오기
-        aiDatasGreedy = IO_SqlDB.ReadAIData_FROM_DB("behaveDataScored");
-        aiDatasGreedy = sortANDSearch.QuickSort_AIData(aiDatasGreedy);
-
-        int angle = -18, angleSUB = 4;// dist = 0;
-
-        //-176 전체할 차례
-        yield return null;
-        StartCoroutine(DQN(angle, angleSUB, 2 * 2, false));
-        yield return null;
-        StartCoroutine(DQN(angle, angleSUB, 4 * 2, false));
-        yield return null;
-        StartCoroutine(DQN(angle, angleSUB, 6 * 2, false));
-        yield return null;
-        StartCoroutine(DQN(angle, angleSUB, 8 * 2, false));
-        yield return null;
-        StartCoroutine(DQN(angle, angleSUB, 10 * 2, false));
-        yield return null;
-        StartCoroutine(DQN(angle, angleSUB, 12 * 2, false));
-        yield return null;
-        StartCoroutine(DQN(angle, angleSUB, 14 * 2, false));
-        yield return null;
-        StartCoroutine(DQN(angle, angleSUB, 16 * 2, false));
-        yield return null;
-        StartCoroutine(DQN(angle, angleSUB, 18 * 2, false));
-        yield return null;
-        StartCoroutine(DQN(angle, angleSUB, 20 * 2, false));
-        yield return null;
-        StartCoroutine(DQN(angle, angleSUB, 22 * 2, false));
-        yield return null;
-        StartCoroutine(DQN(angle, angleSUB, 24 * 2, false));
-
-        //for (int angle = -17; angle < -16; angle++)
-        //{
-        //    for (int angleSUB = 0; angleSUB <= 9; angleSUB++)
-        //    {
-        //        for (int dist = 0; dist <= 5; dist++)
-        //        {
-        //            yield return null;
-        //            StartCoroutine(DQN(angle, angleSUB, dist * 2, false));
-        //        }
-        //    }
-        //}
-
-        yield break;
-    }
-
-    //각 상황, 행동에 대한 Q값 계산 -> DQN식에다 넣기 -> 결과 상황에 대해서 동일 수행 ... -> Depth 3으로 해도 됨 (MAX 0.02으로 추정)
-    //Q_LearnedData의 데이터 읽기 -> (Q값) * (특정 결과가 발생한 빈도) =  aft.posZ * (aft.posx / cur.posx)를 계산 = NewQ
-    //-> NewQ가 노드(행동 결과)를 통과할 때마다 SigFunc에 넣기 -> 일정 깊이(3)까지 탐색 -> (상태, 행동) 별로 결과 합산 -> 가장 우수한 값 적용
-    //일반 Q러닝처럼 Q행동 후 Greedy행동을 취하는 것으로 계산할 지, 아니면 다른 방식으로 할지는 고려를 해볼 것 -> 모든 행동 고려로 해볼 것
-    //Depth 3으로 하면 결국 뻗어버려서 2로 낮춤
-
-    //DQN아님. 매우 복잡한 Q러닝
-    IEnumerator DQN(int angle, int angleSUB, int dist, bool isHPLOW)
-    {
-        List<AIData> dataCollection = IO_SqlDB.ReadAIData_FROM_DB_Angle_AND_Dist("Q_LearnedData", angle * 10 + angleSUB, 1, dist, 2);
-        AIDataList[,,] doingDatas = new AIDataList[3,7,4]; 
-        List<AIData> adamDataList = new List<AIData>();
-
-        IntVector3 doing = new IntVector3(-1,-1,-1);
-
-        if (dataCollection.Count != 0)
-        {
-            //초기화
-            for (int m = 0; m < 3; m++)
-            {
-                for (int r = 0; r < 7; r++)
-                {
-                    for (int a = 0; a < 4; a++)
-                    {
-                        doingDatas[m, r, a] = new AIDataList();
-                    }
-                }
-            }
-
-            //특정 상황에서 행동별 ADAM값 계산 및 수집
-            //1. 행동별로 데이터 분류
-            for (int i = 0; i < dataCollection.Count; i++)
-            {
-                doing.InitIntVector3(dataCollection[i].sitCUR._doing);
-                doingDatas[doing.vecX, doing.vecY, doing.vecZ].datas.Add(new AIData(dataCollection[i]));
-            }
-
-            //2. 각 행동별로 ADAM 값 계산 후 adamDataList에 저장
-            for (int m = 0; m < 3; m++)
-            {
-                for (int r = 0; r < 7; r++)
-                {
-                    for (int a = 0; a < 4; a++)
-                    {
-                        //데이터가 있다면
-                        if (doingDatas[m, r, a].datas.Count > 0)
-                        {
-                            //adamDataList에 대표로 저장
-                            adamDataList.Add(new AIData(doingDatas[m, r, a].datas[0]));
-                            //ADAM 값을 계산하고 adamDataList의 sitAFT._posZ에 저장
-                            adamDataList[adamDataList.Count - 1].sitAFT._posZ = ADAM(doingDatas[m, r, a].datas, 2);
-                            //계산이 끝난 데이터는 바로 제거
-                            //for (int i = 0; i < doingDatas[m, r, a].datas.Count; i++)
-                            //    doingDatas[m, r, a].datas[i].Dispose();
-
-                            yield return null;
-                            Debug.Log((angle * 10 + angleSUB) + ", " + dist + ")  " + m + ", " + r + ", " + a + ": Store ADAM Val");
-
-                            GC.Collect();
-                            GC.WaitForPendingFinalizers();
-                            ////메모리 정리 강제
-                            //GC.Collect(0, GCCollectionMode.Forced);
-                        }
-                    }
-                }
-            }
-
-            if (adamDataList.Count > 0)
-            {
-                AIData maxADAM = new AIData(adamDataList[0]);
-
-                if (adamDataList.Count > 1)
-                {
-                    //특정 상황에 대해 ADAM값이 가장 크게 나오는 행동을 선별 (가장 좋은 행동을 선별)
-                    for (int i = 1; i < adamDataList.Count; i++)
-                    {
-                        if (maxADAM.sitAFT._posZ < adamDataList[i].sitAFT._posZ)
-                            maxADAM.Set(adamDataList[i]);
-                    }
-                }
-
-                adamDataList.Clear();
-                data_FOR_Learn.Add(maxADAM);
-
-                StartCoroutine(Save_DataFORLearn("Q_DeepData"));
-                Debug.Log((angle * 10 + angleSUB) + ", " + dist + ": Done");
-            }
-            else
-            {
-                yield return null;
-                Debug.Log((angle * 10 + angleSUB) + ", " + dist + " No Data");
-            }
-        }
-        else
-        {
-            Debug.Log((angle * 10 + angleSUB) + ", " + dist + " No Data");
-        }
-
-        if(dist == 48)
-            Save_DataFORLearn("DQN_CacheDatas", dqn_CacheDataList);
-
-        yield break;
-    }
-
     List<AIData> GetGreedyResultAIDatas(AIData input)
     {
         List<AIData> result = new List<AIData>();
@@ -1302,62 +1094,104 @@ public class EnemyDataCollector : MonoBehaviour {
         return result;
     }
 
-    //beta1 == 0.9, beta2 == 0.999, eps = 10^(-8)로 확정
-    //learningRate == 0.1로 가정
-
-    //ADAM과 변경된 Neuron 클래스를 어떻게 조합하여 딥러닝을 수행할 지 고려해야됨.
-    float ADAM(List<AIData> datas, int depth)
+    //모든 행동에 대해 Q값을 구해서 다른 DB에 저장 겸 다시 라벨링
+    //각도는 2도, 거리는 2, 시간은 0.5초로 다시 라벨링 해서 저장할 것. 단, 행동은 84개에서 36개로 축소(Rotation쪽을 단방향 회전, 무회전으로 축소)
+    void GetQValue(int angleMain, int angleSUB, int dist, float time)
     {
-        float m = 0, v = 0, result = 0, grad;
+        string fileName = "behaveDataAngle";
+        string code = "";
 
-        if (depth >= 2)
+        int angle = angleMain * 10 + angleSUB;
+        string id = "(" + angle + ", " + dist + ", " + time + ")";
+        AIData[,,] datas = new AIData[3,3,4];
+
+        for (int m = 0; m < 3; m++)
         {
-            for (int i = 0; i < datas.Count; i++)
+            for (int r = 0; r < 3; r++)
             {
-                datas[i].sitAFT._posZ = Neuron.ELU(datas[i].sitAFT._beforeDB, datas[i].sitAFT._hitCounter, (int)(datas[i].sitAFT._dist));
-
-                grad = Neuron.Slope_OF_ELU(datas[i].sitAFT._beforeDB, datas[i].sitAFT._hitCounter, (int)(datas[i].sitAFT._dist));
-                m = 0.9f * m + 0.1f * grad;
-                v = 0.999f * v + 0.001f * grad * grad;
-
-                if (datas[i].sitAFT._posX == 0 || datas[i].sitCUR._posX == 0)
+                for (int a = 0; a < 4; a++)
                 {
-                    datas[i].sitAFT._posX = 1f;
-                    datas[i].sitCUR._posX = 1f;
+                    datas[m, r, a] = new AIData(new SituationCUR(id, 0f, 0f, dist, angle, new IntVector3(m, r, a), time), new SituationAFT(id, 0f, 0f, 0f, 0f, "", 0, -1, false));
                 }
-
-                //ADAM 결과를 datas[i].sitAFT._posZ에 저장
-                datas[i].sitAFT._posZ += 0.1f * m / (Mathf.Sqrt(v) + 0.00000001f) * (datas[i].sitAFT._posX / datas[i].sitCUR._posX);
-                //깊이 탐색
-                datas[i].sitAFT._posZ += ADAM(GetGreedyResultAIDatas(datas[i]), depth - 1);
-                //깊이 탐색 완료 후 정산
-                result += datas[i].sitAFT._posZ;
             }
-            //Debug.Log(depth + ") " + result);
+        }
+
+        //code 초기화
+        int angleTemp = angleMain;
+
+        if (angleTemp < 0)
+        {
+            angleTemp *= (-1);
+            code += "M";
         }
         else
         {
-            for (int i = 0; i < datas.Count; i++)
+            code += "P";
+        }
+        code += angleTemp.ToString();
+
+        //읽기
+        if (aiDatas.Count == 0)
+        {
+            fileName += code;
+
+            aiDatas = IO_SqlDB.ReadAIData_FROM_DB_Angle(fileName, angle, 2);
+        }
+
+        for (int i = 0; i < aiDatas.Count; i++)
+        {
+            if (dist <= aiDatas[i].sitCUR._dist && (dist + 2 > aiDatas[i].sitCUR._dist || dist == 50)
+                && angle <= aiDatas[i].sitCUR._angleComp && angle + 2 >= aiDatas[i].sitCUR._angleComp
+                && time <= aiDatas[i].sitCUR._time && time + 0.25f > aiDatas[i].sitCUR._time
+                && aiDatas[i].sitCUR._doing.vecY < 3)
             {
-                datas[i].sitAFT._posZ = Neuron.ELU(datas[i].sitAFT._beforeDB, datas[i].sitAFT._hitCounter, (int)(datas[i].sitAFT._dist));
+                int m = aiDatas[i].sitCUR._doing.vecX;
+                int r = aiDatas[i].sitCUR._doing.vecY;
+                int a = aiDatas[i].sitCUR._doing.vecZ;
 
-                grad = Neuron.Slope_OF_ELU(datas[i].sitAFT._beforeDB, datas[i].sitAFT._hitCounter, (int)(datas[i].sitAFT._dist));
-                m = 0.9f * m + 0.1f * grad;
-                v = 0.999f * v + 0.001f * grad * grad;
+                //Reward값 계산 후 저장, Q값 계산 후 저장, 행동결과 저장, 명중률, data 갯수 카운팅
+                datas[m, r, a].sitAFT._posX += CalScore(false, aiDatas[i]);
+                datas[m, r, a].sitAFT._posZ += (float)(Q_Func(3, 0, (double)(datas[m, r, a].sitAFT._posX), aiDatas[i]));
+                datas[m, r, a].sitAFT._dist += aiDatas[i].sitAFT._dist;
+                datas[m, r, a].sitAFT._angleComp += aiDatas[i].sitAFT._angleComp;
+                datas[m, r, a].sitCUR._posX += aiDatas[i].sitAFT._hitCounter;
+                datas[m, r, a].sitAFT._beforeDB++;
 
-                if (datas[i].sitAFT._posX == 0 || datas[i].sitCUR._posX == 0)
+                aiDatas.RemoveAt(i);
+                i--;
+            }
+            else
+                continue;
+        }
+
+        //평균 내기
+        for (int m = 0; m < 3; m++)
+        {
+            for (int r = 0; r < 3; r++)
+            {
+                for (int a = 0; a < 4; a++)
                 {
-                    datas[i].sitAFT._posX = 1f;
-                    datas[i].sitCUR._posX = 1f;
-                }
+                    if (datas[m, r, a].sitAFT._beforeDB != 0)
+                    {
+                        int count = datas[m, r, a].sitAFT._beforeDB;
 
-                //Debug.Log(0.1f * m / (Mathf.Sqrt(v) + 0.00000001f));
-                //ADAM 결과에 datas[i] 상황이 될 확률을 곱해서 result에 반영
-                result += 0.1f * m / (Mathf.Sqrt(v) + 0.00000001f) * (datas[i].sitAFT._posX / datas[i].sitCUR._posX);
+                        datas[m, r, a].sitAFT._posX /= count;
+                        datas[m, r, a].sitAFT._posZ /= count;
+                        datas[m, r, a].sitAFT._dist /= count;
+                        datas[m, r, a].sitAFT._angleComp /= count;
+                        datas[m, r, a].sitCUR._posX /= count;
+
+                        data_FOR_Learn.Add(datas[m, r, a]);
+                    }
+                }
             }
         }
 
-        return result;
+        //라벨링 후 저장을 위한 과정
+        fileName = "LabeledQDataAngle";
+        fileName += code;
+
+        StartCoroutine(Save_DataFORLearn(fileName));
     }
 
     IEnumerator Save_DataFORLearn(string fileName)
@@ -1372,11 +1206,8 @@ public class EnemyDataCollector : MonoBehaviour {
             }
         }
 
-        Debug.Log(saveData.Count);
         IO_SqlDB.WriteDB_AIDatas(fileName, saveData);
         data_FOR_Learn.Clear();
-
-        Debug.Log("Save Done");
         sampleLock = true;
 
         yield break;
@@ -1669,74 +1500,150 @@ public class EnemyDataCollector : MonoBehaviour {
     {
         int result = 0;
 
-            //체력 절반 이하, 절반 초과에 따라 다른 행동점수 가산점 OR 불이익 정책 사용
-            //체력이 절반을 초과할 때
-            if (!isLOW_HP_Behave)
+        //체력 절반 이하, 절반 초과에 따라 다른 행동점수 가산점 OR 불이익 정책 사용
+        //체력이 절반을 초과할 때
+        if (!isLOW_HP_Behave)
+        {
+            result += data.sitAFT._hitCounter;
+
+            if (data.sitCUR._doing.vecX == 0 && data.sitAFT._hitCounter > 0)
+                result += 1;
+
+            if (distNum >= 30f && data.sitCUR._doing.vecX != 0 && data.sitCUR._doing.vecY != 0
+                && data.sitAFT._closer == true && data.sitAFT._dist + 10f < distNum)
             {
-                result += data.sitAFT._hitCounter;
-
-                if (data.sitCUR._doing.vecX == 0 && data.sitAFT._hitCounter > 0)
-                    result += 1;
-
-                if (distNum >= 30f && data.sitCUR._doing.vecX != 0 && data.sitCUR._doing.vecY != 0
-                    && data.sitAFT._closer == true && data.sitAFT._dist + 10f < distNum)
-                {
-                    result += 3;
-                }
-
-                if (distNum >= 30f && data.sitCUR._doing.vecX == 0 && data.sitCUR._doing.vecY == 0
-                    && data.sitAFT._closer == false && data.sitAFT._dist >= distNum)
-                {
-                    result -= (int)(20 + data.sitAFT._dist);
-                }
-
-                if (data.sitAFT._hitCounter == 0 && data.sitCUR._doing.vecZ != 0)
-                {
-                    result = 0;
-                }
-            }
-            //체력이 절반 이하일 때
-            else
-            {
-                if (data.sitCUR._doing.vecX != 0 && data.sitCUR._doing.vecY != 0)
-                    result--;
-
-                if (data.sitAFT._dist > distData)
-                    result++;
-
-                if (distNum >= 30f && data.sitCUR._doing.vecX == 0 && data.sitCUR._doing.vecY == 0
-                    && data.sitAFT._closer == true && data.sitAFT._dist <= distNum)
-                {
-                    result -= 3;
-                }
-
-                if (distNum >= 30f && data.sitCUR._doing.vecX != 0 && data.sitCUR._doing.vecY != 0
-                    && data.sitAFT._closer == false && data.sitAFT._dist > distNum)
-                {
-                    result += 3;
-                }
-
-                if (distNum <= 30f && data.sitCUR._doing.vecX == 0 && data.sitCUR._doing.vecY == 0
-                    && data.sitAFT._closer == true && data.sitAFT._dist <= distNum)
-                {
-                    result -= 3;
-                }
-
-                if (distNum <= 30f && data.sitCUR._doing.vecX != 0 && data.sitCUR._doing.vecY != 0
-                    && data.sitAFT._closer == true && data.sitAFT._dist > distNum)
-                {
-                    result += 3;
-                }
+                result += 3;
             }
 
-            //아무것도 안 했으면 감점
-            if (data.sitCUR._doing.vecX == 0)
+            if (distNum >= 30f && data.sitCUR._doing.vecX == 0 && data.sitCUR._doing.vecY == 0
+                && data.sitAFT._closer == false && data.sitAFT._dist >= distNum)
             {
-                result -= 10;
-                if (data.sitCUR._doing.vecY == 0 && data.sitCUR._doing.vecZ == 0)
-                    result -= 100;
-            }   
-       
+                result -= (int)(20 + data.sitAFT._dist);
+            }
+
+            if (data.sitAFT._hitCounter == 0 && data.sitCUR._doing.vecZ != 0)
+            {
+                result = 0;
+            }
+        }
+        //체력이 절반 이상일 때
+        else
+        {
+            if (data.sitCUR._doing.vecX != 0 && data.sitCUR._doing.vecY != 0)
+                result--;
+
+            if (data.sitAFT._dist > distData)
+                result++;
+
+            if (distNum >= 30f && data.sitCUR._doing.vecX == 0 && data.sitCUR._doing.vecY == 0
+                && data.sitAFT._closer == true && data.sitAFT._dist <= distNum)
+            {
+                result -= 3;
+            }
+
+            if (distNum >= 30f && data.sitCUR._doing.vecX != 0 && data.sitCUR._doing.vecY != 0
+                && data.sitAFT._closer == false && data.sitAFT._dist > distNum)
+            {
+                result += 3;
+            }
+
+            if (distNum <= 30f && data.sitCUR._doing.vecX == 0 && data.sitCUR._doing.vecY == 0
+                && data.sitAFT._closer == true && data.sitAFT._dist <= distNum)
+            {
+                result -= 3;
+            }
+
+            if (distNum <= 30f && data.sitCUR._doing.vecX != 0 && data.sitCUR._doing.vecY != 0
+                && data.sitAFT._closer == true && data.sitAFT._dist > distNum)
+            {
+                result += 3;
+            }
+        }
+
+        //아무것도 안 했으면 감점
+        if (data.sitCUR._doing.vecX == 0)
+        {
+            result -= 10;
+            if (data.sitCUR._doing.vecY == 0 && data.sitCUR._doing.vecZ == 0)
+                result -= 100;
+        }
+
+
+        return result;
+    }
+
+    private int CalScore(bool isLOW_HP_Behave, AIData data)
+    {
+        int result = 0;
+
+        //체력 절반 이하, 절반 초과에 따라 다른 행동점수 가산점 OR 불이익 정책 사용
+        //체력이 절반을 초과할 때
+        if (!isLOW_HP_Behave)
+        {
+            result += data.sitAFT._hitCounter * 10;
+
+            if (data.sitCUR._doing.vecX == 0 && data.sitAFT._hitCounter > 0)
+                result += 1;
+
+            if (data.sitCUR._dist >= 30f && data.sitCUR._doing.vecX != 0 && data.sitCUR._doing.vecY != 0
+                && data.sitAFT._closer == true && data.sitAFT._dist + 10f < data.sitCUR._dist)
+            {
+                result += 3;
+            }
+
+            if (data.sitCUR._dist >= 30f && data.sitCUR._doing.vecX == 0 && data.sitCUR._doing.vecY == 0
+                && data.sitAFT._closer == false && data.sitAFT._dist >= data.sitCUR._dist)
+            {
+                result -= (int)(20 + data.sitAFT._dist);
+            }
+
+            if (data.sitAFT._hitCounter == 0 && data.sitCUR._doing.vecZ != 0)
+            {
+                result = 0;
+            }
+        }
+        //체력이 절반 이하일 때
+        else
+        {
+            if (data.sitCUR._doing.vecX != 0 && data.sitCUR._doing.vecY != 0)
+                result--;
+
+            if (data.sitAFT._dist > data.sitCUR._dist)
+                result++;
+
+            if (data.sitCUR._dist >= 30f && data.sitCUR._doing.vecX == 0 && data.sitCUR._doing.vecY == 0
+                && data.sitAFT._closer == true && data.sitAFT._dist <= data.sitCUR._dist)
+            {
+                result += 3;
+            }
+
+            if (data.sitCUR._dist >= 30f && data.sitCUR._doing.vecX != 0 && data.sitCUR._doing.vecY != 0
+                && data.sitAFT._closer == false && data.sitAFT._dist > data.sitCUR._dist)
+            {
+                result -= 3;
+            }
+
+            if (data.sitCUR._dist <= 30f && data.sitCUR._doing.vecX == 0 && data.sitCUR._doing.vecY == 0
+                && data.sitAFT._closer == false && data.sitAFT._dist <= data.sitCUR._dist)
+            {
+                result -= 3;
+            }
+
+            if (data.sitCUR._dist <= 30f && data.sitCUR._doing.vecX != 0 && data.sitCUR._doing.vecY != 0
+                && data.sitAFT._closer == true && data.sitAFT._dist > data.sitCUR._dist)
+            {
+                result += 3;
+            }
+        }
+
+        //아무것도 안 했으면 감점
+        if (data.sitCUR._doing.vecX == 0)
+        {
+            result -= 10;
+            if (data.sitCUR._doing.vecY == 0 && data.sitCUR._doing.vecZ == 0)
+                result -= 100;
+        }
+
 
         return result;
     }
@@ -1757,9 +1664,9 @@ public class EnemyDataCollector : MonoBehaviour {
         double result = 0;
 
         AIData nextGreedyData = aiDatasGreedy[sortANDSearch.Search_AIData(Q_aiData.sitAFT._dist, Q_aiData.sitAFT._angleComp, aiDatasGreedy)];
-        int nextGreedyReward = nextGreedyData.sitAFT._beforeDB;
+        double nextGreedyReward = CalScore(false, nextGreedyData);
 
-        result = (1 - sampleAlpha) * beforeQ + sampleAlpha * (Q_aiData.sitAFT._beforeDB + sampleGamma * nextGreedyReward);
+        result = (1 - sampleAlpha) * beforeQ + sampleAlpha * (Q_aiData.sitAFT._posX + sampleGamma * nextGreedyReward);
         //Debug.Log(index + ": " + result + "<-" + beforeQ + "," + Q_aiData.sitAFT._beforeDB + ", " + nextGreedyReward);
 
         if (depth - index >= 1)

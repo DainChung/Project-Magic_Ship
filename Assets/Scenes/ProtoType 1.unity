@@ -1850,11 +1850,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   listScore_FOR_PPT: 
-  mod: 1
+  mod: 5
   sampleFileString: 1
   sigmaValue: 0
-  sampleAlpha: 0
-  sampleGamma: 0
+  sampleAlpha: 0.97
+  sampleGamma: 0.5
   sample_Q_Depth: 3
 --- !u!1001 &688283570
 Prefab:
