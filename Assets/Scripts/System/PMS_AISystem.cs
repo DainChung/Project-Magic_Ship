@@ -466,7 +466,7 @@ namespace PMS_AISystem
     //    }
     //}
 
-    public class NeuralNetwork
+    public class FCNN
     {
         //layer의 weight값들
         public List<Matrix> layers = new List<Matrix>();
@@ -482,7 +482,7 @@ namespace PMS_AISystem
 
         //depth >= 3으로 가정
         //일단 FCNN
-        public NeuralNetwork(int layerDepth, int inputNum, int outputNum, double learningRate)
+        public FCNN(int layerDepth, int inputNum, int outputNum, double learningRate)
         {
             this.depth = layerDepth;
             this.learningRate = learningRate;
@@ -495,28 +495,43 @@ namespace PMS_AISystem
             //bia
             layers[0].values[0][inputNum - 2] = 1.0;
 
-            //hiddenLayers
-            for (int i = 1; i < layerDepth - 1; i++)
-            {
-                layers.Add(new Matrix(inputNum, inputNum - 1, true));
-                layerOut.Add(new Matrix(1, inputNum - 1, false));
+            //hiddenLayers=======================================================
+            //첫번째 hiddenLayer
+            layers.Add(new Matrix(inputNum, outputNum, true));
+            layerOut.Add(new Matrix(1, outputNum, false));
 
-                for (int j = 0; j < inputNum - 1; j++)
-                    layers[i].values[inputNum - 1][j] = 1.0;
-                
+            for (int j = 0; j < layers[layers.Count - 1].col; j++)
+                layers[layers.Count - 1].values[inputNum - 1][j] = 1.0;
+
+            grad.Add(new List<double>());
+            for (int k = 0; k < layers[layers.Count - 1].col; k++)
+            {
+                grad[grad.Count - 1].Add(0.0);
+            }
+
+            //2 + n 번째 hiddenLayer
+            for (int i = 2; i <= layerDepth - 2; i++)
+            {
+                layers.Add(new Matrix(outputNum, outputNum, true));
+                layerOut.Add(new Matrix(1, outputNum, false));
+                for (int j = 0; j < layers[i].col; j++)
+                    layers[i].values[outputNum - 1][j] = 1.0;
                 grad.Add(new List<double>());
-                for (int k = 0; k < inputNum; k++)
+                for (int k = 0; k < layers[i].col; k++)
                 {
                     grad[grad.Count - 1].Add(0.0);
                 }
             }
+            //Debug.Log(grad[grad.Count - 1].Count);
+            //=================================================================
 
             //outputLayer
-            layers.Add(new Matrix(inputNum, outputNum, true));
+            layers.Add(new Matrix(outputNum, outputNum, true));
             grad.Add(new List<double>());
+
             for (int j = 0; j < outputNum; j++)
             {
-                layers[layerDepth - 1].values[inputNum - 1][j] = 1.0;
+                layers[layerDepth - 1].values[outputNum - 1][j] = 1.0;
                 grad[grad.Count - 1].Add(0.0);
                 output.Add(0.0);
             }
@@ -571,11 +586,16 @@ namespace PMS_AISystem
 
             //Debug.Log("BackProp 1");
             //HiddenLayer의 grad 구하기
+            //grad
             for (int j = depth - 3; j >= 0; j--)
             {
+                //Debug.Log(j + ": " + grad[j].Count);
+                //Debug.Log((j + 1) + ": " + layers[j + 1].values.Count + ", " + layers[j + 1].values[0].Count);
+                //Debug.Log((j+1) + ": " + grad[j+1].Count);
+                //FCNN 으로 수행
                 grad[j] = layers[j + 1].Multiply(grad[j + 1]);
 
-                for (int k = 0; k < layers[j].col - 1; k++)
+                for (int k = 0; k < grad[j].Count; k++)
                 {
                     grad[j][k] = grad[j][k] * SlopeRELU(layerOut[j].values[0][k]);
                 }
@@ -625,6 +645,8 @@ namespace PMS_AISystem
             this.row = row;
             this.col = col;
 
+            double val = 0.0;
+
             for (int r = 0; r < row; r++)
             {
                 values.Add(new List<double>());
@@ -636,7 +658,14 @@ namespace PMS_AISystem
                     }
                     else
                     {
-                        values[r].Add((double)((r + 1) * (c+1)));
+                        val = (double)((r + 1) * (c + 1));
+
+                        while (val >= 10)
+                        {
+                            val *= 0.1;
+                        }
+
+                        values[r].Add(val);
                         values[r][c] /= 10;
                         //values[r].Add((double)(UnityEngine.Random.Range(0.0f, 1.0f)));
                     }
@@ -657,12 +686,12 @@ namespace PMS_AISystem
             return result;
         }
 
-        double mul(List<double> other, int row)
+        double mul(List<double> other, int col)
         {
             double result = 0.0;
 
-            for (int c = 0; c < this.col; c++)
-                result += this.values[row][c] * other[c];
+            for (int r = 0; r < this.row; r++)
+                result += this.values[r][col] * other[col];
 
             return result;
         }
@@ -681,10 +710,10 @@ namespace PMS_AISystem
         {
             List<double> result = new List<double>();
 
-            for (int r = 0; r < this.row; r++)
+            for (int c = 0; c < this.col; c++)
             {
                 result.Add(0.0);
-                result[r] = mul(other, r);
+                result[c] = mul(other, c);
             }
 
             return result;

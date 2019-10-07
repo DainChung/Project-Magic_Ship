@@ -699,6 +699,18 @@ public class EnemyDataCollector : MonoBehaviour {
         return result;
     }
 
+    double GetSimpleError(List<double> a, List<double> b)
+    {
+        double result = 0.0;
+
+        for (int i = 0; i < a.Count; i++)
+        {
+            result += Mathf.Abs((float)(a[i] - b[i]));
+        }
+
+        return result / a.Count;
+    }
+
     void Awake()
     {
         //데이터 정리용
@@ -728,7 +740,14 @@ public class EnemyDataCollector : MonoBehaviour {
         {
             if (sampleFileString == 0)
             {
-                goodBehaveList = IO_SqlDB.ReadSitCUR_FROM_DB("behaveDataScored");
+                //goodBehaveList = IO_SqlDB.ReadSitCUR_FROM_DB("behaveDataScored");
+
+                List<FCNN> sample = new List<FCNN>();
+
+                //TABLE 한개당 36 * 36까지는 수용가능
+                sample.Add(new FCNN(6, 36, 36, 0.1));
+
+                IO_SqlDB.WriteDB_FCNN("___________Sample", new List<string>(), sample, true);
             }
             else if (sampleFileString == 1)
             {
@@ -736,34 +755,55 @@ public class EnemyDataCollector : MonoBehaviour {
                 //aiDatasGreedy = IO_SqlDB.ReadAIData_FROM_DB("behaveDataScored");
                 //sortANDSearch.QuickSort_AIData(aiDatasGreedy);
 
-
-                NeuralNetwork sampleNet = new NeuralNetwork(4, 3, 4, 0.0015);
+                //depth 6, input 5개, output 5개에서 가장 이상적인 LearningRate == 0.000002
+                FCNN sampleNet = new FCNN(6, 5, 5, 0.000002);
                 List<double> inputput = new List<double>();
                 List<double> target = new List<double>();
 
-                inputput.Add(1.0);
-                inputput.Add(2.0);
-                inputput.Add(3.0);
+                //각도는 * 0.01, 거리는 * 0.1해서 넣어야 됨
+                inputput.Add(-0.26);
+                inputput.Add(0.4);
+                inputput.Add(0.75);
+                inputput.Add(inputput[0] * inputput[0]);
+                inputput.Add(inputput[1] * inputput[1]);
                 sampleNet.SetInput(inputput);
 
-                target.Add(10.0);
-                target.Add(8.0);
-                target.Add(5.0);
-                target.Add(2.0);
+                target.Add(3.516);
+                target.Add(6.714);
+                target.Add(121.419);
+                target.Add(8.188);
+                target.Add(25.423);
 
-                //수렴 하기는 하는데 이상함
-                //대부분의 경우 target[0]으로 output[0]이 수렴하지만, (k > 0) output[k]는 output[0] * (k+1)에 수렴함. 예외는 없음
-                //수렴 부분에 대해 좀 더 자세히 살펴보아야 할것 
-                for (int i = 0; i <= 30; i++)
+                int index = 0;
+
+                //수렴 잘 함
+                for (int i = 0; i < 10000; i++)
                 {
                     sampleNet.ForwardProp();
-                    if (i % 10 == 0)
-                        Debug.Log(i + ": " + sampleNet.output[0] + ", " + sampleNet.output[1] + ", " + sampleNet.output[2] + ", " + sampleNet.output[3]);
+                    if (i % 1000 == 0)
+                        Debug.Log(i + ": " + sampleNet.output[0] + ", " + sampleNet.output[1] + ", " + sampleNet.output[2] + ", " + sampleNet.output[3] + ", " + sampleNet.output[4]
+                             );
                     sampleNet.BackProp(target);
+
+                    if (GetSimpleError(sampleNet.output, target) <= 10 && GetSimpleError(sampleNet.output, target) > 1.0)
+                        sampleNet.learningRate -= 0.0000000001;
+                    else if(GetSimpleError(sampleNet.output, target) <= 1.0 && GetSimpleError(sampleNet.output, target) > 0.015)
+                        sampleNet.learningRate -= 0.000000000001;
+
+                    if (GetSimpleError(sampleNet.output, target) > 10)
+                        sampleNet.learningRate += 0.0000002;
+
+                    if (GetSimpleError(sampleNet.output, target) <= 0.015)
+                    {
+                        index = i;
+                        break;
+                    }
                 }
-
-
-
+                sampleNet.ForwardProp();
+                Debug.Log("Last: " + sampleNet.output[0] + ", " + sampleNet.output[1] + ", " + sampleNet.output[2] + ", " + sampleNet.output[3] + ", " + sampleNet.output[4]
+                             );
+                if(index != 0)
+                    Debug.Log("Early End: "+index);
             }
             else
             {
@@ -778,31 +818,31 @@ public class EnemyDataCollector : MonoBehaviour {
         //학습 모드 - QLearning
         else if (mod == 5)
         {
-            aiDatasGreedy = IO_SqlDB.ReadAIData_FROM_DB("behaveDataScored");
-            aiDatasGreedy = sortANDSearch.QuickSort_AIData(aiDatasGreedy);
+            //aiDatasGreedy = IO_SqlDB.ReadAIData_FROM_DB("behaveDataScored");
+            //aiDatasGreedy = sortANDSearch.QuickSort_AIData(aiDatasGreedy);
 
-            Debug.Log("Start");
-            for (int angleM = 0; angleM <= 0; angleM++)
-            {
-                for (int angleS = 0; angleS < 10; angleS += 2)
-                {
-                    for (int d = 0; d <= 50; d += 2)
-                    {
-                        for (float t = 0.5f; t < 1.5f; t += 0.25f)
-                        {
-                            GetQValue(angleM, angleS, d, t);
-                        }
-                    }
-                    aiDatas.Clear();
-                }
-            }
-            Debug.Log("Fin");
+            //Debug.Log("Start");
+            //for (int angleM = 18; angleM <= 18; angleM++)
+            //{
+            //    for (int angleS = 0; angleS < 10; angleS += 2)
+            //    {
+            //        for (int d = 0; d <= 50; d += 2)
+            //        {
+            //            for (float t = 0.5f; t < 1.5f; t += 0.25f)
+            //            {
+            //                GetQValue(angleM, angleS, d, t);
+            //            }
+            //        }
+            //        aiDatas.Clear();
+            //    }
+            //}
+            //Debug.Log("Fin");
             //if (sampleFileString != 1)
             //    StartCoroutine(GetQBaseDataStarter(-18, -15));
             //else
             //    StartCoroutine(Q_LearningStarter());
         }
-        //Deep - ADAM
+        //DQN
         else if (mod == 6)
         {
 

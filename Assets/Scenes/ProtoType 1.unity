@@ -1850,7 +1850,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   listScore_FOR_PPT: 
-  mod: 5
+  mod: 1
   sampleFileString: 1
   sigmaValue: 0
   sampleAlpha: 0.97

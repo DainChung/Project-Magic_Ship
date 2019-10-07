@@ -457,6 +457,162 @@ namespace File_IO {
 
         private static string dbPath = Application.persistentDataPath;
 
+        //DB에서 학습이 완료된 인공신경망 중 일부분만 읽기 위한 함수
+        public static List<FCNN> ReadFCNN_FROM_DB(string fileName, int angle, int angleNUM, int dist, int distNUM)
+        {
+            List<FCNN> result = new List<FCNN>();
+            fileName = @"Data Source=" + dbPath + "/" + fileName + ".db";
+
+            using (var dbConnection = new SqliteConnection(fileName))
+            {
+                dbConnection.Open();
+
+                using (IDbCommand dbCommand = dbConnection.CreateCommand())
+                {
+                    //"SELECT 조회할 칼럼 FROM 조회할 테이블"
+                    //CUR_Transform => CURTrn_id, CURTrn_enePosX, CURTrn_enePosZ, CURTrn_dist, CURTrn_angle
+                    //테이블이 Info, Layer별로 나누어져 있으므로 이를 감안하여 읽기를 수행해야 됨
+                    string sqlQuery = "SELECT * FROM CUR_Transform";
+                    dbCommand.CommandText = sqlQuery;
+
+                    IDataReader reader = dbCommand.ExecuteReader();
+
+                    while (reader.Read())
+                    {
+                        //string id = reader.GetString(0);
+                        //float CURTrn_enePosX = reader.GetFloat(1);
+                        //float CURTrn_enePosZ = reader.GetFloat(2);
+                        //float CURTrn_dist = reader.GetFloat(3);
+                        //float CURTrn_angle = reader.GetFloat(4);
+
+                        //int CURDo_mov = reader.GetInt32(5);
+                        //int CURDo_rot = reader.GetInt32(6);
+                        //int CURDo_atk = reader.GetInt32(7);
+
+                        //float CURBo_Time = reader.GetFloat(8);
+
+                        //cur.Add(new SituationCUR("NULL", -1f, -1f, -1f, -1f, new IntVector3(-1, -1, -1), -1f));
+                        //aft.Add(new SituationAFT("NULL", -1f, -1f, -1f, -1f, "NULL", -1, -1, false));
+
+                        //cur[index]._id = id;
+                        //cur[index]._posX = CURTrn_enePosX;
+                        //cur[index]._posZ = CURTrn_enePosZ;
+                        //cur[index]._dist = CURTrn_dist;
+                        //cur[index]._angleComp = CURTrn_angle;
+
+                        //cur[index]._doing = new IntVector3(CURDo_mov, CURDo_rot, CURDo_atk);
+
+                        //cur[index]._time = CURBo_Time;
+
+                        //index++;
+                    }
+
+                    reader.Close();
+                }
+            }
+
+            return result;
+        }
+
+        //학습이 완료된 인공신경망을 DB에 저장하기 위한 함수
+        //List안에 있는 모든 FCNN의 규격은 동일한 것으로 가정한다.
+        //FCNN쓰기
+        public static void WriteDB_FCNN(string fileName, List<string> fcnnIDList, List<FCNN> learnedFCNN, bool isFirstWrite)
+        {
+            fileName = @"Data Source=" + dbPath + "/" + fileName + ".db";
+
+            int valCount = learnedFCNN[0].layers[1].row * learnedFCNN[0].layers[1].col;
+
+            using (var dbConnection = new SqliteConnection(fileName))
+            {
+
+                dbConnection.Open();
+
+                using (SqliteTransaction dbTranssaction = dbConnection.BeginTransaction())
+                {
+
+                    using (IDbCommand dbCommand = dbConnection.CreateCommand())
+                    {
+                        string sqlQuery = "";
+
+                        //TABLE이 없는 상태라면
+                        if (isFirstWrite)
+                        {
+                            //TABLE을 만들어 준다
+                            sqlQuery = "CREATE TABLE INFO ( id TEXT, learningRate REAL, depth INTEGER, inputNUM INTEGER, outputNUM INTEGER)";
+                            dbCommand.CommandText = sqlQuery;
+                            dbCommand.ExecuteNonQuery();
+
+                            for (int depth = 1; depth < learnedFCNN[0].layers.Count - 1; depth++)
+                            {
+                                sqlQuery = "CREATE TABLE L" +depth+" ( id TEXT, ";
+                                for (int i = 0; i < valCount; i++)
+                                {
+                                    if (i == valCount - 1)
+                                        sqlQuery += ("w" + i.ToString() + " REAL");
+                                    else
+                                        sqlQuery += ("w" + i.ToString() + " REAL, ");
+                                }
+
+                                sqlQuery += ")";
+
+                                dbCommand.CommandText = sqlQuery;
+                                dbCommand.ExecuteNonQuery();
+                            }
+                        }
+
+                        //Layer Info에 대한 입력
+                        //inputLayer를 제외한 모든 Layer에 대한 입력 => 반복문, .string 추가를 이용해서 자동화해야 됨...
+                        //layer에 대해 입력할 때 (w0, w1, ..., wLast) VALUES (@w0, @w1, ... , @wLast) 부분 string을 미리 만들어서 계속 재활용할 것
+
+                        //for (int i = 0; i < sitAFT.Count; i++)
+                        //{
+                        //    //AFT_Transform 테이블에 대한 Query문 준비
+                        //    sqlQuery = "INSERT INTO AFT_Transform (AFT_Trn_id, AFT_Trn_posX, AFT_Trn_posZ, AFT_Trn_dist, AFT_Trn_angle) VALUES (@id, @posX, @posZ, @_ene_TO_plyDist, @_ene_TO_plyAngles);";
+
+                        //    dbCommand.CommandText = sqlQuery;
+
+                        //    //파라미터 입력
+                        //    dbCommand.Parameters.Add(new SqliteParameter("@id", sitAFT[i]._id));
+                        //    dbCommand.Parameters.Add(new SqliteParameter("@posX", sitAFT[i]._posX));
+                        //    dbCommand.Parameters.Add(new SqliteParameter("@posZ", sitAFT[i]._posZ));
+                        //    dbCommand.Parameters.Add(new SqliteParameter("@_ene_TO_plyDist", sitAFT[i]._dist));
+                        //    dbCommand.Parameters.Add(new SqliteParameter("@_ene_TO_plyAngles", sitAFT[i]._angleComp));
+
+                        //    //Query 전송 및 수행
+                        //    dbCommand.ExecuteNonQuery();
+
+                        //    //AFT_Bools 테이블에 대한 Query문 준비
+                        //    sqlQuery = "INSERT INTO AFT_Bools (AFT_Bo_id, AFT_Bo_getHitCount, AFT_Bo_gettingCloser, AFT_Bo_beforeBehaveID, AFT_Bo_beforeBehaveDB)VALUES (@id, @_isPlayerGetHitCount, @getCloser, @beforeID, @beforeDB);";
+
+                        //    int getCloser = 0;
+
+                        //    if (sitAFT[i]._closer) getCloser = 1;
+
+                        //    dbCommand.CommandText = sqlQuery;
+
+                        //    //파라미터 입력
+                        //    dbCommand.Parameters.Add(new SqliteParameter("@id", sitAFT[i]._id));
+                        //    dbCommand.Parameters.Add(new SqliteParameter("@_isPlayerGetHitCount", sitAFT[i]._hitCounter));
+                        //    dbCommand.Parameters.Add(new SqliteParameter("@getCloser", getCloser));
+                        //    dbCommand.Parameters.Add(new SqliteParameter("@beforeID", sitAFT[i]._beforeID));
+                        //    dbCommand.Parameters.Add(new SqliteParameter("@beforeDB", sitAFT[i]._beforeDB));
+
+                        //    dbCommand.ExecuteNonQuery();
+
+
+                        //}
+
+                        dbCommand.Dispose();
+
+                    }
+                    dbTranssaction.Commit();
+                }
+                dbConnection.Close();
+            }
+
+        }
+
         //SitCUR와 SitAFT를 학습 목적으로 읽기 위해 사용하는 함수
         public static List<AIData> ReadAIData_FROM_DB_FOR_Learning(string fileName)
         {
@@ -1667,6 +1823,7 @@ namespace File_IO {
         }
 
         //AFT전용 함수
+        //쓰기 예시
         public static void WriteDB_AFT(string fileName, List<SituationAFT> sitAFT)
         {
             /* 예상 데이터 분류 (()안은 AD, BD가 들어갈 자리 => id로 AD, BD를 구분할 필요 없음)
