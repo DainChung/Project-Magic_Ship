@@ -743,11 +743,22 @@ public class EnemyDataCollector : MonoBehaviour {
                 //goodBehaveList = IO_SqlDB.ReadSitCUR_FROM_DB("behaveDataScored");
 
                 List<FCNN> sample = new List<FCNN>();
+                List<string> sampleID = new List<string>();
 
-                //TABLE 한개당 36 * 36까지는 수용가능
+                //TABLE col수를 36으로 줄이고 Layer 하나 저장할 때 36 줄에 걸쳐 나눠 저장하는 것으로 변경함
                 sample.Add(new FCNN(6, 36, 36, 0.1));
+                sample.Add(new FCNN(6, 36, 36, 0.1));
+                sampleID.Add("(180, 0, 0.5)");
+                sampleID.Add("(180, 0, 0.75)");
 
-                IO_SqlDB.WriteDB_FCNN("___________Sample", new List<string>(), sample, true);
+                sample[1].layers[1].values[0][0] = 3.14;
+                //sample[1].layers[1].DebugMat(0);
+                //Debug.Log(sample[1].layers[1].row);
+
+               // IO_SqlDB.WriteDB_FCNN("FCNN_Parted", sampleID, sample, true);
+                FCNN hello = IO_SqlDB.ReadFCNN_FROM_DB("FCNN_Parted", 180, 0, 0.75f);
+
+                //IO_SqlDB.WriteDB_FCNN("FCNN_United", new List<string>(), sample, true);
             }
             else if (sampleFileString == 1)
             {
@@ -761,7 +772,7 @@ public class EnemyDataCollector : MonoBehaviour {
                 List<double> target = new List<double>();
 
                 //각도는 * 0.01, 거리는 * 0.1해서 넣어야 됨
-                inputput.Add(-0.26);
+                inputput.Add(-0.01);
                 inputput.Add(0.4);
                 inputput.Add(0.75);
                 inputput.Add(inputput[0] * inputput[0]);

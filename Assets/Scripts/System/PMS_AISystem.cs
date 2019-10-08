@@ -477,8 +477,12 @@ namespace PMS_AISystem
         //hiddenLayer들의 output값들
         List<Matrix> layerOut = new List<Matrix>();
 
-        int depth = 0;
+        public int depth = 0;
         public double learningRate = 0.0;
+        public int inputNum, outputNum;
+
+        public FCNN()
+        {}
 
         //depth >= 3으로 가정
         //일단 FCNN
@@ -486,6 +490,8 @@ namespace PMS_AISystem
         {
             this.depth = layerDepth;
             this.learningRate = learningRate;
+            this.inputNum = inputNum;
+            this.outputNum = outputNum;
 
             //bia 포함
             inputNum++;
@@ -633,6 +639,47 @@ namespace PMS_AISystem
             else
                 Debug.Log("Error");
         }
+
+        //input 36개, output 36개일 때만 작동
+        public void SetInput(float angle, float dist, float time)
+        {
+            if (layers[0].values[0].Count == 36 && layers[layers.Count - 1].values[0].Count == 36)
+            {
+                layers[0].values[0] = SetInputValue(angle, dist, time);
+            }
+            else
+                Debug.Log("Error");
+        }
+
+        //input 36개, output 36개일 때만 정상 작동
+        List<double> SetInputValue(float angle, float dist, float time)
+        {
+            List<double> result = new List<double>();
+
+            double newAngle = angle * 0.01;
+            double newDist = dist * 0.1;
+            double newTime = time;
+
+            result.Add(newAngle);
+            result.Add(newDist);
+            result.Add(newTime);
+
+            result.Add(newAngle * newAngle);
+            result.Add(newDist * newDist);
+            result.Add(newTime * newTime);
+
+            result.Add(newAngle * newDist);
+            result.Add(newDist * newTime);
+            result.Add(newTime * newAngle);
+
+            //dummy
+            for (int i = 9; i < 36; i++)
+            {
+                result.Add(0.0);
+            }
+
+            return result;
+        }
     }
 
     public class Matrix
@@ -675,6 +722,42 @@ namespace PMS_AISystem
 
         public Matrix()
         {}
+
+        public void CopyMatrix(Matrix newMat)
+        {
+            if (this.row != newMat.row || this.col != newMat.col)
+            {
+                Debug.Log("Matrix Copy ERROR");
+            }
+            else
+            {
+                for (int r = 0; r < this.row; r++)
+                {
+                    for (int c = 0; c < this.col; c++)
+                    {
+                        this.values[r][c] = newMat.values[r][c];
+                    }
+                }
+            }
+        }
+
+        public void CopyMatrix(List<List<double>> newMat)
+        {
+            try
+            {
+                for (int r = 0; r < this.row; r++)
+                {
+                    for (int c = 0; c < this.col; c++)
+                    {
+                        this.values[r][c] = newMat[r][c];
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                Debug.Log("Matrix Copy Error, List");
+            }
+        }
 
         double mul(Matrix other, int col)
         {
@@ -723,7 +806,13 @@ namespace PMS_AISystem
         {
             for (int r = 0; r < this.row; r++)
                 for (int c = 0; c < this.col; c++)
-                    Debug.Log(r+", "+c+" : "+this.values[r][c]);
+                    Debug.Log(r + ", " + c + " : " + this.values[r][c]);
+        }
+
+        public void DebugMat(int row)
+        {
+            for (int c = 0; c < this.col; c++)
+                Debug.Log(row + ", " + c + " : " + this.values[row][c]);
         }
     }
 
