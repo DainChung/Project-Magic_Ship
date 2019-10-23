@@ -342,130 +342,6 @@ namespace PMS_AISystem
         }
     }
 
-    //public class NeuronNetwork
-    //{
-    //    public Matrix inputLayer;
-    //    public List<Matrix> layers = new List<Matrix>();
-    //    public List<Matrix> layersOutput = new List<Matrix>();
-
-    //    public int outputLayerIndex = 0;
-    //    List<double> grad = new List<double>();
-
-    //    int depth;
-
-    //    //numOFInput은 2 이상의 양수가 권장됨, depth는 3이상이 권장됨 (depth == 3이면 for문 작동 안 함)
-    //    //input 중 하나는 bia로 사용해야 됨, inputLayer를 제외한 각 Layer에서 bia를 고려해서 지정된 값을 넣어줘야 됨(ex) numOFInput == 2이면 -2)
-    //    public NeuronNetwork(int depth, int numOFInput, int numOFOutput)
-    //    {
-    //        if (depth >= 3)
-    //        {
-    //            this.depth = depth;
-
-    //            //하나는 bia
-    //            inputLayer = new Matrix(1, numOFInput, false);
-
-    //            layers.Add(new Matrix(numOFInput, depth * numOFInput, true));
-    //            for (int i = 1; i < depth - 2; i++)
-    //                layers.Add(new Matrix(depth * numOFInput, depth * numOFInput, true));
-    //            layers.Add(new Matrix(depth * numOFInput, depth * (numOFInput - 1), true));
-
-    //            layers.Add(new Matrix(depth * (numOFInput - 1), numOFOutput, true));
-    //            outputLayerIndex = layers.Count - 1;
-
-    //            for (int j = 0; j < numOFOutput; j++)
-    //                grad.Add(0.0);
-
-    //            for (int k = 0; k < layers.Count; k++)
-    //                layersOutput.Add(new Matrix(1, layers[k].col, false));
-    //        }
-    //        else
-    //        {
-    //            Debug.Log("Depth는 3 이상의 양수만 허용");
-    //        }
-    //    }
-
-    //    public void ForwardProp(List<double> inputVal)
-    //    {
-    //        Matrix result = inputLayer;
-
-    //        if(inputLayer.values.Count == inputVal.Count)
-    //            inputLayer.values = inputVal;
-
-    //        try {
-    //            for (int i = 0; i < this.depth; i++)
-    //            {
-    //                //행렬 곱셈
-    //                result = result.Mul(layers[i]);
-    //                //ELU(행렬 곱 결과)
-    //                result.values = ELU(result.values);
-    //                layersOutput[i] = result;
-    //            }
-    //        }
-    //        catch (Exception)
-    //        {
-    //            Debug.Log("ERROR");
-    //        }
-    //    }
-
-    //    List<double> ELU(List<double> vals)
-    //    {
-    //        for (int i = 0; i < vals.Count; i++)
-    //            vals[i] = vals[i] > 0.0 ? vals[i] : 0.01 * (Mathf.Exp((float)(vals[i])) - 1);
-
-    //        return vals;
-    //    }
-
-    //    List<double> GradELU(List<double> vals)
-    //    {
-    //        for (int i = 0; i < vals.Count; i++)
-    //            vals[i] = vals[i] > 0.0 ? 1 : 0.01 * Mathf.Exp((float)(vals[i]));
-
-    //        return vals;
-    //    }
-
-    //    //weight 값이 대부분 1로 고정되는 알 수 없는 현상 발생
-    //    public void ADAM(List<double> target)
-    //    {
-    //        ADAM(target, layers.Count - 1);
-    //        //Debug.Log("ADAM");
-    //        //layers[layers.Count - 1].DebugMat();
-
-    //        for (int i = layers.Count - 2; i > -1; i--)
-    //            ADAM(layersOutput[i].values, i); 
-
-    //    }
-
-    //    void ADAM(List<double> target, int layerNum)
-    //    {
-    //        List<double> gradELU = GradELU(layers[layers.Count - 1].values);
-
-    //        try
-    //        {
-    //            for (int i = 0; i < grad.Count; i++)
-    //            {
-    //                grad[i] = (layers[layerNum].values[i] - target[i]) * gradELU[i];
-
-    //                layers[layerNum].m[i] = 0.9 * layers[layerNum].m[i] + 0.1 * grad[i];
-    //                layers[layerNum].v[i] = 0.999 * layers[layerNum].v[i] + 0.001 * grad[i] * grad[i];
-    //            }
-
-
-    //            int j = 0;
-    //            Debug.Log("B: " + layerNum);
-    //            //output 건들면 안 됨
-    //            for (j = 0; j < layers[layerNum].values.Count - 1; j++)
-    //            {
-    //                layers[layerNum].values[j] -= 0.1 * layers[layerNum].m[j] / (Mathf.Sqrt((float)(layers[layerNum].v[j])) + 0.00000001);
-    //            }
-    //            Debug.Log("C: " + layerNum);
-    //        }
-    //        catch (Exception e)
-    //        {
-    //            Debug.Log(e);
-    //        }
-    //    }
-    //}
-
     public class FCNN
     {
         //layer의 weight값들
@@ -476,13 +352,26 @@ namespace PMS_AISystem
         public List<double> output = new List<double>();
         //hiddenLayer들의 output값들
         List<Matrix> layerOut = new List<Matrix>();
+        public List<double> outputInfo = new List<double>();
 
         public int depth = 0;
         public double learningRate = 0.0;
         public int inputNum, outputNum;
 
         public FCNN()
-        {}
+        { }
+
+        public FCNN(FCNN fcnn)
+        {
+            this.depth = fcnn.depth;
+            this.learningRate = fcnn.learningRate;
+            this.inputNum = fcnn.inputNum;
+            this.outputNum = fcnn.outputNum;
+
+            this.layers = fcnn.layers;
+            this.outputInfo = fcnn.outputInfo;
+            this.output = fcnn.output;
+        }
 
         //depth >= 3으로 가정
         //일단 FCNN
@@ -540,6 +429,7 @@ namespace PMS_AISystem
                 layers[layerDepth - 1].values[outputNum - 1][j] = 1.0;
                 grad[grad.Count - 1].Add(0.0);
                 output.Add(0.0);
+                outputInfo.Add(0);
             }
         }
 
@@ -551,7 +441,7 @@ namespace PMS_AISystem
             {
                 result = RELU(result.Multiply(layers[i]));
 
-                if(i <= layerOut.Count)
+                if (i <= layerOut.Count)
                     layerOut[i - 1] = result;
                 //bia
                 result.values[result.values.Count - 1].Add(1.0);
@@ -640,15 +530,15 @@ namespace PMS_AISystem
                 Debug.Log("Error");
         }
 
-        //input 36개, output 36개일 때만 작동
+        //input 36개(bia 제외), output 36개일 때만 작동
         public void SetInput(float angle, float dist, float time)
         {
-            if (layers[0].values[0].Count == 36 && layers[layers.Count - 1].values[0].Count == 36)
+            if (inputNum == 36 && outputNum == 36)
             {
                 layers[0].values[0] = SetInputValue(angle, dist, time);
             }
             else
-                Debug.Log("Error");
+                Debug.Log(angle + ", "+dist + ", "+time+" Error");
         }
 
         //input 36개, output 36개일 때만 정상 작동
@@ -656,7 +546,7 @@ namespace PMS_AISystem
         {
             List<double> result = new List<double>();
 
-            double newAngle = angle * 0.01;
+            double newAngle = (angle + 180.0) * 0.01;
             double newDist = dist * 0.1;
             double newTime = time;
 
@@ -672,13 +562,76 @@ namespace PMS_AISystem
             result.Add(newDist * newTime);
             result.Add(newTime * newAngle);
 
-            //dummy
             for (int i = 9; i < 36; i++)
-            {
                 result.Add(0.0);
+
+            return result;
+        }
+
+        public List<double> RefineTarget(List<double> target)
+        {
+            List<double> result = new List<double>();
+
+            for (int i = 0; i < target.Count; i++)
+            {
+                result.Add(target[i]);
+                if (result[i] < 0)
+                {
+                    result[i] *= (-1);
+                    outputInfo[i] = -1;
+                }
+                else if (result[i] > 40)
+                {
+                    outputInfo[i] = result[i] - 40;
+                    result[i] = 40;
+                }
+                else if (target[i] == 0)
+                {
+                    outputInfo[i] = -2;
+                }
             }
 
             return result;
+        }
+
+        public int GetMaxQIndex()
+        {
+            int maxQindex = -1;
+            double maxQ = -999.0f;
+
+            for (int i = 0; i < outputNum; i++)
+            {
+                if (outputInfo[i] == -1)
+                    output[i] *= -1;
+                else if (outputInfo[i] > 0)
+                    output[i] += outputInfo[i];
+
+                if (maxQ < output[i])
+                {
+                    maxQ = output[i];
+                    maxQindex = i;
+                }
+            }
+
+            return maxQindex;
+        }
+
+        public double GetMaxQ()
+        {
+            double maxQ = -999.0f;
+
+            for (int i = 0; i < outputNum; i++)
+            {
+                if (outputInfo[i] == -1)
+                    output[i] *= -1;
+                else if (outputInfo[i] > 0)
+                    output[i] += outputInfo[i];
+
+                if (maxQ < output[i])
+                    maxQ = output[i];
+            }
+
+            return maxQ;
         }
     }
 
@@ -707,7 +660,7 @@ namespace PMS_AISystem
                     {
                         val = (double)((r + 1) * (c + 1));
 
-                        while (val >= 10)
+                        while (val >= 1)
                         {
                             val *= 0.1;
                         }

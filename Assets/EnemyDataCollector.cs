@@ -44,8 +44,14 @@ public class EnemyDataCollector : MonoBehaviour {
 
     private SortANDSearch sortANDSearch = new SortANDSearch();
 
-    List<AIData> dqn_CacheDataList = new List<AIData>();
-    int cacheCount = 10000;
+    private List<AIData> dqn_CacheDataList = new List<AIData>();
+    int cacheCount = 1000;
+
+    private const double lR = 0.0000000001;
+    private const double minuslR0 = 0.000000000008;
+    private const double minuslR1 = 0.000000000001;
+    private const double pluslR = 0.00000000045;
+    private const double enoughERROR = 0.00001;
 
     void swap(int a, int b)
     {
@@ -693,7 +699,6 @@ public class EnemyDataCollector : MonoBehaviour {
             //index = sortANDSearch.Search_SitCUR(dist, angle, goodBehaveList.Count, goodBehaveList.Count, 1, goodBehaveListLOW);
             result = aiDatasGreedy[sortANDSearch.Search_AIData(dist, angle, aiDatasGreedy)].sitCUR;
         }
-
         //Debug.Log("CurD: "+ dist + ". CurA:"+ angle + ", DBD: "+ goodBehaveList[resultIndex]._dist + ", DBA: "+ goodBehaveList[resultIndex]._angleComp);
 
         return result;
@@ -709,6 +714,27 @@ public class EnemyDataCollector : MonoBehaviour {
         }
 
         return result / a.Count;
+    }
+
+    double GetError(List<double> a, List<double> b)
+    {
+        int count = a.Count;
+        double result = 0.0;
+
+        for (int i = 0; i < a.Count; i++)
+        {
+            if (b[i] != 0.0)
+            {
+                result += (a[i] - b[i]) * (a[i] - b[i]);
+            }
+            else
+            {
+                count--;
+                continue;
+            }
+        }
+
+        return result / count;
     }
 
     void Awake()
@@ -733,6 +759,7 @@ public class EnemyDataCollector : MonoBehaviour {
             //goodBehaveList = sortANDSearch.QuickSort_SitCUR(goodBehaveList);
 
             aiDatasGreedy = IO_SqlDB.ReadAIData_FROM_DB("behaveDataScored");
+            goodBehaveList = IO_SqlDB.ReadSitCUR_FROM_DB("behaveDataScored");
         }
         //수렴 완벽에 가깝게 잘 됨
         //이제 전체 데이터 학습에 대해 어떻게 할 것인지 고찰이 필요함
@@ -740,133 +767,490 @@ public class EnemyDataCollector : MonoBehaviour {
         {
             if (sampleFileString == 0)
             {
-                //goodBehaveList = IO_SqlDB.ReadSitCUR_FROM_DB("behaveDataScored");
-
-                List<FCNN> sample = new List<FCNN>();
-                List<string> sampleID = new List<string>();
-
-                //TABLE col수를 36으로 줄이고 Layer 하나 저장할 때 36 줄에 걸쳐 나눠 저장하는 것으로 변경함
-                sample.Add(new FCNN(6, 36, 36, 0.1));
-                sample.Add(new FCNN(6, 36, 36, 0.1));
-                sampleID.Add("(180, 0, 0.5)");
-                sampleID.Add("(180, 0, 0.75)");
-
-                sample[1].layers[1].values[0][0] = 3.14;
-                //sample[1].layers[1].DebugMat(0);
-                //Debug.Log(sample[1].layers[1].row);
-
-               // IO_SqlDB.WriteDB_FCNN("FCNN_Parted", sampleID, sample, true);
-                FCNN hello = IO_SqlDB.ReadFCNN_FROM_DB("FCNN_Parted", 180, 0, 0.75f);
-
-                //IO_SqlDB.WriteDB_FCNN("FCNN_United", new List<string>(), sample, true);
+                goodBehaveList = IO_SqlDB.ReadSitCUR_FROM_DB("behaveDataScored");
+                aiDatasGreedy = IO_SqlDB.ReadAIData_FROM_DB("behaveDataScored");
+                aiDatasGreedy = sortANDSearch.QuickSort_AIData(aiDatasGreedy);
             }
             else if (sampleFileString == 1)
             {
-                //goodBehaveList = IO_SqlDB.ReadSitCUR_FROM_DB("Q_LearnedData");
-                //aiDatasGreedy = IO_SqlDB.ReadAIData_FROM_DB("behaveDataScored");
-                //sortANDSearch.QuickSort_AIData(aiDatasGreedy);
-
-                //depth 6, input 5개, output 5개에서 가장 이상적인 LearningRate == 0.000002
-                FCNN sampleNet = new FCNN(6, 5, 5, 0.000002);
-                List<double> inputput = new List<double>();
-                List<double> target = new List<double>();
-
-                //각도는 * 0.01, 거리는 * 0.1해서 넣어야 됨
-                inputput.Add(-0.01);
-                inputput.Add(0.4);
-                inputput.Add(0.75);
-                inputput.Add(inputput[0] * inputput[0]);
-                inputput.Add(inputput[1] * inputput[1]);
-                sampleNet.SetInput(inputput);
-
-                target.Add(3.516);
-                target.Add(6.714);
-                target.Add(121.419);
-                target.Add(8.188);
-                target.Add(25.423);
-
-                int index = 0;
-
-                //수렴 잘 함
-                for (int i = 0; i < 10000; i++)
-                {
-                    sampleNet.ForwardProp();
-                    if (i % 1000 == 0)
-                        Debug.Log(i + ": " + sampleNet.output[0] + ", " + sampleNet.output[1] + ", " + sampleNet.output[2] + ", " + sampleNet.output[3] + ", " + sampleNet.output[4]
-                             );
-                    sampleNet.BackProp(target);
-
-                    if (GetSimpleError(sampleNet.output, target) <= 10 && GetSimpleError(sampleNet.output, target) > 1.0)
-                        sampleNet.learningRate -= 0.0000000001;
-                    else if(GetSimpleError(sampleNet.output, target) <= 1.0 && GetSimpleError(sampleNet.output, target) > 0.015)
-                        sampleNet.learningRate -= 0.000000000001;
-
-                    if (GetSimpleError(sampleNet.output, target) > 10)
-                        sampleNet.learningRate += 0.0000002;
-
-                    if (GetSimpleError(sampleNet.output, target) <= 0.015)
-                    {
-                        index = i;
-                        break;
-                    }
-                }
-                sampleNet.ForwardProp();
-                Debug.Log("Last: " + sampleNet.output[0] + ", " + sampleNet.output[1] + ", " + sampleNet.output[2] + ", " + sampleNet.output[3] + ", " + sampleNet.output[4]
-                             );
-                if(index != 0)
-                    Debug.Log("Early End: "+index);
+                goodBehaveList = IO_SqlDB.ReadSitCUR_FROM_DB("FCNNed_QData");
+                aiDatasGreedy = IO_SqlDB.ReadAIData_FROM_DB("behaveDataScored0");
+                aiDatasGreedy = sortANDSearch.QuickSort_AIData(aiDatasGreedy);
             }
-            else
+            else if (sampleFileString == 2)
             {
-                goodBehaveList = IO_SqlDB.ReadSitCUR_FROM_DB("behaveDataScored_2_0");
+                goodBehaveList = IO_SqlDB.ReadSitCUR_FROM_DB("FCNNed_QData");
+                aiDatasGreedy = IO_SqlDB.ReadAIData_FROM_DB("behaveDataScored1");
+                aiDatasGreedy = sortANDSearch.QuickSort_AIData(aiDatasGreedy);
+            }
+            else if (sampleFileString == 3)
+            {
+                goodBehaveList = IO_SqlDB.ReadSitCUR_FROM_DB("FCNNed_QData");
+                aiDatasGreedy = IO_SqlDB.ReadAIData_FROM_DB("behaveDataScored");
+                aiDatasGreedy = sortANDSearch.QuickSort_AIData(aiDatasGreedy);
             }
             goodBehaveList = sortANDSearch.QuickSort_SitCUR(goodBehaveList);
             //quickSort(0, goodBehaveList.Count - 1);
 
             //goodBehaveListLOW = IO_SqlDB.ReadSitCUR_FROM_DB("behaveDataScoredLOW");
             //quickSortLOW(0, goodBehaveListLOW.Count - 1);
+
         }
         //학습 모드 - QLearning
+        //다시 돌릴 것
         else if (mod == 5)
         {
-            //aiDatasGreedy = IO_SqlDB.ReadAIData_FROM_DB("behaveDataScored");
-            //aiDatasGreedy = sortANDSearch.QuickSort_AIData(aiDatasGreedy);
+            //List<List<bool>> checker = new List<List<bool>>();
 
-            //Debug.Log("Start");
-            //for (int angleM = 18; angleM <= 18; angleM++)
+            //for (int i = 0; i <= 36; i++)
             //{
-            //    for (int angleS = 0; angleS < 10; angleS += 2)
+            //    checker.Add(new List<bool>());
+            //    for (int j = 0; j < 10; j++)
             //    {
-            //        for (int d = 0; d <= 50; d += 2)
-            //        {
-            //            for (float t = 0.5f; t < 1.5f; t += 0.25f)
-            //            {
-            //                GetQValue(angleM, angleS, d, t);
-            //            }
-            //        }
-            //        aiDatas.Clear();
+            //        checker[i].Add(false);
             //    }
             //}
-            //Debug.Log("Fin");
+
+            aiDatasGreedy = IO_SqlDB.ReadAIData_FROM_DB("behaveDataScored");
+            aiDatasGreedy = sortANDSearch.QuickSort_AIData(aiDatasGreedy);
+
+            Debug.Log("Start");
+            for (int angleM = -18; angleM <= 18; angleM++)
+            {
+                for (int angleS = 0; angleS < 10; angleS += 2)
+                {
+                    for (int d = 0; d <= 50; d += 2)
+                    {
+                        for (float t = 0.5f; t < 1.5f; t += 0.25f)
+                        {
+                            GetQValue(angleM, angleS, d, t);//, ref checker);
+                        }
+                    }
+                    aiDatas.Clear();
+                }
+            }
+            Debug.Log("Fin");
+
             //if (sampleFileString != 1)
             //    StartCoroutine(GetQBaseDataStarter(-18, -15));
             //else
             //    StartCoroutine(Q_LearningStarter());
         }
         //DQN
+        //FCNN SQL 읽쓰 기능 완료됨. 학습 후 저장 작업 시작하면 됨.
+        //먼저 angle == -180 && dist == 0인 경우에 한하여 수행해 볼것 (time == 0.5, 0.75, 1.0, 1.25)
+        //일단은 수동으로 작업해서 실험해볼것
+
+        //위 내용이 완료되면
+        //(m, r, a)를 index로 변환하는 작업, SQL에서 읽어온 List<AIData>에서 행동에 따른 Q값을 List<double> target에 알맞게 넣는 작업,
+        //input을 SQL에서 읽어온 List<AIData>에서 추출하는 작업을 완료할 것
+        //일반적인 경우 수렴이 잘 되지만, target값이 50 이상인 경우 제대로 수렴이 안 되는 경우가 있음
+        //target값이 40인 경우까지는 커버되는것으로 추정됨
+        //10도 학습하는데 평균 1시간 24분 즈음 => 편의상 1시간 30분
         else if (mod == 6)
         {
+            StartCoroutine(Find_MAXQ_Doing());
+            ////10도당 약 1시간 24분 소모
+            ////종료 시간 예측할 땐 1시간 30분으로 가정할 것
 
+            ////최종장, 12시간 예상
+            ////완료
+            //for (int angleM = -18; angleM <= -18; angleM++)
+            //{
+            //    for (int angleS = 2; angleS < 10; angleS += 2)
+            //    {
+            //        for (int dist = 0; dist <= 50; dist += 2)
+            //        {
+            //            DQN(angleM, angleS, dist);
+            //        }
+            //    }
+            //}
+
+            //Q러닝 결과 읽고 가장 좋은 행동 찾아서 따로 모으기
+            //OR 학습 완료된 FCNN 읽어서 라벨 구버전 별로 가장 좋은 행동 예측 해서 반환
+            //OR 학습 완료된 FCNN 읽어서 통합 시키기
+
+            //Debug.Log("DONE");
         }
         //분류가 되지 않은 AIData들을 각도별로 분류하는 모드
         else if (mod == 7)
         {
+            List<AIData> sampleList = IO_SqlDB.ReadAIData_FROM_DB_Angle_AND_Dist("LabeledQDataAngleM17", -170, 2, 46, 2);
+
+            for (int i = 0; i < sampleList.Count; i++)
+            {
+                if (sampleList[i].sitCUR._time != 0.5)
+                {
+                    sampleList.RemoveAt(i);
+                    i--;
+                }
+            }
+
+            double learningRate = lR * 0.01;
+            double error = 0.0;
+            int index = -1;
+
+            FCNN sampleNet = new FCNN(6, 36, 36, learningRate);
+            List<double> target = SetTarget(36, sampleList);
+            target = sampleNet.RefineTarget(target);
+
+            sampleNet.SetInput(sampleList[0].sitCUR._angleComp, sampleList[0].sitCUR._dist, sampleList[0].sitCUR._time);
+
+            for (int i = 0; i < 15000; i++)
+            {
+                sampleNet.ForwardProp();
+                //Debug.Log(sampleNet.output.Count + ", " + target.Count);
+                error = GetError(sampleNet.output, target);
+
+                if (error > 10)
+                    learningRate += pluslR;
+                else if (error <= 10 && error > 1.0)
+                    learningRate -= minuslR0;
+                else if (error <= 1.0 && error > enoughERROR)
+                    learningRate -= minuslR1;
+                else // error <= enoughERROR
+                {
+                    index = i;
+                    break;
+                }
+
+                sampleNet.learningRate = learningRate;
+                sampleNet.BackProp(target);
+            }
+            sampleNet.ForwardProp();
+
+            List<double> result = new List<double>();
+            for (int i = 0; i < sampleNet.outputInfo.Count; i++)
+            {
+                result.Add(sampleNet.output[i]);
+                if (target[i] == 40)
+                    result[i] = sampleNet.output[i] + sampleNet.outputInfo[i];
+                else if (sampleNet.outputInfo[i] == -1)
+                    result[i] *= (-1);
+                else if (sampleNet.outputInfo[i] == -2)
+                    result[i] = -1;
+            }
+
+            for (int i = 0; i < result.Count; i++)
+            {
+                if (result[i] != -1)
+                {
+                    if(target[i] == 40)
+                        Debug.Log(Index_TO_IntVector3(i).IntVector3ToString() + ": " + result[i] + " || " + (target[i]+ sampleNet.outputInfo[i]));
+                    else
+                        Debug.Log(Index_TO_IntVector3(i).IntVector3ToString() + ": " + result[i] + " || " + target[i]);
+                }
+            }
+            Debug.Log("ERR: " + error + ", EarlyEnd: " + index);
+            Debug.Log("lR: " + learningRate);
+
             //StartCoroutine(Div_BY_Angle_HugeBehaveData());
         }
         else
         { }
     }
 
+    IEnumerator Find_MAXQ_Doing()
+    {
+        for (int angle = -180; angle < 180; angle += 2)
+        {
+            for (int dist = 0; dist <= 50; dist += 2)
+            {
+                StartCoroutine(Find_MAXQ_Doing(angle, dist));
+            }
+            Debug.Log(angle+" Done");
+            yield return null;
+        }
+
+        StartCoroutine(SaverGreat("FCNNed_QData"));
+
+        yield break;
+    }
+
+    IEnumerator Find_MAXQ_Doing(int angle, int dist)
+    {
+        List<FCNN> fcnnList = new List<FCNN>();
+
+        for (double t = 0.5; t < 1.5; t += 0.25)
+            fcnnList.Add(IO_SqlDB.ReadFCNN_FROM_DB("FCNN_Parted", angle, dist, t));
+
+        if (fcnnList.Count == 0)
+        {
+            Debug.Log("Not Enough FCNN");
+            yield break;
+        }
+
+        //불량 학습된 FCNN제외
+        try
+        {
+            for (int index = 0; index < fcnnList.Count; index++)
+            {
+                for (int i = 0; i < fcnnList[index].outputInfo.Count; i++)
+                {
+                    if (fcnnList[index].outputInfo[i] == -9999)
+                    {
+                        fcnnList.RemoveAt(index);
+                        index--;
+                    }
+                }
+            }
+        }
+        catch (Exception)
+        {
+            Debug.Log("Not Enough FCNN");
+            yield break;
+        }
+
+        if (fcnnList.Count == 0)
+        {
+            Debug.Log("Not Enough FCNN");
+            yield break;
+        }
+
+        //학습한 FCNN으로 가장 좋은 행동 예측
+        int maxQDoingIndex = -1;
+        double maxQTime = 0.0f;
+        double maxQ = -999.0;
+        int timeIndex = -1;
+
+        for (double t = 0.1; t <= 1.5; t += 0.1)
+        {
+            if (t <= 0.6f)  timeIndex = 0;
+            else if (t > 0.6f && t <= 0.9f) timeIndex = 1;
+            else if (t > 0.9f && t <= 1.1f) timeIndex = 2;
+            else if (t > 1.1f && t <= 1.3f) timeIndex = 3;
+            else timeIndex = 4;
+
+            try
+            {
+                fcnnList[timeIndex].SetInput((float)(angle), (float)(dist), (float)(t));
+                fcnnList[timeIndex].ForwardProp();
+
+                if (maxQ < fcnnList[timeIndex].GetMaxQ())
+                {
+                    maxQ = fcnnList[timeIndex].GetMaxQ();
+                    maxQDoingIndex = fcnnList[timeIndex].GetMaxQIndex();
+                    maxQTime = t;
+                }
+            }
+            catch (Exception)
+            {}
+        }
+
+        //가장 좋은 행동을 따로 저장
+        if (maxQDoingIndex != -1)
+        {
+            IntVector3 maxQDoing = Index_TO_IntVector3(maxQDoingIndex);
+            listSitCUR.Add(new SituationCUR(angle.ToString() + ", " + dist.ToString(), 0.0f, 0.0f, (float)(dist), (float)(angle), maxQDoing, (float)(maxQTime)));
+        }
+
+        //Debug.Log(angle.ToString() + ", " + dist.ToString()+": " + listSitCUR.Count);
+        yield break;
+    }
+
+    void DQN(int angleMain, int angleSub, int dist)
+    {
+        string fileName = "LabeledQDataAngle";
+        int angle = angleMain * 10 + angleSub;
+
+        if (angleMain < 0)
+        {
+            angleMain *= (-1);
+            fileName += "M" + angleMain.ToString();
+        }
+        else
+            fileName += "P" + angleMain.ToString();
+
+        List<string> idList = new List<string>();
+        string baseid = "(" + angle.ToString() + ", " + dist.ToString() + ", ";
+        List<AIData> labeledData = IO_SqlDB.ReadAIData_FROM_DB_Angle_AND_Dist(fileName, angle, 2, dist, 2);
+        List<FCNN> neuralNet = new List<FCNN>();
+        double learningRate = 0.0;
+        double error = 100.0;
+
+        for (double t = 0.5; t < 1.5; t += 0.25)
+        {
+            error = 100.0;
+
+            learningRate = lR;
+            List<AIData> inputData = DivAIDatasBYTime(t, labeledData);
+            FCNN net = new FCNN(6, 36, 36, learningRate);
+            List<double> target = SetTarget(36, inputData);
+            List<double> targetCache = target;
+            target = net.RefineTarget(target);
+
+            //정보 없음
+            if (inputData.Count == 0) { continue; }
+            //정보 있으면 id추가
+            else { idList.Add(baseid + t.ToString() + ")"); }
+
+            net.SetInput(inputData[0].sitCUR._angleComp, inputData[0].sitCUR._dist, inputData[0].sitCUR._time);
+
+            //무한 루프 방지
+            for(int i= 0; i < 10000; i++)
+            {
+                net.ForwardProp();
+                error = GetError(net.output, target);
+
+                if (error > 10) learningRate += pluslR;
+                else if (error <= 10 && error > 1.0) learningRate -= minuslR0;
+                else if (error <= 1.0 && error > enoughERROR) learningRate -= minuslR1;
+                else { break; }
+
+                net.learningRate = learningRate;
+                net.BackProp(target);
+            }
+            net.ForwardProp();
+
+            for (int i = 0; i < net.outputNum; i++)
+            {
+                if (target[i] == 40)
+                    net.output[i] += net.outputInfo[i];
+                else if (net.outputInfo[i] == -1)
+                    net.output[i] *= (-1);
+                else if (net.outputInfo[i] == -2)
+                    net.output[i] = -1;
+                else { }
+
+                //학습 불량시 재학습 최대 3회 시도
+                if (net.output[i] == 0 && target[i] > 0)
+                    net = DQN_RetryLearning(targetCache, inputData, lR, net, 0, pluslR, minuslR0, minuslR1);
+            }
+
+            neuralNet.Add(net);
+        }
+
+        //inputData.Count == 0인 경우가 가끔 존재함
+        if(idList.Count != 0 && neuralNet.Count != 0)
+            IO_SqlDB.WriteDB_FCNN("FCNN_Parted", idList, neuralNet, false);
+    }
+
+    FCNN DQN_RetryLearning(List<double> target, List<AIData> inputData, double bflR, FCNN bf, int stack, double plR, double mlR0, double mlR1)
+    {
+        double learningRate = bflR * 0.1, error = 100.0;
+        FCNN reLearned = new FCNN(6, 36, 36, learningRate);
+        List<double> targetCache = target;
+
+        plR *= 0.1;
+        mlR0 *= 0.1;
+        mlR1 *= 0.1;
+        reLearned.SetInput(inputData[0].sitCUR._angleComp, inputData[0].sitCUR._dist, inputData[0].sitCUR._time);
+        target = reLearned.RefineTarget(target);
+
+        if (stack < 3)
+        {
+            //무한 루프 방지
+            for (int i = 0; i < 10000; i++)
+            {
+                reLearned.ForwardProp();
+                error = GetError(reLearned.output, target);
+
+                if (error > 10) learningRate += plR;
+                else if (error <= 10 && error > 1.0) learningRate -= mlR0;
+                else if (error <= 1.0 && error > enoughERROR) learningRate -= mlR1;
+                else { break; }
+
+                reLearned.learningRate = learningRate;
+                reLearned.BackProp(target);
+            }
+            reLearned.ForwardProp();
+
+            for (int i = 0; i < reLearned.outputNum; i++)
+            {
+                if (target[i] == 40)
+                    reLearned.output[i] += reLearned.outputInfo[i];
+                else if (reLearned.outputInfo[i] == -1)
+                    reLearned.output[i] *= (-1);
+                else if (reLearned.outputInfo[i] == -2)
+                    reLearned.output[i] = -1;
+                else { }
+
+                //최대 3번까지 재학습 시도
+                if (reLearned.output[i] == 0 && target[i] > 0)
+                {
+                    stack++;
+                    reLearned = DQN_RetryLearning(targetCache, inputData, learningRate, reLearned, stack, plR, mlR0, mlR1);
+                    break;
+                }
+            }
+        }
+        else
+        {
+            //재학습 3번 했으면 충분히 한 것으로 판단하고 반환한다.
+            reLearned = bf;
+
+            for (int i = 0; i < reLearned.outputNum; i++)
+            {
+                if (target[i] == 40)
+                    reLearned.output[i] += reLearned.outputInfo[i];
+                else if (reLearned.outputInfo[i] == -1)
+                    reLearned.output[i] *= (-1);
+                else if (reLearned.outputInfo[i] == -2)
+                    reLearned.output[i] = -1;
+                else { }
+
+                //학습 불량시 표시하고 반환
+                if (reLearned.output[i] == 0 && target[i] > 0)
+                    reLearned.outputInfo[i] = -9999;
+            }
+        }
+
+        return reLearned;
+    }
+
+    List<AIData> DivAIDatasBYTime(double t, List<AIData> datas)
+    {
+        List<AIData> result = new List<AIData>();
+
+        for (int i = 0; i < datas.Count; i++)
+        {
+            if (datas[i].sitCUR._time == t)
+                result.Add(new AIData(datas[i]));
+        }
+
+        return result;
+    }
+
+    List<double> SetTarget(int targetLength, List<AIData> datas)
+    {
+        List<double> result = new List<double>();
+
+        for (int i = 0; i < targetLength; i++)
+        {
+            result.Add(0.0);
+        }
+
+        for (int j = 0; j < datas.Count; j++)
+        {
+            result[IntVector3_TO_Index(datas[j].sitCUR._doing)] = datas[j].sitAFT._posZ;
+        }
+
+        return result;
+    }
+
+    IntVector3 Index_TO_IntVector3(int index)
+    {
+        IntVector3 result = new IntVector3(-1,-1,-1);
+
+        int m, r, a;
+
+        m = (int)(index / 12);
+        r = (int)((index % 12) / 4);
+        a = (index % 12) % 4;
+
+        result.InitIntVector3(m, r, a);
+
+        return result;
+    }
+
+    int IntVector3_TO_Index(IntVector3 vec)
+    {
+        int index = -1;
+
+        index = vec.vecX * 12 + vec.vecY * 4 + vec.vecZ;     
+
+        return index;
+    }
 
 
     IEnumerator Div_BY_Angle_HugeBehaveData()
@@ -1147,7 +1531,7 @@ public class EnemyDataCollector : MonoBehaviour {
 
     //모든 행동에 대해 Q값을 구해서 다른 DB에 저장 겸 다시 라벨링
     //각도는 2도, 거리는 2, 시간은 0.5초로 다시 라벨링 해서 저장할 것. 단, 행동은 84개에서 36개로 축소(Rotation쪽을 단방향 회전, 무회전으로 축소)
-    void GetQValue(int angleMain, int angleSUB, int dist, float time)
+    void GetQValue(int angleMain, int angleSUB, int dist, float time)//, ref List<List<bool>> isFin)
     {
         string fileName = "behaveDataAngle";
         string code = "";
@@ -1182,12 +1566,16 @@ public class EnemyDataCollector : MonoBehaviour {
         code += angleTemp.ToString();
 
         //읽기
-        if (aiDatas.Count == 0)
+        if (aiDatas.Count == 0)// && !isFin[angleMain+18][angleSUB])
         {
             fileName += code;
 
             aiDatas = IO_SqlDB.ReadAIData_FROM_DB_Angle(fileName, angle, 2);
         }
+        //else if (isFin[angleMain + 18][angleSUB])
+        //{
+        //    return;
+        //}
 
         for (int i = 0; i < aiDatas.Count; i++)
         {
@@ -1200,10 +1588,12 @@ public class EnemyDataCollector : MonoBehaviour {
                 int r = aiDatas[i].sitCUR._doing.vecY;
                 int a = aiDatas[i].sitCUR._doing.vecZ;
 
-                //Reward값 계산 후 저장, Q값 계산 후 저장, 행동결과 저장, 명중률, data 갯수 카운팅
-                datas[m, r, a].sitAFT._posX += CalScore(false, aiDatas[i]);
-                datas[m, r, a].sitAFT._posZ += (float)(Q_Func(3, 0, (double)(datas[m, r, a].sitAFT._posX), aiDatas[i]));
-                datas[m, r, a].sitAFT._dist += aiDatas[i].sitAFT._dist;
+                //Q값 계산 후 저장, 행동결과 저장, 명중률, data 갯수 카운팅
+                datas[m, r, a].sitAFT._posZ += (float)(Q_Func(3, 0, 0.0, aiDatas[i]));
+
+                if (dist == 50) { datas[m, r, a].sitAFT._dist += 50; }
+                else { datas[m, r, a].sitAFT._dist += aiDatas[i].sitAFT._dist; }  
+                           
                 datas[m, r, a].sitAFT._angleComp += aiDatas[i].sitAFT._angleComp;
                 datas[m, r, a].sitCUR._posX += aiDatas[i].sitAFT._hitCounter;
                 datas[m, r, a].sitAFT._beforeDB++;
@@ -1215,6 +1605,8 @@ public class EnemyDataCollector : MonoBehaviour {
                 continue;
         }
 
+        int count = 0;
+
         //평균 내기
         for (int m = 0; m < 3; m++)
         {
@@ -1222,17 +1614,16 @@ public class EnemyDataCollector : MonoBehaviour {
             {
                 for (int a = 0; a < 4; a++)
                 {
-                    if (datas[m, r, a].sitAFT._beforeDB != 0)
+                    count = datas[m, r, a].sitAFT._beforeDB;
+
+                    if (count != 0)
                     {
-                        int count = datas[m, r, a].sitAFT._beforeDB;
+                        datas[m, r, a].sitAFT._posZ = datas[m, r, a].sitAFT._posZ / count;
+                        datas[m, r, a].sitAFT._dist = datas[m, r, a].sitAFT._dist / count;
+                        datas[m, r, a].sitAFT._angleComp = datas[m, r, a].sitAFT._angleComp / count;
+                        datas[m, r, a].sitCUR._posX = datas[m, r, a].sitCUR._posX / count;
 
-                        datas[m, r, a].sitAFT._posX /= count;
-                        datas[m, r, a].sitAFT._posZ /= count;
-                        datas[m, r, a].sitAFT._dist /= count;
-                        datas[m, r, a].sitAFT._angleComp /= count;
-                        datas[m, r, a].sitCUR._posX /= count;
-
-                        data_FOR_Learn.Add(datas[m, r, a]);
+                        data_FOR_Learn.Add(new AIData(datas[m, r, a]));
                     }
                 }
             }
@@ -1243,6 +1634,7 @@ public class EnemyDataCollector : MonoBehaviour {
         fileName += code;
 
         StartCoroutine(Save_DataFORLearn(fileName));
+        //isFin[angleMain + 18][angleSUB] = true;
     }
 
     IEnumerator Save_DataFORLearn(string fileName)
@@ -1716,9 +2108,10 @@ public class EnemyDataCollector : MonoBehaviour {
 
         AIData nextGreedyData = aiDatasGreedy[sortANDSearch.Search_AIData(Q_aiData.sitAFT._dist, Q_aiData.sitAFT._angleComp, aiDatasGreedy)];
         double nextGreedyReward = CalScore(false, nextGreedyData);
+        double reward = CalScore(false, Q_aiData);
 
-        result = (1 - sampleAlpha) * beforeQ + sampleAlpha * (Q_aiData.sitAFT._posX + sampleGamma * nextGreedyReward);
-        //Debug.Log(index + ": " + result + "<-" + beforeQ + "," + Q_aiData.sitAFT._beforeDB + ", " + nextGreedyReward);
+        result = (1 - sampleAlpha) * beforeQ + sampleAlpha * (reward + sampleGamma * nextGreedyReward);
+        //Debug.Log(index + ": " + result + "<-" + beforeQ + "," + reward + ", " + nextGreedyReward);
 
         if (depth - index >= 1)
             result = Q_Func(depth, ++index, result, nextGreedyData);
@@ -1769,6 +2162,14 @@ public class EnemyDataCollector : MonoBehaviour {
 
 
         Debug.Log(listSitCUR.Count + " GreatBehaves Save Complete");
+        yield break;
+    }
+
+    //FCNNed_QData
+    IEnumerator SaverGreat(string fileName)
+    {
+        IO_SqlDB.WriteDB_CUR(fileName, listSitCUR);
+        Debug.Log(listSitCUR.Count + " fcnnedData Save Complete");
         yield break;
     }
 

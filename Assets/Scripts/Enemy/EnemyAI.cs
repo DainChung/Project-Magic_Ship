@@ -30,7 +30,7 @@ public class EnemyAI : MonoBehaviour
     private int behaveIndex;
     private int behaveCounter;
 
-    //AI_DeapLearning__Random_Ver에서 사용할 변수들
+    //AI_DeepLearning__Random_Ver에서 사용할 변수들
     private bool isbehaveCoolTimeOn = true;
     public bool __GET_isbehaveCoolTimeOn { get { return isbehaveCoolTimeOn; } }
 
@@ -53,6 +53,8 @@ public class EnemyAI : MonoBehaviour
     [HideInInspector]
     int scoreCount_FOR_PPT = 0;
     [HideInInspector]
+    int rewardCount = 0;
+    [HideInInspector]
     public int getDamagedCounter = 0; bool isHitB = false;
     public bool _SET_isHitB { set { isHitB = value; } }
 
@@ -66,7 +68,7 @@ public class EnemyAI : MonoBehaviour
     IntVector3 __OLD__forSave = new IntVector3(-1, -1, -1);
 
     float curDist;
-
+    bool deleteIt = false;
     int qDepth = 0;
 
     //SituationCUR sitCUR = new SituationCUR("NULL", -1, -1, -1, -1, new IntVector3(-1, -1, -1), false);
@@ -598,7 +600,7 @@ public class EnemyAI : MonoBehaviour
     //데이터 수집 목적인 랜덤한 행동을 지시하는 함수
     //2019.04.20
     //함수 폐기
-    public void AI_DeapLearning__Random_Ver()
+    public void AI_DeepLearning__Random_Ver()
     {
         //임시로 추가한 것, P를 누르면 모든 데이터 수집 개체 삭제 및 데이터 저장
         if (Input.GetKeyDown(KeyCode.P))
@@ -691,24 +693,24 @@ public class EnemyAI : MonoBehaviour
     //강화학습을 위한 형태로 개조됨
     //강화학습 데이터대로 행동했지만 결과가 좋지 못한 경우(행동 점수 <= 0) 임의 행동을 한 뒤 별도의 DB에 저장할 수 있도록 한다.
     //별도의 DB에 저장된 데이터를 일단 수동으로 학습하도록 한다.(프로그래머가 수동으로 변수나 코드를 바꿔줘야 하는 방식)
-    public void AI_DeapLearning__BigData_Ver()
+    public void AI_DeepLearning__BigData_Ver()
     {
         if (isbehaveCoolTimeOn)
         {
             curDist = Vector3.Distance(transform.position, enemyController.playerTransform.position);
-            isHPLOW = enemyController.__ENE_Stat.__PUB__Health_Point < enemyController.__ENE_Stat.half_HP;
+            isHPLOW = true;//enemyController.__ENE_Stat.__PUB__Health_Point < enemyController.__ENE_Stat.half_HP;
 
             //sitCUR = enemyCollector.SearchGoodSitCUR(curDist, enemyController._GET__ENE_AI_Engine.angleComp, isHPLOW, true);
 
-            if (qDepth >= 1)
-            {
-                sitCUR = enemyCollector.SearchGoodSitCUR(curDist, enemyController._GET__ENE_AI_Engine.angleComp, isHPLOW, true);
-                if (qDepth >= 3) qDepth = -1;
-            }
-            else
-                sitCUR = enemyCollector.SearchGoodSitCUR(curDist, enemyController._GET__ENE_AI_Engine.angleComp, isHPLOW, false);
+            //if (qDepth >= 1)
+            //{
+                //sitCUR = enemyCollector.SearchGoodSitCUR(curDist, enemyController._GET__ENE_AI_Engine.angleComp, isHPLOW, true);
+            //    if (qDepth >= 3) qDepth = -1;
+            //}
+            //else
+            sitCUR = enemyCollector.SearchGoodSitCUR(curDist, enemyController._GET__ENE_AI_Engine.angleComp, isHPLOW, false);
 
-            qDepth++;
+            //qDepth = 0;
 
             //20190606 임시
             if (sitCUR._doing.vecZ != 0)
@@ -733,9 +735,13 @@ public class EnemyAI : MonoBehaviour
                 SituationCUR cur_FOR_PPT = new SituationCUR(behaveID, beforeVec2.x, beforeVec2.y, beforeDist, beforeAngleComp, forSave, sitCUR._time);
                 SituationAFT aft_FOR_PPT = new SituationAFT(behaveID, transform.position.x, transform.position.z, curDist, enemyController._GET__ENE_AI_Engine.angleComp, beforeBehaveID, 0, hitCounter, isCloser);
 
-                //AI_Score_Cal(hitCounter);
+                AI_Score_Cal(hitCounter);
                 AI_Score_Cal(isHPLOW, cur_FOR_PPT, aft_FOR_PPT);
                 aft_FOR_PPT._beforeDB = scoreCount_FOR_PPT;
+
+
+                if (rewardCount <= 1)
+                    sitCUR = enemyCollector.SearchGoodSitCUR(curDist, enemyController._GET__ENE_AI_Engine.angleComp, isHPLOW, true);
 
                 if (forSave.vecZ != 0)
                 {
@@ -749,7 +755,7 @@ public class EnemyAI : MonoBehaviour
                     sitCUR._time = Random.Range(0.5f, 1.5f);
                 }
 
-                scoreCount_FOR_PPT = 0;
+                rewardCount = 0;
             }
 
             //DataBase에서 긁어온 정보의 time동안 행동한다.
@@ -768,30 +774,36 @@ public class EnemyAI : MonoBehaviour
         //공격 쿨타임도 끝났고 공격을 하려는 경우
         if (sitCUR._doing.vecZ != 0)
         {
-            if (__ENE_AI_Engine._PUB_enemy_Is_ON_CoolTime[1] && sitCUR._doing.vecZ < behaveList_Attack.Count && curDist < 30f)
+            if (__ENE_AI_Engine._PUB_enemy_Is_ON_CoolTime[1])// && sitCUR._doing.vecZ < behaveList_Attack.Count && curDist < 30f)
             {
                 //주어진 공격 수행
                 behaveList_Attack[sitCUR._doing.vecZ]();
             }
         }
 
-        //주어진 이동 수행
-        if (sitCUR._doing.vecX != 0)
-            behaveList_Move[sitCUR._doing.vecX]();
-        //주어진 회전 수행
-        if(sitCUR._doing.vecY != 0)
-            behaveList_Rotate[sitCUR._doing.vecY]();
+        ////주어진 이동 수행
+        //if (sitCUR._doing.vecX != 0)
+        //    behaveList_Move[sitCUR._doing.vecX]();
+        ////주어진 회전 수행
+        //if(sitCUR._doing.vecY != 0)
+        //    behaveList_Rotate[sitCUR._doing.vecY]();
 
-        //임시로 추가한 것, P을 누르면 모든 데이터 수집 개체 삭제 및 데이터 저장
-        if ((Input.GetKeyDown(KeyCode.P) || behaveCount_FOR_PPT == 10) && simpleSpining != 1)
+        behaveList_Move[sitCUR._doing.vecX]();
+        behaveList_Rotate[sitCUR._doing.vecY]();
+
+        if (deleteIt)
         {
             enemyCollector.listScore_FOR_PPT.Add(scoreCount_FOR_PPT);
             Destroy(gameObject);
         }
+
+        //임시로 추가한 것, P을 누르면 모든 데이터 수집 개체 삭제 및 데이터 저장
+        if ((Input.GetKeyDown(KeyCode.P) || behaveCount_FOR_PPT < -1) && simpleSpining != 1)
+            deleteIt = true;
     }
 
     //비교를 위해 추가된 예전 버전의 Bigdata함수
-    public void __OLD__AI_DeapLearning__BigData_Ver()
+    public void __OLD__AI_DeepLearning__BigData_Ver()
     {
         ////임시로 추가한 것, P을 누르면 모든 데이터 수집 개체 삭제 및 데이터 저장
         //if (Input.GetKeyDown(KeyCode.P))
@@ -800,11 +812,11 @@ public class EnemyAI : MonoBehaviour
         //}
 
         //20190606 임시
-        if (behaveCount_FOR_PPT == 100)
-        {
-            enemyCollector.listScore_FOR_PPT.Add(scoreCount_FOR_PPT);
-            Destroy(gameObject);
-        }
+        //if (behaveCount_FOR_PPT == 100)
+        //{
+        //    enemyCollector.listScore_FOR_PPT.Add(scoreCount_FOR_PPT);
+        //    Destroy(gameObject);
+        //}
 
         float dummy = 0f;
         float curDist = Vector3.Distance(transform.position, enemyController.playerTransform.position);
@@ -1001,7 +1013,7 @@ public class EnemyAI : MonoBehaviour
 
             if (aft._hitCounter == 0 && cur._doing.vecZ != 0)
             {
-                //aft._beforeDB -= 10;
+                aft._beforeDB -= 10;
             }
         }
         else
@@ -1037,7 +1049,7 @@ public class EnemyAI : MonoBehaviour
             }
         }
 
-        scoreCount_FOR_PPT += resultScore;
+        rewardCount += resultScore;
     }
 
     private void AI_Score_Cal(int hitCounter)

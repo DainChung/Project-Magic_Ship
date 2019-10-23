@@ -59,6 +59,7 @@ public class UnitBaseEngine : MonoBehaviour
         }
 
         public Vector3 movingVector;
+        public ParticleSystem movingEffect;
 
         protected float speed_BUF_Amount;
 
@@ -78,6 +79,17 @@ public class UnitBaseEngine : MonoBehaviour
                 movingVector.Set(0, 0, move_Speed * Time.deltaTime * dir);
                 //moved_OBJ.GetComponent<Rigidbody>().AddForce(movingVector);
                 moved_OBJ.Translate(movingVector);
+                if (dir == 1)
+                {
+                    movingEffect.startSpeed = 16;
+                    movingEffect.Play();
+                }
+                else
+                {
+                    movingEffect.startSpeed = -16;
+                    movingEffect.Play();
+                }
+
             }
             //나중에 dir 값과 관련된 Exception 따로 넣어서 수정할 것
             //후진 시 이속 감소의 구체적인 값은 아직 미정
@@ -209,8 +221,12 @@ public class UnitBaseEngine : MonoBehaviour
 
             //private string bulletName 변수는 Sample__SkillDataBase.csv에서 읽어오도록 만들것
 
-            GameObject spawned_OBJ;
+            GameObject spawned_OBJ, effect;
             spawned_OBJ = (GameObject)(MonoBehaviour.Instantiate(Resources.Load(prefabBulletPath + "SampleBullet") as GameObject, spawnPosition, spawnRotation));
+            //effect
+            effect = (GameObject)(MonoBehaviour.Instantiate(Resources.Load("Prefabs/Effect/Explosion") as GameObject, spawnPosition, spawnRotation));
+            effect.GetComponent<Explosion>().source = unit_Base_Engine.transform;
+            MonoBehaviour.Instantiate(Resources.Load("Prefabs/Effect/Explo") as GameObject, spawnPosition, spawnRotation);
             //투사체가 날아가는 속도를 특정 값으로 설정. 나중엔 DB에서 긁어올 것
             if (unit_Base_Engine.enemyController != null)
             {
@@ -243,8 +259,12 @@ public class UnitBaseEngine : MonoBehaviour
         {
             //GameObject threw_Ammo =;
 
-            GameObject spawned_OBJ;
+            GameObject spawned_OBJ, effect;
             spawned_OBJ = (GameObject)(MonoBehaviour.Instantiate(Resources.Load(prefabBulletPath + "SampleBullet") as GameObject, attacker.position, attacker.rotation));
+            //effect
+            effect = (GameObject)(MonoBehaviour.Instantiate(Resources.Load("Prefabs/Effect/Explosion") as GameObject, attacker.position, attacker.rotation));
+            effect.GetComponent<Explosion>().source = unit_Base_Engine.transform;
+            MonoBehaviour.Instantiate(Resources.Load("Prefabs/Effect/Explo") as GameObject, attacker.position, attacker.rotation);
             //투사체가 날아가는 속도를 특정 값으로 설정. 나중엔 DB에서 긁어올 것
             if (unit_Base_Engine.enemyController != null)
             {

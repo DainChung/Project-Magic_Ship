@@ -107,6 +107,7 @@ public class PlayerController : MonoBehaviour {
     //플레이어의 앞, 우측, 좌측을 담당할 변수
     //0: 앞, 1: 우측, 2: 좌측
     public Transform[] playerAttackerTransforms;
+    public ParticleSystem movingEffect;
     private int index_OF_playerAttackerTransforms;
 
     //투사체를 발사할 위치 => 키 입력에 따라 앞, 우측, 좌측 값을 저장한다.
@@ -169,7 +170,7 @@ public class PlayerController : MonoBehaviour {
         __PLY_Engine.playerController = this;
         __PLY_Engine._unit_Combat_Engine.__SET_unit_Base_Engine = __PLY_Engine;
         __PLY_Engine._unit_Move_Engine._SET_unit_Base_Engine = __PLY_Engine;
-
+        __PLY_Engine._unit_Move_Engine.movingEffect = this.movingEffect;
         //UnitBaseEngine이 Unit__Base_Stat 내용에 접근할 수 있도록 한다.
         __PLY_Engine._unit_Stat = __PLY_Stat;
 
@@ -249,7 +250,10 @@ public class PlayerController : MonoBehaviour {
                     __PLY_Engine._unit_Move_Engine.Move_OBJ(__PLY_Stat.__PUB_Move_Speed, ref playerTransform, -1f);
                 }
                 else
-                { }
+                {
+                    if(movingEffect.isPlaying)
+                        movingEffect.Stop();
+                }
 
                 if (Input.GetKey(KeyCode.A))
                 {

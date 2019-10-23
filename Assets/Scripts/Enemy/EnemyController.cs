@@ -276,9 +276,11 @@ public class EnemyController : MonoBehaviour {
     public Transform enemy_Front;
     public Transform enemy_Right;
     public Transform enemy_Left;
-
+    public ParticleSystem movingEffect;
     public string unitID;
     private int aiLV;
+
+    Vector3 beforePos;
 
     //AI 레벨에 따라 완벽하게 다른 행동을 할 수 있도록 밑작업
     private List<System.Action> _AI_FuncList = new List<System.Action>();
@@ -299,6 +301,8 @@ public class EnemyController : MonoBehaviour {
         __ENE_AI_Engine.__ENE_Engine._unit_Combat_Engine.__SET_unit_Base_Engine = __ENE_AI_Engine.__ENE_Engine;
         __ENE_AI_Engine.__ENE_Engine._unit_Move_Engine._SET_unit_Base_Engine = __ENE_AI_Engine.__ENE_Engine;
 
+        __ENE_AI_Engine.__ENE_Engine._unit_Move_Engine.movingEffect = this.movingEffect;
+
         //Unit__Base_Engine이 Unit__Base_Stat 내용에 접근할 수 있도록 한다.
         __ENE_AI_Engine.__ENE_Engine._unit_Stat = __ENE_Stat;
 
@@ -316,9 +320,8 @@ public class EnemyController : MonoBehaviour {
         _AI_FuncList.Add(() => __ENE_AI.AI_Simple_Level0_WITH_BOSS());
         _AI_FuncList.Add(() => __ENE_AI.AI_Simple_Level0_BOSS());
         _AI_FuncList.Add(() => __ENE_AI.AI_ReinforceLearn_RandomBehave_Ver());
-        //_AI_FuncList.Add(() => __ENE_AI.AI_DeapLearning__Random_Ver());
-        _AI_FuncList.Add(() => __ENE_AI.AI_DeapLearning__BigData_Ver()); //Reinforce를 기반으로 하는 MDP 초기형
-        //_AI_FuncList.Add(() => __ENE_AI.__OLD__AI_DeapLearning__BigData_Ver()); //GreatATK를 기반으로 하는 빅데이터
+        _AI_FuncList.Add(() => __ENE_AI.__OLD__AI_DeepLearning__BigData_Ver());
+        _AI_FuncList.Add(() => __ENE_AI.AI_DeepLearning__BigData_Ver());
 
         aiLV = __ENE_Stat._GET_ai_Level;
     }
@@ -326,6 +329,7 @@ public class EnemyController : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
 
+        beforePos = transform.position;
         //Enemy가 생성될 때 이를 PlayerUI에 알려준다
         GameObject.Find("Main Camera").GetComponent<PlayerUI>().SearchEnemys();
 
@@ -350,6 +354,9 @@ public class EnemyController : MonoBehaviour {
             {
                 //나중에 EnemyAI 클래스를 따로 만들어서 이하 내용과 같은 기능을 하도록 넣을 것.
                 _AI_FuncList[aiLV]();
+
+                if (Vector3.Distance(beforePos, transform.position) < 0.1 && movingEffect.isPlaying)
+                    movingEffect.Stop();
 
                 //스피드 버프 OR 디버프 지속시간 종료 여부
                 if (__ENE_Stat.__PUB_Stat_IsCoolTimeOn[0])
@@ -431,7 +438,7 @@ public class EnemyController : MonoBehaviour {
     //랜덤 데이터 얻을 때에 한해서만 필요한 함수들
     void OnTriggerEnter(Collider other)
     {
-        if ((__ENE_Stat._GET_ai_Level == 3 || __ENE_Stat._GET_ai_Level == 4) && transform.GetComponent<Collider>().isTrigger && other.transform.tag == "Player")
+        if ((__ENE_Stat._GET_ai_Level == 3 || __ENE_Stat._GET_ai_Level == 4 || __ENE_Stat._GET_ai_Level == 5) && transform.GetComponent<Collider>().isTrigger && other.transform.tag == "Player")
         {
             transform.GetComponent<Collider>().isTrigger = false;
         }
@@ -439,7 +446,7 @@ public class EnemyController : MonoBehaviour {
 
     void OnTriggerExit(Collider other)
     {
-        if ((__ENE_Stat._GET_ai_Level == 3 || __ENE_Stat._GET_ai_Level == 4) && !transform.GetComponent<Collider>().isTrigger && other.transform.tag == "Player")
+        if ((__ENE_Stat._GET_ai_Level == 3 || __ENE_Stat._GET_ai_Level == 4 || __ENE_Stat._GET_ai_Level == 5) && !transform.GetComponent<Collider>().isTrigger && other.transform.tag == "Player")
         {
             transform.GetComponent<Collider>().isTrigger = true;
         }

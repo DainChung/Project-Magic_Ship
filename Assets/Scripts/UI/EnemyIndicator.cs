@@ -68,7 +68,7 @@ public class EnemyIndicator : MonoBehaviour {
                 newDegree = (Quaternion.LookRotation(enemy.position - player.position, Vector3.up)).eulerAngles.y * (-1) + 45f;
                 //MainCamera를 바라보면서 Enemy 방향을 가리키기 위해 localRotation을 사용한다.
                 transform.localRotation = Quaternion.Euler(0, 0, newDegree);
-                transform.localScale = (0.3f * FOriginalLocalScale) / (Vector3.Distance(player.position, enemy.position) * 0.02f);
+                transform.localScale = (0.25f * FOriginalLocalScale) / (Vector3.Distance(player.position, enemy.position) * 0.02f);
 
                 //보정된 위치 값 적용
                 transform.position = Camera.main.ScreenToWorldPoint(destiVector3);

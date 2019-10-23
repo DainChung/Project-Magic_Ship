@@ -456,9 +456,10 @@ namespace File_IO {
 
         private static string dbPath = Application.persistentDataPath;
         private static string cacheQuery = "NULL";
+        private static string infoCacheQuery = "NULL";
 
         //DB에서 학습이 완료된 인공신경망 중 하나만 읽기 위한 함수
-        public static FCNN ReadFCNN_FROM_DB(string fileName, int angle, int dist, float time)
+        public static FCNN ReadFCNN_FROM_DB(string fileName, int angle, int dist, double time)
         {
             FCNN result = new FCNN();
             fileName = @"Data Source=" + dbPath + "/" + fileName + ".db";
@@ -483,6 +484,10 @@ namespace File_IO {
                         if (id.CompareTo(reader.GetString(0)) == 0)
                         {
                             result = new FCNN(reader.GetInt32(2), reader.GetInt32(3), reader.GetInt32(4), reader.GetDouble(1));
+                            for (int i = 0; i < result.outputNum; i++)
+                            {
+                                result.outputInfo[i] = reader.GetDouble(i+5);
+                            }
                             break;
                         }
                         index++;
@@ -490,8 +495,7 @@ namespace File_IO {
                     reader.Close();
 
                     List<List<double>> var = new List<List<double>>();
-                    // inputNUM == 36 && outputNUM == 36을 전제로 한다.
-                    int startLine = index * 37 + 1, endLine = startLine + 36;
+                    int startLine = index * (result.outputNum + 1) + 1, endLine = startLine + result.outputNum;
 
                     sqlQuery = "SELECT * FROM L1 WHERE rowid >= " + startLine + " AND rowid <= " + endLine;
                     dbCommand.CommandText = sqlQuery;
@@ -504,42 +508,55 @@ namespace File_IO {
                         {
                             var.Add(new List<double>());
 
-                            for (int c = 1; c < 37; c++)
+                            for (int c = 1; c < result.outputNum + 1; c++)
                                 var[var.Count - 1].Add(reader.GetDouble(c));
                         }
                     }
-                    result.layers[1].CopyMatrix(var);
-                    
-                    reader.Close();
 
-                    startLine = index * 36 + 1;
-                    endLine = startLine + 35;
-                    int r = 0;
-                    for (int d = 2; d < result.depth - 1; d++)
+                    try
                     {
-                        sqlQuery = "SELECT * FROM L"+d.ToString()+" WHERE rowid >= " + startLine + " AND rowid <= " + endLine;
-                        dbCommand.CommandText = sqlQuery;
-
-                        reader = dbCommand.ExecuteReader();
-                        r = 0;
-                        while (reader.Read())
-                        {
-                            //id가 일치하면
-                            if (id.CompareTo(reader.GetString(0)) == 0)
-                            {
-                                for (int c = 1; c < 37; c++)
-                                    var[r][c - 1] = reader.GetDouble(c);
-                            }
-                            r++;
-                        }
-                        result.layers[d].CopyMatrix(var);
-
+                        result.layers[1].CopyMatrix(var);
                         reader.Close();
-                    }
-                    reader.Close();
 
-                    reader = null;
-                    dbCommand.Dispose();
+                        startLine = index * result.outputNum + 1;
+                        endLine = startLine + (result.outputNum - 1);
+                        int r = 0;
+                        for (int d = 2; d < result.depth - 1; d++)
+                        {
+                            sqlQuery = "SELECT * FROM L" + d.ToString() + " WHERE rowid >= " + startLine + " AND rowid <= " + endLine;
+                            dbCommand.CommandText = sqlQuery;
+
+                            reader = dbCommand.ExecuteReader();
+                            r = 0;
+                            while (reader.Read())
+                            {
+                                //id가 일치하면
+                                if (id.CompareTo(reader.GetString(0)) == 0)
+                                {
+                                    for (int c = 1; c < result.outputNum + 1; c++)
+                                        var[r][c - 1] = reader.GetDouble(c);
+                                }
+                                r++;
+                            }
+                            result.layers[d].CopyMatrix(var);
+
+                            reader.Close();
+                        }
+
+                    }
+                    catch (Exception)
+                    {
+                        Debug.Log(id+" Not Found");
+                    }
+                    finally
+                    {
+                        reader.Close();
+
+                        reader = null;
+                        dbCommand.Dispose();
+                    }
+                    
+                    
                 }
                 dbConnection.Close();
             }
@@ -554,6 +571,11 @@ namespace File_IO {
         {
             fileName = @"Data Source=" + dbPath + "/" + fileName + ".db";
 
+            //Debug.Log(fcnnIDList.Count + ", " + learnedFCNN.Count);
+            //비어있으면 작동 안 함
+            if (learnedFCNN.Count == 0 || fcnnIDList.Count == 0)
+                return;
+
             int valCount = learnedFCNN[0].layers[1].row * learnedFCNN[0].layers[1].col;
 
             using (var dbConnection = new SqliteConnection(fileName))
@@ -567,6 +589,8 @@ namespace File_IO {
                         string sqlQuery = "";
                         string cacheQuery0 = "(id, ";
                         string cacheQuery1 = "(@id, ";
+                        string infoCacheQuery0 = ", ";
+                        string infoCacheQuery1 = ", ";
 
                         string wString = "";
 
@@ -574,7 +598,15 @@ namespace File_IO {
                         if (isFirstWrite)
                         {
                             //TABLE을 만들어 준다
-                            sqlQuery = "CREATE TABLE INFO ( id TEXT, learningRate REAL, depth INTEGER, inputNUM INTEGER, outputNUM INTEGER)";
+                            sqlQuery = "CREATE TABLE INFO ( id TEXT, learningRate REAL, depth INTEGER, inputNUM INTEGER, outputNUM INTEGER, ";
+                            for (int i = 0; i < learnedFCNN[0].outputNum; i++)
+                            {
+                                if (i == learnedFCNN[0].outputNum - 1)
+                                    sqlQuery += ("out" + i.ToString() + " REAL)");
+                                else
+                                    sqlQuery += ("out" + i.ToString() + " REAL, ");
+                            }
+
                             dbCommand.CommandText = sqlQuery;
                             dbCommand.ExecuteNonQuery();
 
@@ -602,6 +634,7 @@ namespace File_IO {
                         {
                             //cacheQuery를 비운다.
                             cacheQuery = "";
+                            infoCacheQuery = "";
 
                             //cacheQuery 초기화 시작
                             for (int i = 0; i < learnedFCNN[0].layers[1].col; i++)
@@ -610,28 +643,38 @@ namespace File_IO {
                                 {
                                     cacheQuery0 += ("w" + i.ToString() + ")");
                                     cacheQuery1 += ("@w" + i.ToString() + ")");
+                                    infoCacheQuery0 += ("out" + i.ToString() + ")");
+                                    infoCacheQuery1 += ("@out" + i.ToString() + ")");
                                 }
                                 else
                                 {
                                     cacheQuery0 += ("w" + i.ToString() + ", ");
                                     cacheQuery1 += ("@w" + i.ToString() + ", ");
+                                    infoCacheQuery0 += ("out" + i.ToString() + ", ");
+                                    infoCacheQuery1 += ("@out" + i.ToString() + ", ");
                                 }
                             }
                             cacheQuery = cacheQuery0 + " VALUES " + cacheQuery1;
+                            infoCacheQuery = infoCacheQuery0 + " VALUES (@id, @learningRate, @depth, @inputNUM, @outputNUM" + infoCacheQuery1;
                         }
 
 
                         for (int index = 0; index < fcnnIDList.Count; index++)
                         {
                             //Layer Info에 대한 입력
-                            sqlQuery = "INSERT INTO INFO (id, learningRate, depth, inputNUM, outputNUM) VALUES (@id, @learningRate, @depth, @inputNUM, @outputNUM);";
+                            sqlQuery = "INSERT INTO INFO (id, learningRate, depth, inputNUM, outputNUM" + infoCacheQuery;
                             dbCommand.CommandText = sqlQuery;
                             dbCommand.Parameters.Add(new SqliteParameter("@id", fcnnIDList[index]));
                             dbCommand.Parameters.Add(new SqliteParameter("@learningRate", learnedFCNN[index].learningRate));
                             dbCommand.Parameters.Add(new SqliteParameter("@depth", learnedFCNN[index].depth));
                             dbCommand.Parameters.Add(new SqliteParameter("@inputNUM", learnedFCNN[index].inputNum));
                             dbCommand.Parameters.Add(new SqliteParameter("@outputNUM", learnedFCNN[index].outputNum));
+                            for (int i = 0; i < learnedFCNN[0].outputNum; i++)
+                            {
+                                wString = "@out" + i.ToString();
 
+                                dbCommand.Parameters.Add(new SqliteParameter(wString, learnedFCNN[index].outputInfo[i]));
+                            }
                             dbCommand.ExecuteNonQuery();
 
                             //inputLayer를 제외한 모든 Layer에 대한 입력
@@ -666,7 +709,7 @@ namespace File_IO {
                 dbConnection.Close();
             }
 
-            Debug.Log("FCNN Write Done");
+            //Debug.Log("FCNN Write Done");
         }
 
         //SitCUR와 SitAFT를 학습 목적으로 읽기 위해 사용하는 함수
@@ -790,10 +833,18 @@ namespace File_IO {
 
         public static List<AIData> ReadAIData_FROM_DB(string fileName)
         {
+            int fileIndex = -1;
             List<SituationCUR> cur = new List<SituationCUR>();
             List<SituationAFT> aft = new List<SituationAFT>();
 
             List<AIData> result = new List<AIData>();
+
+            if (fileName[fileName.Length - 2] == 'd' && (fileName[fileName.Length - 1] == '0' || fileName[fileName.Length - 1] == '1'))
+            {
+                fileIndex = (int)(fileName[fileName.Length - 1]);
+                fileName = fileName.Remove(fileName.Length - 1);
+                Debug.Log(fileName);
+            }
 
             fileName = @"Data Source=" + dbPath + "/" + fileName + ".db";
 
@@ -944,6 +995,84 @@ namespace File_IO {
             for (int i = 0; i < cur.Count; i++)
             {
                 result.Add(new AIData(cur[i], aft[i]));
+
+                if (fileIndex == -1)
+                {
+                    if (Mathf.Abs(result[i].sitCUR._angleComp + 90) < 10 && result[i].sitCUR._doing.vecZ != 3 && result[i].sitCUR._doing.vecZ != 0)
+                        result[i].sitCUR._doing.vecZ = 3;
+                    else if (Mathf.Abs(result[i].sitCUR._angleComp - 90) < 10 && result[i].sitCUR._doing.vecZ != 2 && result[i].sitCUR._doing.vecZ != 0)
+                        result[i].sitCUR._doing.vecZ = 2;
+                    else if (Mathf.Abs(result[i].sitCUR._angleComp) < 10 && result[i].sitCUR._doing.vecZ != 1 && result[i].sitCUR._doing.vecZ != 0)
+                        result[i].sitCUR._doing.vecZ = 1;
+                    else if ((result[i].sitCUR._angleComp >= 100 || result[i].sitCUR._angleComp <= -100) && result[i].sitCUR._doing.vecZ != 0)
+                        result[i].sitCUR._doing.vecZ = 0;
+
+                    if (result[i].sitCUR._dist >= 40.1f)
+                    {
+                        if (((result[i].sitCUR._angleComp + 180) > 270) || ((result[i].sitCUR._angleComp + 180) < 90))
+                            result[i].sitCUR._doing = new IntVector3(2, 6, 0);
+                        else if (result[i].sitCUR._angleComp < 30 && result[i].sitCUR._angleComp >= 0)
+                            result[i].sitCUR._doing = new IntVector3(1, 4, 0);
+                        else if (result[i].sitCUR._angleComp > -30 && result[i].sitCUR._angleComp < 0)
+                            result[i].sitCUR._doing = new IntVector3(1, 5, 0);
+                        else
+                            result[i].sitCUR._doing = new IntVector3(1, 3, 0);
+                    }
+                    else if (result[i].sitCUR._dist >= 20.1f)
+                        result[i].sitCUR._doing.vecZ = 0;
+                }
+                else if (fileIndex == 0)
+                {
+                    if (Mathf.Abs(result[i].sitCUR._angleComp + 90) < 10 && result[i].sitCUR._doing.vecZ != 3 && result[i].sitCUR._doing.vecZ != 0)
+                        result[i].sitCUR._doing.vecZ = 1;
+                    else if (Mathf.Abs(result[i].sitCUR._angleComp - 90) < 10 && result[i].sitCUR._doing.vecZ != 2 && result[i].sitCUR._doing.vecZ != 0)
+                        result[i].sitCUR._doing.vecZ = 3;
+                    else if (Mathf.Abs(result[i].sitCUR._angleComp) < 10 && result[i].sitCUR._doing.vecZ != 1 && result[i].sitCUR._doing.vecZ != 0)
+                        result[i].sitCUR._doing.vecZ = 2;
+                    else if ((result[i].sitCUR._angleComp >= 100 || result[i].sitCUR._angleComp <= -100) && result[i].sitCUR._doing.vecZ != 0)
+                        result[i].sitCUR._doing.vecZ = 0;
+
+                    if (result[i].sitCUR._dist >= 40.1f)
+                    {
+                        if ((result[i].sitCUR._angleComp + 180) > 270)
+                            result[i].sitCUR._doing = new IntVector3(1, 5, 1);
+                        else if((result[i].sitCUR._angleComp + 180) < 90)
+                            result[i].sitCUR._doing = new IntVector3(1, 4, 2);
+                        else if (result[i].sitCUR._angleComp < 30 && result[i].sitCUR._angleComp >= 0)
+                            result[i].sitCUR._doing = new IntVector3(2, 2, 1);
+                        else if (result[i].sitCUR._angleComp > -30 && result[i].sitCUR._angleComp < 0)
+                            result[i].sitCUR._doing = new IntVector3(1, 1, 2);
+                        else
+                            result[i].sitCUR._doing = new IntVector3(1, 2, 1);
+                    }
+                }
+                else if (fileIndex == 1)
+                {
+                    if (Mathf.Abs(result[i].sitCUR._angleComp + 90) < 10 && result[i].sitCUR._doing.vecZ != 3 && result[i].sitCUR._doing.vecZ != 0)
+                        result[i].sitCUR._doing.vecZ = 3;
+                    else if (Mathf.Abs(result[i].sitCUR._angleComp - 90) < 10 && result[i].sitCUR._doing.vecZ != 2 && result[i].sitCUR._doing.vecZ != 0)
+                        result[i].sitCUR._doing.vecZ = 3;
+                    else if (Mathf.Abs(result[i].sitCUR._angleComp) < 10 && result[i].sitCUR._doing.vecZ != 1 && result[i].sitCUR._doing.vecZ != 0)
+                        result[i].sitCUR._doing.vecZ = 1;
+                    else if ((result[i].sitCUR._angleComp >= 100 || result[i].sitCUR._angleComp <= -100) && result[i].sitCUR._doing.vecZ != 0)
+                        result[i].sitCUR._doing.vecZ = 0;
+
+                    if (result[i].sitCUR._dist >= 40.1f)
+                    {
+                        if ((result[i].sitCUR._angleComp + 180) > 270)
+                            result[i].sitCUR._doing = new IntVector3(1, 5, 1);
+                        else if ((result[i].sitCUR._angleComp + 180) < 90)
+                            result[i].sitCUR._doing = new IntVector3(1, 4, 2);
+                        else if (result[i].sitCUR._angleComp < 30 && result[i].sitCUR._angleComp >= 0)
+                            result[i].sitCUR._doing = new IntVector3(2, 2, 0);
+                        else if (result[i].sitCUR._angleComp > -30 && result[i].sitCUR._angleComp < 0)
+                            result[i].sitCUR._doing = new IntVector3(1, 2, 3);
+                        else
+                            result[i].sitCUR._doing = new IntVector3(1, 1, 2);
+                    }
+                    else if (result[i].sitCUR._dist >= 20.1f)
+                        result[i].sitCUR._doing.vecZ = 0;
+                }
             }
 
             Debug.Log("Read Done");
@@ -1791,8 +1920,8 @@ namespace File_IO {
 
             for (int i = 0; i < listAIData.Count; i++)
             {
-                cur.Add(listAIData[i].sitCUR);
-                aft.Add(listAIData[i].sitAFT);
+                cur.Add(new SituationCUR( listAIData[i].sitCUR));
+                aft.Add(new SituationAFT( listAIData[i].sitAFT));
             }
 
             WriteDB_CUR(fileName, cur);
