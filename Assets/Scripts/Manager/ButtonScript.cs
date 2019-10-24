@@ -10,9 +10,15 @@ public class ButtonScript : MonoBehaviour {
 
         if (name == "Stage 1") index = 0;
         else if (name == "Stage 2") index = 1;
-        else index = 2;
+        else if (name == "Stage 3") index = 2;
+        else index = -2;
 
-        int isLocked = GameObject.FindWithTag("Player").GetComponent<Player_Info_Manager>().__GET_playerInfo._GET_stageIsLocked[index];
+        int isLocked = 0;
+
+        if (index >= 0)
+            isLocked = GameObject.FindWithTag("Player").GetComponent<Player_Info_Manager>().__GET_playerInfo._GET_stageIsLocked[index];
+        else
+            isLocked = 3;
 
         //스테이지 잠김
         if (isLocked == 0) Debug.Log("잠긴 스테이지");
@@ -28,7 +34,10 @@ public class ButtonScript : MonoBehaviour {
             SceneManager.LoadScene(name);
             Debug.Log("이미 클리어한 스테이지");
         }
-        else { }
+        else
+        {
+            //SceneManager.LoadScene(name);
+        }
     }
 
 	public void GoToStage(string name)
@@ -46,5 +55,10 @@ public class ButtonScript : MonoBehaviour {
     public void Pause()
     {
         Time.timeScale = 0.0f;
+    }
+
+    public void Exit()
+    {
+        Application.Quit();
     }
 }

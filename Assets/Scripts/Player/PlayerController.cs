@@ -138,6 +138,8 @@ public class PlayerController : MonoBehaviour {
     //궁극기 임시 조치
     SkillBaseStat debugUltimateSkill = new SkillBaseStat();
 
+    public SpriteRenderer[] attackDIR;
+
     public void Initialize_Player_EquippedSkills(List<string> playerInfo)
     {
         for (int i = 0; i < 3; i++)
@@ -198,6 +200,15 @@ public class PlayerController : MonoBehaviour {
     // Use this for initialization
     void Start ()
     {
+        //transform.GetComponent<AudioSource>().Stop();
+        try
+        {
+            attackDIR[0].enabled = true;
+            attackDIR[1].enabled = false;
+            attackDIR[2].enabled = false;
+        }
+        catch (System.Exception) { }
+
         //플레이어가 투사체를 발사할 위치를 앞부분으로 우선 설정한다.
         index_OF_playerAttackerTransforms = 0;
         playerAttacker = playerAttackerTransforms[index_OF_playerAttackerTransforms];
@@ -218,6 +229,7 @@ public class PlayerController : MonoBehaviour {
                 //4~5차 단계에서 UI를 추가할 것
                 if (Input.GetKeyDown(KeyCode.Q))
                 {
+                    transform.GetComponent<AudioSource>().Play();
                     //플레이어가 투사체를 발사할 위치가 앞 또는 우측인 경우
                     if (index_OF_playerAttackerTransforms < 2 && index_OF_playerAttackerTransforms >= 0)
                     {
@@ -230,6 +242,15 @@ public class PlayerController : MonoBehaviour {
                         //다시 앞쪽으로 돌아간다.
                         index_OF_playerAttackerTransforms = 0;
                     }
+
+                    try
+                    {
+                        for (int i = 0; i < 3; i++)
+                            attackDIR[i].enabled = false;
+
+                        attackDIR[index_OF_playerAttackerTransforms].enabled = true;
+                    }
+                    catch (System.Exception) { }
 
                     //설정된 투사체 발사 위치를 적용한다.
                     playerAttacker = playerAttackerTransforms[index_OF_playerAttackerTransforms];
@@ -266,20 +287,20 @@ public class PlayerController : MonoBehaviour {
                 else
                 { }
 
-                if (Input.GetMouseButtonDown(1))
-                {
-                    //임시코드(GUI - CH)
-                    __PLY_Stat.__PUB__Health_Point -= 1;
-                    __PLY_Stat.__PUB__Mana_Point -= 1;
-                    __PLY_Stat.__PUB__Power_Point -= 1;
-                    Debug.Log("Click Right");
-                    //임시코드(GUI - CH)
-                }
+                //if (Input.GetMouseButtonDown(1))
+                //{
+                //    //임시코드(GUI - CH)
+                //    __PLY_Stat.__PUB__Health_Point -= 1;
+                //    __PLY_Stat.__PUB__Mana_Point -= 1;
+                //    __PLY_Stat.__PUB__Power_Point -= 1;
+                //    Debug.Log("Click Right");
+                //    //임시코드(GUI - CH)
+                //}
 
-                if (Input.GetMouseButtonUp(1))
-                {
-                    Debug.Log("Mouse Up!");
-                }
+                //if (Input.GetMouseButtonUp(1))
+                //{
+                //    Debug.Log("Mouse Up!");
+                //}
 
                 //기본 공격
                 //마우스 좌클릭 -> 전면 공격
@@ -300,12 +321,6 @@ public class PlayerController : MonoBehaviour {
                             )
                         );
                 }
-                //마우스 우클릭 -> 측면 공격
-                //나중에 구현하자
-                if (Input.GetMouseButtonDown(1))
-                {
-
-                }
 
                 //Debug.Log(__PLY_Selected_Skills[0].time);
 
@@ -325,24 +340,24 @@ public class PlayerController : MonoBehaviour {
                 {
                     PLY_Controller_Using_Skill(2);
                 }
-                // for test
-                else if (Input.GetKeyDown(KeyCode.Alpha4) && !(_SPW_MOS_Skill_Activated))
-                {
-                    __PLY_Engine._unit_Combat_Engine.Using_Skill(ref playerAttacker, debugUltimateSkill, true);
-                }
+                //// for test
+                //else if (Input.GetKeyDown(KeyCode.Alpha4) && !(_SPW_MOS_Skill_Activated))
+                //{
+                //    __PLY_Engine._unit_Combat_Engine.Using_Skill(ref playerAttacker, debugUltimateSkill, true);
+                //}
                 else
                 { }
 
-                ////스피드 버프 OR 디버프 지속시간 종료 여부
-                //if (__PLY_Stat.__PUB_Stat_IsCoolTimeOn[0])
-                //{
-                //    //스피드 버프 OR 디버프 해제
-                //    //스킬 넣는 부분은 일단 저런식으로 하는 수 밖에 없음
-                //    //나중에 스킬 위치를 마음대로 바꿀 수 있도록 변경할 때 고민이 필요함
-                //    __PLY_Engine._unit_Move_Engine.Init_Speed_BUF_Amount();
-                //    //스피드 버프 해제로 일단 간주
-                //    __PLY_Stat.__PUB_Stat_IsCoolTimeOn[0] = false;
-                //}
+                //스피드 버프 OR 디버프 지속시간 종료 여부
+                if (__PLY_Stat.__PUB_Stat_IsCoolTimeOn[0])
+                {
+                    //스피드 버프 OR 디버프 해제
+                    //스킬 넣는 부분은 일단 저런식으로 하는 수 밖에 없음
+                    //나중에 스킬 위치를 마음대로 바꿀 수 있도록 변경할 때 고민이 필요함
+                    __PLY_Engine._unit_Move_Engine.Init_Speed_BUF_Amount();
+                    //스피드 버프 해제로 일단 간주
+                    __PLY_Stat.__PUB_Stat_IsCoolTimeOn[0] = false;
+                }
 
                 ////체력 버프 OR 디버프 지속시간 종료 여부
                 //if (__PLY_Stat.__PUB_Stat_IsCoolTimeOn[1])
@@ -350,21 +365,21 @@ public class PlayerController : MonoBehaviour {
 
                 //}
 
-                ////기본 마나 회복 지속시간 종료 여부
-                //if (__PLY_Stat.__PUB_Stat_IsCoolTimeOn[2])
-                //{
-                //    //일단 1씩 회복한다.
-                //    __PLY_Stat.__Get_HIT__About_Mana(1, -1);
-                //    //다음 기본 마나 회복 시간까지 대기 
-                //    __PLY_Stat.__PUB_Stat_IsCoolTimeOn[2] = false;
+                //기본 마나 회복 지속시간 종료 여부
+                if (__PLY_Stat.__PUB_Stat_IsCoolTimeOn[2])
+                {
+                    //일단 1씩 회복한다.
+                    __PLY_Stat.__Get_HIT__About_Mana(1, -1);
+                    //다음 기본 마나 회복 시간까지 대기 
+                    __PLY_Stat.__PUB_Stat_IsCoolTimeOn[2] = false;
 
-                //    //일단 8초마다 마나를 회복하도록 결정
-                //    __PLY_CoolTimer.StartCoroutine(
-                //        __PLY_CoolTimer.Timer_Do_Once(8.0f,
-                //        (input) => { __PLY_Stat.__PUB_Stat_IsCoolTimeOn[2] = input; },
-                //        false)
-                //        );
-                //}
+                    //일단 8초마다 마나를 회복하도록 결정
+                    __PLY_CoolTimer.StartCoroutine(
+                        __PLY_CoolTimer.Timer_Do_Once(8.0f,
+                        (input) => { __PLY_Stat.__PUB_Stat_IsCoolTimeOn[2] = input; },
+                        false)
+                        );
+                }
 
                 ////PP 버프 OR 디버프 지속시간 종료 여부
                 //if (__PLY_Stat.__PUB_Stat_IsCoolTimeOn[3])

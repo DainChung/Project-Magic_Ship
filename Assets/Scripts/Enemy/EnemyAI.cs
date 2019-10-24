@@ -634,6 +634,7 @@ public class EnemyAI : MonoBehaviour
             bool isCloser = false;
 
             behaveID = System.DateTime.Now.ToString() + ": " + gameObject.GetInstanceID().ToString();
+            //int t = System.DateTime.Now.Second;
             //Debug.Log("ID: "+behaveID);
             //Debug.Log("Before: "+beforeBehaveID);
             if (beforeDist > curDist) isCloser = true;

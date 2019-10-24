@@ -19,6 +19,15 @@ public class MapManager : MonoBehaviour {
 
     private const float dist = 1.6f;
 
+    public UnityEngine.UI.Image tutorial;
+    public GameObject tutorialExit;
+    public SpriteRenderer arrow;
+
+    public UnityEngine.UI.Image clear;
+    public UnityEngine.UI.Image dead;
+
+    double startTime, clearTime;
+
     void Awake()
     {
         mapMax_X = mapWidth;
@@ -28,6 +37,10 @@ public class MapManager : MonoBehaviour {
 	// Use this for initialization
 	void Start()
     {
+        transform.GetComponent<ButtonScript>().Pause();
+        GameObject.Find("SamplePlayer").GetComponent<PlayerController>().playerMustBeFreeze = true;
+        arrow.enabled = false;
+
         Vector3 pos = new Vector3(0, 0, 0);
 
         playerUI = GameObject.Find("Main Camera").GetComponent<PlayerUI>();
@@ -43,6 +56,19 @@ public class MapManager : MonoBehaviour {
         }
     }
 
+    public void ExitTutorial()
+    {
+        transform.GetComponent<ButtonScript>().Resume();
+        GameObject.Find("SamplePlayer").GetComponent<PlayerController>().playerMustBeFreeze = false;
+
+        tutorial.enabled = false;
+        tutorialExit.GetComponent<UnityEngine.UI.Button>().enabled = false;
+        tutorialExit.GetComponent<UnityEngine.UI.Image>().enabled = false;
+        arrow.enabled = true;
+
+        startTime = System.DateTime.Now.Subtract(System.DateTime.MinValue).TotalSeconds;
+    }
+
     public void __SET_remainedEnemys()
     {
         playerUI.SearchEnemys();
@@ -56,7 +82,11 @@ public class MapManager : MonoBehaviour {
         if (playerUI.enemysNum != (remainedEnemys + 1)) { Debug.Log("잘못된 입력"); }
 
         //남아있는 Spawner와 적이 없으면 스테이지 클리어로 인정된다.
-        if ((remainedEnemys <= 0) && (remainedEnemySpawners <= 0)) { remainedEnemys = 0; remainedEnemySpawners = 0;  Debug.Log("스테이지 클리어"); }
+        if ((remainedEnemys <= 0) && (remainedEnemySpawners <= 0))
+        {
+            remainedEnemys = 0; remainedEnemySpawners = 0;  Debug.Log("스테이지 클리어");
+            clearTime = System.DateTime.Now.Subtract(System.DateTime.MinValue).TotalSeconds - startTime;
+        }
     }
 
     public void PlayerDead()
