@@ -473,31 +473,20 @@ namespace PMS_AISystem
 
         public void BackProp(List<double> target)
         {
-            //Debug.Log("BackProp 0");
             //Output Layer의 grad 구하기
             for (int i = 0; i < target.Count; i++)
-            {
                 grad[depth - 2][i] = (target[i] - output[i]) * SlopeRELU(output[i]);
-            }
 
-            //Debug.Log("BackProp 1");
             //HiddenLayer의 grad 구하기
-            //grad
             for (int j = depth - 3; j >= 0; j--)
             {
-                //Debug.Log(j + ": " + grad[j].Count);
-                //Debug.Log((j + 1) + ": " + layers[j + 1].values.Count + ", " + layers[j + 1].values[0].Count);
-                //Debug.Log((j+1) + ": " + grad[j+1].Count);
                 //FCNN 으로 수행
                 grad[j] = layers[j + 1].Multiply(grad[j + 1]);
 
                 for (int k = 0; k < grad[j].Count; k++)
-                {
                     grad[j][k] = grad[j][k] * SlopeRELU(layerOut[j].values[0][k]);
-                }
             }
 
-            //Debug.Log("BackProp 2");
             //weight값 적용
             for (int l = depth - 1; l >= 1; l--)
                 GradDes(l);
@@ -512,7 +501,6 @@ namespace PMS_AISystem
             else
                 outVal = layerOut[index - 1].values[0];
 
-            //Debug.Log("GradDes 0");
             for (int r = 0; r < layers[index].row; r++)
             {
                 for (int c = 0; c < layers[index].col; c++)

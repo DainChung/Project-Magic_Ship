@@ -47,6 +47,9 @@ public class AmmoBase : MonoBehaviour {
         {
             //디버프 정보를 가져온다.
             whichSkill = skillStat;
+
+            if (whichSkill.__Get_Skill_ID == "NORMAL_HP_01")
+                __Ammo_Damage = (int)(whichSkill.__GET_Skill_Rate);
         }
         //평범한 투사체면
         else

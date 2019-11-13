@@ -2121,17 +2121,17 @@ public class EnemyDataCollector : MonoBehaviour {
 
     void Update()
     {
-        //모두 저장
-        if (Input.GetKeyDown(KeyCode.P))
-        {
-            StartCoroutine(Saver());
-        }
+        ////모두 저장
+        //if (Input.GetKeyDown(KeyCode.P))
+        //{
+        //    StartCoroutine(Saver());
+        //}
 
-        //20190606 임시
-        if (Input.GetKeyDown(KeyCode.L))
-        {
-            IO_CSV.Writer_CSV("/ScoreCAL.csv", listScore_FOR_PPT);
-        }
+        ////20190606 임시
+        //if (Input.GetKeyDown(KeyCode.L))
+        //{
+        //    IO_CSV.Writer_CSV("/ScoreCAL.csv", listScore_FOR_PPT);
+        //}
     } 
 
     IEnumerator SaveAFT()

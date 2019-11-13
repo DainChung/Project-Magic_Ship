@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.UI;
 using System.Collections;
 
 public class MapManager : MonoBehaviour {
@@ -19,12 +20,15 @@ public class MapManager : MonoBehaviour {
 
     private const float dist = 1.6f;
 
-    public UnityEngine.UI.Image tutorial;
-    public GameObject tutorialExit;
+    public Image tutorial;
+    public GameObject button_tutorialExit;
     public SpriteRenderer arrow;
 
-    public UnityEngine.UI.Image clear;
-    public UnityEngine.UI.Image dead;
+    public Image dead;
+    public Result result;
+
+    public GameObject button_retry;
+    public GameObject button_menu;
 
     double startTime, clearTime;
 
@@ -37,14 +41,36 @@ public class MapManager : MonoBehaviour {
 	// Use this for initialization
 	void Start()
     {
-        transform.GetComponent<ButtonScript>().Pause();
-        GameObject.Find("SamplePlayer").GetComponent<PlayerController>().playerMustBeFreeze = true;
-        arrow.enabled = false;
+        try
+        {
+            transform.GetComponent<ButtonScript>().Pause();
+            GameObject.Find("SamplePlayer").GetComponent<PlayerController>().playerMustBeFreeze = true;
+            arrow.enabled = false;
+        }
+        catch (System.Exception)
+        {
+            GameObject.Find("SamplePlayer").GetComponent<PlayerController>().playerMustBeFreeze = false;
+        }
 
         Vector3 pos = new Vector3(0, 0, 0);
 
         playerUI = GameObject.Find("Main Camera").GetComponent<PlayerUI>();
 
+        try
+        {
+            dead.enabled = false;
+
+            result.ShowIt(false);
+
+            button_retry.GetComponent<Button>().enabled = false;
+            button_retry.GetComponent<Image>().enabled = false;
+            button_retry.transform.GetChild(0).GetComponent<Text>().enabled = false;
+            button_menu.GetComponent<Button>().enabled = false;
+            button_menu.GetComponent<Image>().enabled = false;
+            button_menu.transform.GetChild(0).GetComponent<Text>().enabled = false;
+        }
+        catch (System.Exception)
+        { }
         //일정 거리마다 파도효과용 바다 블럭 배치
         for (int x = 0; x < mapMax_X; x++)
         {
@@ -62,8 +88,9 @@ public class MapManager : MonoBehaviour {
         GameObject.Find("SamplePlayer").GetComponent<PlayerController>().playerMustBeFreeze = false;
 
         tutorial.enabled = false;
-        tutorialExit.GetComponent<UnityEngine.UI.Button>().enabled = false;
-        tutorialExit.GetComponent<UnityEngine.UI.Image>().enabled = false;
+        button_tutorialExit.GetComponent<Button>().enabled = false;
+        button_tutorialExit.GetComponent<Image>().enabled = false;
+        button_tutorialExit.GetComponent<AudioSource>().Play();
         arrow.enabled = true;
 
         startTime = System.DateTime.Now.Subtract(System.DateTime.MinValue).TotalSeconds;
@@ -84,13 +111,47 @@ public class MapManager : MonoBehaviour {
         //남아있는 Spawner와 적이 없으면 스테이지 클리어로 인정된다.
         if ((remainedEnemys <= 0) && (remainedEnemySpawners <= 0))
         {
-            remainedEnemys = 0; remainedEnemySpawners = 0;  Debug.Log("스테이지 클리어");
+            remainedEnemys = 0; remainedEnemySpawners = 0;  //Debug.Log("스테이지 클리어");
             clearTime = System.DateTime.Now.Subtract(System.DateTime.MinValue).TotalSeconds - startTime;
+
+            try
+            {
+                GameObject.Find("SamplePlayer").GetComponent<PlayerController>().playerMustBeFreeze = true;
+
+                clearTime = (int)(clearTime * 100)/100;
+
+                result.score = (int)(3000 + GameObject.Find("SamplePlayer").GetComponent<PlayerController>().__PLY_Stat.__PUB__Health_Point - clearTime * 3);
+                result.texts[2].text = clearTime.ToString();
+                result.ShowIt(true);
+
+                button_retry.GetComponent<Button>().enabled = true;
+                button_retry.GetComponent<Image>().enabled = true;
+                button_retry.transform.GetChild(0).GetComponent<Text>().enabled = true;
+                button_menu.GetComponent<Button>().enabled = true;
+                button_menu.GetComponent<Image>().enabled = true;
+                button_menu.transform.GetChild(0).GetComponent<Text>().enabled = true;
+            }
+            catch (System.Exception)
+            { }
         }
     }
 
     public void PlayerDead()
     {
-        Debug.Log("실패");
+        try
+        {
+            dead.enabled = true;
+            GameObject.Find("SamplePlayer").GetComponent<PlayerController>().playerMustBeFreeze = true;
+
+            button_retry.GetComponent<Button>().enabled = true;
+            button_retry.GetComponent<Image>().enabled = true;
+            button_retry.transform.GetChild(0).GetComponent<Text>().enabled = true;
+            button_menu.GetComponent<Button>().enabled = true;
+            button_menu.GetComponent<Image>().enabled = true;
+            button_menu.transform.GetChild(0).GetComponent<Text>().enabled = true;
+            //Debug.Log("실패");
+        }
+        catch (System.Exception)
+        { }
     }
 }

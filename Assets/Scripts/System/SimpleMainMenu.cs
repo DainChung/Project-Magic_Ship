@@ -26,6 +26,7 @@ public class SimpleMainMenu : MonoBehaviour {
         if (Input.GetKey(KeyCode.Return))
         {
             pressEnter.enabled = false;
+            transform.GetComponent<AudioSource>().Play();
 
             for (int i = 0; i < buttonMain.Length; i++)
             {

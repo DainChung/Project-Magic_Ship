@@ -25,15 +25,15 @@ desktop: 1920x1080 60Hz; virtual: 1920x1080 at 0,0
 <RI> Initializing input.
 <RI> Input initialized.
 <RI> Initialized touch support.
-UnloadTime: 0.717826 ms
+UnloadTime: 0.790912 ms
 Setting up 1 worker threads for Enlighten.
-  Thread -> id: 2a24 -> priority: 1 
+  Thread -> id: 10e4 -> priority: 1 
 The referenced script on this Behaviour (Game Object 'Afterburner') is missing!
  
 (Filename:  Line: 1656)
 
 Unloading 6 Unused Serialized files (Serialized files now loaded: 0)
-UnloadTime: 2.180738 ms
+UnloadTime: 1.810960 ms
 Platform assembly: C:\Users\Dian\Downloads\백업폴더\개발\개발관련백업\Unity\Project-Magic_Ship\SampleBuilddddder\Sample_Data\Managed\System.Transactions.dll (this message is harmless)
 Platform assembly: C:\Users\Dian\Downloads\백업폴더\개발\개발관련백업\Unity\Project-Magic_Ship\SampleBuilddddder\Sample_Data\Managed\System.Xml.dll (this message is harmless)
 Read Done
@@ -42,7 +42,7 @@ Read Done
 
 
 Unloading 31 unused Assets to reduce memory usage. Loaded Objects now: 1187.
-Total: 27.998781 ms (FindLiveObjects: 0.067950 ms CreateObjectMapping: 0.030814 ms MarkObjects: 5.567598 ms  DeleteObjects: 22.310690 ms)
+Total: 22.644121 ms (FindLiveObjects: 0.073086 ms CreateObjectMapping: 0.011456 ms MarkObjects: 4.357525 ms  DeleteObjects: 18.180325 ms)
 
 Player Get Hit
  

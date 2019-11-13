@@ -705,7 +705,7 @@ public class EnemyAI : MonoBehaviour
 
             //if (qDepth >= 1)
             //{
-                //sitCUR = enemyCollector.SearchGoodSitCUR(curDist, enemyController._GET__ENE_AI_Engine.angleComp, isHPLOW, true);
+            //sitCUR = enemyCollector.SearchGoodSitCUR(curDist, enemyController._GET__ENE_AI_Engine.angleComp, isHPLOW, true);
             //    if (qDepth >= 3) qDepth = -1;
             //}
             //else
@@ -726,6 +726,8 @@ public class EnemyAI : MonoBehaviour
 
             if (simpleSpining == 1)
             {
+                sitCUR._doing.vecX = 1;
+                sitCUR._doing.vecY = 1;
                 sitCUR._doing.vecZ = 0;
             }
             else
@@ -771,7 +773,6 @@ public class EnemyAI : MonoBehaviour
             getDamagedCounter = 0;
         }
 
-        //1차적으로 일반 공격만 생각하도록 한다.
         //공격 쿨타임도 끝났고 공격을 하려는 경우
         if (sitCUR._doing.vecZ != 0)
         {
@@ -782,25 +783,47 @@ public class EnemyAI : MonoBehaviour
             }
         }
 
-        ////주어진 이동 수행
-        //if (sitCUR._doing.vecX != 0)
-        //    behaveList_Move[sitCUR._doing.vecX]();
-        ////주어진 회전 수행
-        //if(sitCUR._doing.vecY != 0)
-        //    behaveList_Rotate[sitCUR._doing.vecY]();
-
+        //주어진 이동 및 회전 수행
         behaveList_Move[sitCUR._doing.vecX]();
         behaveList_Rotate[sitCUR._doing.vecY]();
 
-        if (deleteIt)
+        ////디버깅 용도
+        //if (deleteIt)
+        //{
+        //    enemyCollector.listScore_FOR_PPT.Add(scoreCount_FOR_PPT);
+        //    Destroy(gameObject);
+        //}
+        //if ((Input.GetKeyDown(KeyCode.P) || behaveCount_FOR_PPT < -1 || behaveCount_FOR_PPT >= 49) && simpleSpining != 1)
+        //    deleteIt = true;
+    }
+
+    public void AI_DeepLearning_NoFeedback()
+    {
+        //검색한 행동의 타이머가 끝날 때마다 수행한다.
+        if (isbehaveCoolTimeOn)
         {
-            enemyCollector.listScore_FOR_PPT.Add(scoreCount_FOR_PPT);
-            Destroy(gameObject);
+            //거리 계산
+            curDist = Vector3.Distance(transform.position, enemyController.playerTransform.position);
+            //현재 상황(캐릭터와 Target까지의 벡터)에서 Q값이 가장 높다고 예측된 행동 검색
+            sitCUR = enemyCollector.SearchGoodSitCUR(curDist, enemyController._GET__ENE_AI_Engine.angleComp,
+                                                    true, false);
+
+            //검색한 행동의 시간동안 타이머 작동
+            StartCoroutine(enemyController.enemyCoolTimer.Timer(sitCUR._time,
+                                                    (input) => { isbehaveCoolTimeOn = input; }, true));
         }
 
-        //임시로 추가한 것, P을 누르면 모든 데이터 수집 개체 삭제 및 데이터 저장
-        if ((Input.GetKeyDown(KeyCode.P) || behaveCount_FOR_PPT < -1) && simpleSpining != 1)
-            deleteIt = true;
+        //검색한 행동을 수행한다.
+        //공격 쿨타임이 완료되었고 공격을 하려는 경우
+        if (sitCUR._doing.vecZ != 0 && __ENE_AI_Engine._PUB_enemy_Is_ON_CoolTime[1])
+        {
+            //검색한 공격 행동 수행
+            behaveList_Attack[sitCUR._doing.vecZ]();
+        }
+
+        //검색한 이동 및 회전 수행
+        behaveList_Move[sitCUR._doing.vecX]();
+        behaveList_Rotate[sitCUR._doing.vecY]();
     }
 
     //비교를 위해 추가된 예전 버전의 Bigdata함수

@@ -70,14 +70,21 @@ public class EnemyUI : MonoBehaviour {
     {
         scrPos = oMainCamera.WorldToScreenPoint(transform.position);
 
-        //적이 플레이어 시야 밖으로 나갔거나 두 개체간 거리가 80.0f 이내일 때
-        if ((scrPos.x < 0 || scrPos.x > scrWidth || scrPos.y < 0 || scrPos.y > scrHeight)
-            && (Vector3.Distance(sPlayerController.transform.position, sEnemyController.transform.position) < 80.0f))
+        try
         {
-            isEnemyScreenOut = true;
+            //적이 플레이어 시야 밖으로 나갔거나 두 개체간 거리가 80.0f 이내일 때
+            if ((scrPos.x < 0 || scrPos.x > scrWidth || scrPos.y < 0 || scrPos.y > scrHeight)
+                && (Vector3.Distance(sPlayerController.transform.position, sEnemyController.transform.position) < 80.0f))
+            {
+                isEnemyScreenOut = true;
+            }
+            //적이 플레이어 시야 안에 있거나 두 개체 간 거리가 40.0f 이상일 때
+            else
+            {
+                isEnemyScreenOut = false;
+            }
         }
-        //적이 플레이어 시야 안에 있거나 두 개체 간 거리가 40.0f 이상일 때
-        else
+        catch (System.Exception)
         {
             isEnemyScreenOut = false;
         }
