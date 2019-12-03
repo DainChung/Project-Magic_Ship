@@ -10,7 +10,7 @@ using File_IO;
 //한 스크립트에서 저장 총괄하기
 public class EnemyDataCollector : MonoBehaviour {
 
-    //20190606 임시
+    //통계용
     [HideInInspector]
     public List<int> listScore_FOR_PPT = new List<int>();
 
@@ -52,20 +52,6 @@ public class EnemyDataCollector : MonoBehaviour {
     private const double minuslR1 = 0.000000000001;
     private const double pluslR = 0.00000000045;
     private const double enoughERROR = 0.00001;
-
-    void swap(int a, int b)
-    {
-        SituationCUR t = goodBehaveList[a];
-        goodBehaveList[a] = goodBehaveList[b];
-        goodBehaveList[b] = t;
-    }
-
-    void swapLOW(int a, int b)
-    {
-        SituationCUR t = goodBehaveListLOW[a];
-        goodBehaveListLOW[a] = goodBehaveListLOW[b];
-        goodBehaveListLOW[b] = t;
-    }
 
     public class SortANDSearch {
 
@@ -312,375 +298,6 @@ public class EnemyDataCollector : MonoBehaviour {
         }
     }
 
-
-
-    void quickSort(int l, int r)
-    {
-        int p = l;
-        int j = p;
-        int i = l + 1;
-
-        if (l < r)
-        {
-            for (; i <= r; i++)
-            {
-                if (goodBehaveList[i]._angleComp < goodBehaveList[p]._angleComp)
-                {
-                    j++;
-                    swap(j, i);
-                }
-            }
-            swap(l, j);
-            p = j;
-
-            quickSort(l, p - 1);
-            quickSort(p + 1, r);
-        }
-    }
-
-    void quickSortLOW(int l, int r)
-    {
-        int p = l;
-        int j = p;
-        int i = l + 1;
-
-        if (l < r)
-        {
-            for (; i <= r; i++)
-            {
-                if (goodBehaveListLOW[i]._angleComp < goodBehaveListLOW[p]._angleComp)
-                {
-                    j++;
-                    swapLOW(j, i);
-                }
-            }
-            swapLOW(l, j);
-            p = j;
-
-            quickSortLOW(l, p - 1);
-            quickSortLOW(p + 1, r);
-        }
-    }
-
-    void quickSort_AIData(int l, int r)
-    {
-        int p = l;
-        int j = p;
-        int i = l + 1;
-
-        if (l < r)
-        {
-            for (; i <= r; i++)
-            {
-                if (aiDatas[i].sitCUR._angleComp < aiDatas[p].sitCUR._angleComp)
-                {
-                    j++;
-
-                    AIData temp = aiDatas[j];
-                    aiDatas[j] = aiDatas[i];
-                    aiDatas[i] = temp;
-                }
-            }
-            AIData temp2 = aiDatas[l];
-            aiDatas[l] = aiDatas[j];
-            aiDatas[j] = temp2;
-            p = j;
-
-            quickSort_AIData(l, p - 1);
-            quickSort_AIData(p + 1, r);
-        }
-    }
-
-    void quickSort_AIData_DIST(int l, int r)
-    {
-        int p = l;
-        int j = p;
-        int i = l + 1;
-
-        if (l < r)
-        {
-            for (; i <= r; i++)
-            {
-                if (Mathf.Abs(data_FOR_Learn[i].sitCUR._dist - data_FOR_Learn[i].sitAFT._dist) < Mathf.Abs(data_FOR_Learn[p].sitCUR._dist - data_FOR_Learn[p].sitAFT._dist))
-                {
-                    j++;
-
-                    AIData temp = data_FOR_Learn[j];
-                    data_FOR_Learn[j] = data_FOR_Learn[i];
-                    data_FOR_Learn[i] = temp;
-                }
-            }
-            AIData temp2 = data_FOR_Learn[l];
-            data_FOR_Learn[l] = data_FOR_Learn[j];
-            data_FOR_Learn[j] = temp2;
-            p = j;
-
-            quickSort_AIData_DIST(l, p - 1);
-            quickSort_AIData_DIST(p + 1, r);
-        }
-    }
-
-    void search_AIData(float angle, int i, int length, int j, ref int resultIndex)
-    {
-        int index = i;
-
-        if (j == 1)
-            index = (int)(length / 2);
-        else
-        {
-            if (index < 0)
-            {
-                index *= (-1);
-                index -= (int)(length / (j * 2));
-            }
-            else
-            {
-                index += (int)(length / (j * 2));
-            }
-        }
-
-        if (angle <= aiDatas[index].sitCUR._angleComp && aiDatas[index].sitCUR._angleComp < angle + 10)
-        {
-            if (aiDatas[index].sitCUR._angleComp > angle)
-            {
-                j *= 2;
-                search_AIData(angle, -index, length, j, ref resultIndex);
-            }
-            else if (aiDatas[index].sitCUR._angleComp < angle)
-            {
-                j *= 2;
-                search_AIData(angle, index, length, j, ref resultIndex);
-            }
-        }
-        else
-        {
-            resultIndex = index;
-        }
-    }
-
-    void search(float dist, float angle, int i, int length, int j, ref int result)
-    {
-        int index = i;
-
-        if (j == 1)
-            index = (int)(length / 2);
-        else
-        {
-            if (index < 0)
-            {
-                index *= (-1);
-                index -= (int)(length / (j * 2));
-            }
-            else
-            {
-                index += (int)(length / (j * 2));
-            }
-        }
-
-        if ((int)(length / j) > 16)
-        {
-            if (goodBehaveList[index]._angleComp > angle)
-            {
-                j *= 2;
-                search(dist, angle, -index, length, j, ref result);
-            }
-            else if (goodBehaveList[index]._angleComp < angle)
-            {
-                j *= 2;
-                search(dist, angle, index, length, j, ref result);
-            }
-            else
-            {
-                result = index;
-            }
-        }
-        else
-        {
-            float _dist = 999f;
-            int min = index - 15;
-            int max = index + 15;
-
-            if (max > length - 1) max = length - 1;
-            if (min < 0) min = 0;
-
-            for (int q = min; q < max; q++)
-            {
-                float comp = Mathf.Abs(goodBehaveList[q]._dist - dist);
-
-                if (comp < _dist)
-                {
-                    _dist = comp;
-                    result = q;
-                }
-            }
-        }
-    }
-
-    void searchLOW(float dist, float angle, int i, int length, int j, ref int result)
-    {
-        int index = i;
-
-        if (j == 1)
-            index = (int)(length / 2);
-        else
-        {
-            if (index < 0)
-            {
-                index *= (-1);
-                index -= (int)(length / (j * 2));
-            }
-            else
-            {
-                index += (int)(length / (j * 2));
-            }
-        }
-
-        if ((int)(length / j) > 16)
-        {
-            if (goodBehaveListLOW[index]._angleComp > angle)
-            {
-                j *= 2;
-                searchLOW(dist, angle, -index, length, j, ref result);
-            }
-            else if (goodBehaveListLOW[index]._angleComp < angle)
-            {
-                j *= 2;
-                searchLOW(dist, angle, index, length, j, ref result);
-            }
-            else
-            {
-                result = index;
-            }
-        }
-        else
-        {
-            float _dist = 999f;
-            int min = index - 15;
-            int max = index + 15;
-
-            if (max > length - 1) max = length - 1;
-            if (min < 0) min = 0;
-
-            for (int q = min; q < max; q++)
-            {
-                float comp = Mathf.Abs(goodBehaveListLOW[q]._dist - dist);
-
-                if (comp < _dist)
-                {
-                    _dist = comp;
-                    result = q;
-                }
-            }
-        }
-    }
-
-    void search(float angle, int i, int length, int j, ref int resultIndex, string id)
-    {
-        int index = i;
-
-        if (j == 1)
-            index = (int)(length / 2);
-        else
-        {
-            if (index < 0)
-            {
-                index *= (-1);
-                index -= (int)(length / (j * 2));
-            }
-            else
-            {
-                index += (int)(length / (j * 2));
-            }
-        }
-
-        if (goodBehaveList[index]._angleComp > angle)
-        {
-            j *= 2;
-            search(angle, -index, length, j, ref resultIndex, id);
-        }
-        else if (goodBehaveList[index]._angleComp < angle)
-        {
-            j *= 2;
-            search(angle, index, length, j, ref resultIndex, id);
-        }
-        else
-        {
-            if (goodBehaveList[index]._angleComp == angle && goodBehaveList[index]._id != id)
-                resultIndex = index;
-            else
-                resultIndex = -1;
-        }
-    }
-
-    public IntVector3 SearchGoodDoing(float dist, float angle)
-    {
-        IntVector3 result = new IntVector3(-1, -1, -1);
-        int resultIndex = -1;
-
-        search(dist, angle, goodBehaveList.Count, goodBehaveList.Count, 1, ref resultIndex);
-        result = goodBehaveList[resultIndex]._doing;
-
-        //Debug.Log("CurD: "+ dist + ". CurA:"+ angle + ", DBD: "+ goodBehaveList[resultIndex]._dist + ", DBA: "+ goodBehaveList[resultIndex]._angleComp);
-
-        return result;
-    }
-
-    public class TrackSameData {
-        public string id;
-        public int count;
-
-        public TrackSameData(string ID, int COUNT)
-        {
-            id = ID;
-            count = COUNT;
-        }
-    }
-
-    List<TrackSameData> SearchSameData()
-    {
-        List<TrackSameData> temp = new List<TrackSameData>();
-        bool there = false;
-
-        for (int i = 0; i < goodBehaveList.Count - 1; i++)
-        {
-            if (goodBehaveList[i + 1]._id == goodBehaveList[i]._id)
-            {
-                goodBehaveList.RemoveAt(i);
-                
-                if (temp.Count != 0)
-                {
-                    for (int j = 0; j < temp.Count; j++)
-                    {
-                        if (temp[j].id == goodBehaveList[i]._id)
-                        {
-                            temp[j].count++;
-                            there = true;
-                            break;
-                        }
-                    }
-
-                    if (!there)
-                    {
-                        temp.Add(new TrackSameData(goodBehaveList[i]._id, 1));
-                    }
-                    else
-                    {
-                        there = false;
-                    }
-                }
-                else
-                {
-                    temp.Add(new TrackSameData(goodBehaveList[i]._id, 1));
-                }
-
-                i--;
-            }
-        }
-
-
-        return temp;
-    }
-
     public SituationCUR SearchGoodSitCUR(float dist, float angle, bool isHPLOW, bool isGreedy)
     {
         SituationCUR result = new SituationCUR("NULL", -1f, -1, -1, -1, new IntVector3(-1, -1, -1), -1f);
@@ -689,8 +306,8 @@ public class EnemyDataCollector : MonoBehaviour {
         if (!isGreedy)
         {
             //Debug.Log("CUR: " + dist + ", " + angle);
-            search(dist, angle, goodBehaveList.Count, goodBehaveList.Count, 1, ref index);
-            //index = sortANDSearch.Search_SitCUR(dist, angle, goodBehaveList.Count, goodBehaveList.Count, 1, goodBehaveList);
+            //search(dist, angle, goodBehaveList.Count, goodBehaveList.Count, 1, ref index);
+            index = sortANDSearch.Search_SitCUR(dist, angle, goodBehaveList.Count, goodBehaveList.Count, 1, goodBehaveList);
             result = goodBehaveList[index];
             //Debug.Log("Result: " + result._dist + ", " + result._angleComp);
         }
@@ -702,18 +319,6 @@ public class EnemyDataCollector : MonoBehaviour {
         //Debug.Log("CurD: "+ dist + ". CurA:"+ angle + ", DBD: "+ goodBehaveList[resultIndex]._dist + ", DBA: "+ goodBehaveList[resultIndex]._angleComp);
 
         return result;
-    }
-
-    double GetSimpleError(List<double> a, List<double> b)
-    {
-        double result = 0.0;
-
-        for (int i = 0; i < a.Count; i++)
-        {
-            result += Mathf.Abs((float)(a[i] - b[i]));
-        }
-
-        return result / a.Count;
     }
 
     double GetError(List<double> a, List<double> b)
@@ -796,6 +401,10 @@ public class EnemyDataCollector : MonoBehaviour {
             //quickSortLOW(0, goodBehaveListLOW.Count - 1);
 
         }
+        else if (mod == 4)
+        {
+            StartCoroutine(Find_MAXQ_Doing());
+        }
         //학습 모드 - QLearning
         //다시 돌릴 것
         else if (mod == 5)
@@ -849,22 +458,21 @@ public class EnemyDataCollector : MonoBehaviour {
         //10도 학습하는데 평균 1시간 24분 즈음 => 편의상 1시간 30분
         else if (mod == 6)
         {
-            StartCoroutine(Find_MAXQ_Doing());
             ////10도당 약 1시간 24분 소모
             ////종료 시간 예측할 땐 1시간 30분으로 가정할 것
 
-            ////최종장, 12시간 예상
-            ////완료
-            //for (int angleM = -18; angleM <= -18; angleM++)
-            //{
-            //    for (int angleS = 2; angleS < 10; angleS += 2)
-            //    {
-            //        for (int dist = 0; dist <= 50; dist += 2)
-            //        {
-            //            DQN(angleM, angleS, dist);
-            //        }
-            //    }
-            //}
+            //최종장, 12시간 예상
+            //완료
+            for (int angleM = -18; angleM <= -18; angleM++)
+            {
+                for (int angleS = 2; angleS < 10; angleS += 2)
+                {
+                    for (int dist = 0; dist <= 50; dist += 2)
+                    {
+                        DQN(angleM, angleS, dist);
+                    }
+                }
+            }
 
             //Q러닝 결과 읽고 가장 좋은 행동 찾아서 따로 모으기
             //OR 학습 완료된 FCNN 읽어서 라벨 구버전 별로 가장 좋은 행동 예측 해서 반환
@@ -935,8 +543,8 @@ public class EnemyDataCollector : MonoBehaviour {
             {
                 if (result[i] != -1)
                 {
-                    if(target[i] == 40)
-                        Debug.Log(Index_TO_IntVector3(i).IntVector3ToString() + ": " + result[i] + " || " + (target[i]+ sampleNet.outputInfo[i]));
+                    if (target[i] == 40)
+                        Debug.Log(Index_TO_IntVector3(i).IntVector3ToString() + ": " + result[i] + " || " + (target[i] + sampleNet.outputInfo[i]));
                     else
                         Debug.Log(Index_TO_IntVector3(i).IntVector3ToString() + ": " + result[i] + " || " + target[i]);
                 }
@@ -1324,7 +932,7 @@ public class EnemyDataCollector : MonoBehaviour {
         List<AIData> mAngle180 = new List<AIData>();
 
         //aiDatas[i].sitCUR._angleComp 오름차순 정렬 (-180부터 180까지)
-        quickSort_AIData(0, aiDatas.Count - 1);
+        aiDatas = sortANDSearch.QuickSort_AIData(aiDatas);
 
         float angle = -180f;
 
@@ -1698,7 +1306,7 @@ public class EnemyDataCollector : MonoBehaviour {
         {
             Debug.Log("New Read " + angle);
             aiDatas = IO_SqlDB.ReadAIData_FROM_DB(fileName, angle);
-            quickSort_AIData(0, aiDatas.Count - 1);
+            aiDatas = sortANDSearch.QuickSort_AIData(aiDatas);
         }
     }
 

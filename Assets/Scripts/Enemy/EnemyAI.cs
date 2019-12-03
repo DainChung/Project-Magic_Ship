@@ -699,25 +699,15 @@ public class EnemyAI : MonoBehaviour
         if (isbehaveCoolTimeOn)
         {
             curDist = Vector3.Distance(transform.position, enemyController.playerTransform.position);
-            isHPLOW = true;//enemyController.__ENE_Stat.__PUB__Health_Point < enemyController.__ENE_Stat.half_HP;
+            isHPLOW = true;
 
-            //sitCUR = enemyCollector.SearchGoodSitCUR(curDist, enemyController._GET__ENE_AI_Engine.angleComp, isHPLOW, true);
-
-            //if (qDepth >= 1)
-            //{
-            //sitCUR = enemyCollector.SearchGoodSitCUR(curDist, enemyController._GET__ENE_AI_Engine.angleComp, isHPLOW, true);
-            //    if (qDepth >= 3) qDepth = -1;
-            //}
-            //else
             sitCUR = enemyCollector.SearchGoodSitCUR(curDist, enemyController._GET__ENE_AI_Engine.angleComp, isHPLOW, false);
 
-            //qDepth = 0;
-
-            //20190606 임시
-            if (sitCUR._doing.vecZ != 0)
-            {
-                behaveCount_FOR_PPT++;
-            }
+            ////디버깅
+            //if (sitCUR._doing.vecZ != 0)
+            //{
+            //    behaveCount_FOR_PPT++;
+            //}
 
             bool isCloser = false;
 
