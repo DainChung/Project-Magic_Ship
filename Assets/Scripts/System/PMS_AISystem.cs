@@ -50,18 +50,6 @@ namespace PMS_AISystem
         }
     }
 
-    public class Behave
-    {
-        public IntVector3 Doing;
-        public float Time;
-
-        public Behave(IntVector3 doing, float time)
-        {
-            Doing = doing;
-            Time = time;
-        }
-    }
-
     public class SituationCUR : IDisposable
     {
 
@@ -86,17 +74,6 @@ namespace PMS_AISystem
             _angleComp = angleComp;
             _doing = doing;
             _time = time;
-        }
-
-        public SituationCUR(string id, float dist, float angleComp, Behave behave)
-        {
-            _id = id;
-            _posX = 0f;
-            _posZ = 0f;
-            _dist = dist;
-            _angleComp = angleComp;
-            _doing = behave.Doing;
-            _time = behave.Time;
         }
 
         public SituationCUR()
@@ -300,45 +277,6 @@ namespace PMS_AISystem
         public AIDataList()
         {
             datas = new List<AIData>();
-        }
-    }
-
-    public class DeepAIData
-    {
-        public SituationCUR sitCUR;
-        public List<SituationAFT> sitAFTList = new List<SituationAFT>();
-
-        public DeepAIData(SituationCUR cur, List<SituationAFT> aft)
-        {
-            sitCUR = cur;
-            sitAFTList = aft;
-        }
-
-        public DeepAIData(SituationCUR cur, SituationAFT aft)
-        {
-            sitCUR = cur;
-            sitAFTList.Add(aft);
-        }
-
-        public DeepAIData(SituationAFT aft)
-        {
-            sitAFTList.Add(new SituationAFT(aft));
-        }
-
-        public DeepAIData(SituationAFT aft, int index)
-        {
-            sitAFTList[index] = aft;
-        }
-
-        public DeepAIData()
-        {
-            sitAFTList.Add(new SituationAFT());
-        }
-
-        public DeepAIData(AIData data)
-        {
-            sitCUR = new SituationCUR(data.sitCUR);
-            sitAFTList.Add(new SituationAFT(data.sitAFT));
         }
     }
 

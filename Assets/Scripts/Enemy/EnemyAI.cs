@@ -179,6 +179,20 @@ public class EnemyAI : MonoBehaviour
                 __ENE_AI_Engine.Rotate_TO_Direction(enemyController.__ENE_Stat.__PUB_Rotation_Speed, ref enemyController.enemyTransform, enemyController.playerTransform, true);
 
                 //일정 시간동안 해당 유닛의 전방을 향해 이동한다.
+                if ((__ENE_AI_Engine._PUB_enemyCoolTime & 0x000000000001) == 0x000000000001)
+                {
+                    __ENE_AI_Engine.__ENE_Engine._unit_Move_Engine.Move_OBJ(enemyController.__ENE_Stat.__PUB_Move_Speed, ref enemyController.enemyTransform, 1);
+                    //4초 동안 퇴각
+                    StartCoroutine(enemyController.enemyCoolTimer.Timer_Do_Once(4.0f, (input) => { __ENE_AI_Engine._PUB_enemy_Is_ON_CoolTime[0] = input; }, true));
+                }
+                else
+                {
+                    //16초 동안 정지
+                    StartCoroutine(enemyController.enemyCoolTimer.Timer_Do_Once(16.0f, (input) => { __ENE_AI_Engine._PUB_enemy_Is_ON_CoolTime[0] = input; }, false));
+                    //회복 패턴은 정예 선박만 넣는것이 좋을 것 같다
+                    //StartCoroutine(__ENE_Stat.__Get_HIT__About_Health_FREQ(2.0f, 1.0f, 1, -1));
+                }
+                
                 if (__ENE_AI_Engine._PUB_enemy_Is_ON_CoolTime[0])
                 {
                     __ENE_AI_Engine.__ENE_Engine._unit_Move_Engine.Move_OBJ(enemyController.__ENE_Stat.__PUB_Move_Speed, ref enemyController.enemyTransform, 1);
@@ -192,6 +206,7 @@ public class EnemyAI : MonoBehaviour
                     //회복 패턴은 정예 선박만 넣는것이 좋을 것 같다
                     //StartCoroutine(__ENE_Stat.__Get_HIT__About_Health_FREQ(2.0f, 1.0f, 1, -1));
                 }
+                
 
             }
             //체력이 최대 체력의 절반을 초과할 때 (공격해야할 때)

@@ -130,6 +130,13 @@ public class EnemyAIEngine {
     private Quaternion destiQT;
     //쿨타임 여부에 따른 행동 관리
     private bool[] enemy_is_ON_CoolTime = new bool[9];
+    private byte enemyCoolTime = 0x00000000;
+
+    public byte _PUB_enemyCoolTime
+    {
+        get { return enemyCoolTime;  }
+        set { enemyCoolTime = value; }
+    }
 
     public bool[] _PUB_enemy_Is_ON_CoolTime
     {
