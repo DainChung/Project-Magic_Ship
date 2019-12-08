@@ -127,7 +127,7 @@ public class UnitCoolTimer : MonoBehaviour {
         yield break;
     }
 
-    public IEnumerator Timer_Do_Once(float timeVal, Action<int> output, int lockVal, int index)
+    public IEnumerator Timer_Do_Once(float timeVal, Action<int> timeLocker, int lockVal, int index)
     {
         //시간 계산
         yield return new WaitForSeconds(timeVal);
@@ -137,16 +137,49 @@ public class UnitCoolTimer : MonoBehaviour {
         if ((lockVal & index) == index)
         {
             //해당하는 값을 0으로 바꿔준다.
-            output(lockVal & (~index));
+            timeLocker(lockVal & (~index));
         }
         //Timer가 시작될 때 바꿀 값이 0(false)이었다면
         else
         {
             //해당하는 값을 1로 바꿔준다.
-            output(lockVal + index);
+            timeLocker(lockVal + index);
         }
 
         //코루틴 종료
+        yield break;
+    }
+
+    public IEnumerator Timer(float timeVal, Action<int> timeLocker, int lockVal, int index, Action<float> outputRemainedTime)
+    {
+        float remained_Time;
+
+        if ((lockVal & index) == index)
+        {
+            timeLocker(lockVal & (~index));
+        }
+        else
+        {
+            timeLocker(lockVal + index);
+        }
+
+        for (remained_Time = timeVal; remained_Time >= 0; remained_Time--)
+        {
+            outputRemainedTime(remained_Time);
+
+            yield return new WaitForSeconds(1.0f);
+        }
+
+        if ((lockVal & index) == index)
+        {
+            timeLocker(lockVal & (~index));
+        }
+        else
+        {
+            timeLocker(lockVal + index);
+        }
+
+        //해당 코루틴 자동 종료
         yield break;
     }
 }

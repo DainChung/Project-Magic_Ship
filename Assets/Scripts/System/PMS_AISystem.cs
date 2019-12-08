@@ -4,12 +4,11 @@ using System.Collections;
 using System.Collections.Generic;
 using System;
 
-//해당 스크립트 폐기 가능성 존재
-//번거롭게 새로운 클래스를 만드는 것보다 DB에 직접 값들을 저장하고 읽어오는 것이 유용할 수 있음
 namespace PMS_AISystem
 {
 
-    public class IntVector3 {
+    public class IntVector3
+    {
         public int vecX;
         public int vecY;
         public int vecZ;
@@ -693,94 +692,5 @@ namespace PMS_AISystem
             for (int c = 0; c < this.col; c++)
                 Debug.Log(row + ", " + c + " : " + this.values[row][c]);
         }
-    }
-
-    public class Neuron
-    {
-        public List<double> inputs = new List<double>();
-        public List<double> weights = new List<double>();
-        public double output = 0.0;
-        public double bia = 1.0;
-
-        double m = 0.0, v = 0.0;
-
-        public Neuron(int inputNUM)
-        {
-            int i = 0;
-
-            while (i < inputNUM)
-            {
-                this.inputs.Add(0.0);
-                this.weights.Add((double)(UnityEngine.Random.Range(0.0f, 1.0f)));
-                    
-                i++;
-            }
-        }
-
-        public void FeedForward()
-        {
-            for (int i = 0; i < this.inputs.Count; i++)
-                output += (inputs[i] * weights[i] - bia);
-            
-            output = output > 0.0 ? output : 0.01 * (Mathf.Exp((float)(output)) - 1);
-        }
-
-        //public void ADAM(double target, List<Neuron> allNeurons)
-        //{
-        //    double grad = (output - target) * Grad_ELU();
-
-        //    m = 0.9 * m + 0.1 * grad;
-        //    v = 0.999 * v + 0.001 * grad * grad;
-
-        //    weights[0] -= 0.1 * m / (Mathf.Sqrt((float)(v)) + 0.00000001) * dist * 0.001;
-        //    //angle의 경우 최대 3자리 수인 관계로 절대값을 줄여줘야 됨(음수일 경우도 고려 필요)
-        //    //angle 값을 축소해서 곱해주면 제대로 수렴, 그냥 곱해주면 무조건 -0.01로 수렴하려고 함, 음수 또는 양수 인 경우 모두 적합함
-        //    weights[1] -= 0.1 * m / (Mathf.Sqrt((float)(v)) + 0.00000001) * angle * 0.002;
-        //    weights[2] -= 0.1 * m / (Mathf.Sqrt((float)(v)) + 0.00000001) * time * 0.0005;
-
-        //    bia -= 0.1 * m / (Mathf.Sqrt((float)(v)) + 0.00000001);
-        //}
-
-        //public void ADAM(double target)
-        //{
-        //    double grad = (output - target) * Grad_ELU();
-
-        //    m = 0.9 * m + 0.1 * grad;
-        //    v = 0.999 * v + 0.001 * grad * grad;
-
-        //    //hiddenLayer의 output값들을 먼저 변경시키고 weight에 대한 값 조정을 할 것
-        //    //단, inputLayer의 input값들은 변경하지 않도록 해야함
-        //    //doM -= 0.1 * m / (Mathf.Sqrt((float)(v)) + 0.00000001) * doM;
-        //    //doR -= 0.1 * m / (Mathf.Sqrt((float)(v)) + 0.00000001) * doR;
-        //    //doA -= 0.1 * m / (Mathf.Sqrt((float)(v)) + 0.00000001) * doA;
-
-        //    //dist = 0.1 * m / (Mathf.Sqrt((float)(v)) + 0.00000001) * dist * 0.001;
-        //    //angle -= 0.1 * m / (Mathf.Sqrt((float)(v)) + 0.00000001) * angle * 0.0002;
-        //    //time -= 0.1 * m / (Mathf.Sqrt((float)(v)) + 0.00000001) * time * 0.0005;
-
-        //    //weights[0] -= 0.1 * m / (Mathf.Sqrt((float)(v)) + 0.00000001) * doM * 0.001;
-        //    //weights[1] -= 0.1 * m / (Mathf.Sqrt((float)(v)) + 0.00000001) * doR * 0.001;
-        //    //weights[2] -= 0.1 * m / (Mathf.Sqrt((float)(v)) + 0.00000001) * doA * 0.001;
-
-        //    weights[0] -= 0.1 * m / (Mathf.Sqrt((float)(v)) + 0.00000001) * dist * 0.001;
-        //    //angle의 경우 최대 3자리 수인 관계로 절대값을 줄여줘야 됨(음수일 경우도 고려 필요)
-        //    //angle 값을 축소해서 곱해주면 제대로 수렴, 그냥 곱해주면 무조건 -0.01로 수렴하려고 함, 음수 또는 양수 인 경우 모두 적합함
-        //    weights[1] -= 0.1 * m / (Mathf.Sqrt((float)(v)) + 0.00000001) * angle * 0.002;
-        //    weights[2] -= 0.1 * m / (Mathf.Sqrt((float)(v)) + 0.00000001) * time * 0.0005;
-
-        //    bia -= 0.1 * m / (Mathf.Sqrt((float)(v)) + 0.00000001);
-        //}
-
-        //public double Get_ELU()
-        //{
-        //    double result = dist * weights[0] + angle * weights[1] + time * weights[2] - 3 * bia;
-
-        //    return result > 0.0 ? result : 0.01 * (Mathf.Exp((float)(result)) - 1);
-        //}
-
-        //double Grad_ELU()
-        //{
-        //    return output > 0.0 ? 1.0 : 0.01 * Mathf.Exp((float)(output));
-        //}
     }
 }
