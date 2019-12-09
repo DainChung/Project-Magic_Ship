@@ -130,9 +130,9 @@ public class EnemyAIEngine {
     private Quaternion destiQT;
     //쿨타임 여부에 따른 행동 관리
     private bool[] enemy_is_ON_CoolTime = new bool[9];
-    private byte enemyCoolTime = 0x00000000;
+    private int enemyCoolTime = 0x0000000000;
 
-    public byte _PUB_enemyCoolTime
+    public int _PUB_enemyCoolTime
     {
         get { return enemyCoolTime;  }
         set { enemyCoolTime = value; }
@@ -262,7 +262,7 @@ public class EnemyAIEngine {
 
 public class EnemyController : MonoBehaviour {
 
-    public EnemyStat __ENE_Stat = new EnemyStat();
+    public EnemyStat ENE_Stat = new EnemyStat();
 
     private EnemyAIEngine __ENE_AI_Engine = new EnemyAIEngine();
     public EnemyAIEngine _GET__ENE_AI_Engine
@@ -294,9 +294,9 @@ public class EnemyController : MonoBehaviour {
 
     void Awake() {
         //이속, 회전속도, 체력, 마나, 파워 게이지, 공격력, 크리확률, 크리계수, AI레벨
-        //__ENE_Stat.SampleInit(10.0f, 30.0f, 10, 10, 10, 1, 0.1f, 2.0f, 0);
-        //__ENE_Stat.SampleInit(10.0f, 30.0f, 10, 10, 10, 1, 0.1f, 2.0f, sample_AI_Level);
-        __ENE_Stat.InitialLize_Enemy_Stat(IO_CSV.__Get_Searched_EnemyBaseStat(unitID));
+        //ENE_Stat.SampleInit(10.0f, 30.0f, 10, 10, 10, 1, 0.1f, 2.0f, 0);
+        //ENE_Stat.SampleInit(10.0f, 30.0f, 10, 10, 10, 1, 0.1f, 2.0f, sample_AI_Level);
+        ENE_Stat.InitialLize_Enemy_Stat(IO_CSV.__Get_Searched_EnemyBaseStat(unitID));
 
         //UnitBaseEngine에 Enemy라고 알려준다.
         __ENE_AI_Engine.__ENE_Engine = transform.GetComponent<UnitBaseEngine>();
@@ -311,13 +311,14 @@ public class EnemyController : MonoBehaviour {
         __ENE_AI_Engine.__ENE_Engine._unit_Move_Engine.movingEffect = this.movingEffect;
 
         //Unit__Base_Engine이 Unit__Base_Stat 내용에 접근할 수 있도록 한다.
-        __ENE_AI_Engine.__ENE_Engine._unit_Stat = __ENE_Stat;
+        __ENE_AI_Engine.__ENE_Engine._unit_Stat = ENE_Stat;
 
 
         __ENE_AI = transform.GetComponent<EnemyAI>();
 
 
         //쿨타임을 위한 부울 변수들 초기화
+        __ENE_AI_Engine._PUB_enemyCoolTime = 0x0000000000;
         for (int index = 0; index < __ENE_AI_Engine._PUB_enemy_Is_ON_CoolTime.Length; index++)
         {
             __ENE_AI_Engine._PUB_enemy_Is_ON_CoolTime[index] = true;
@@ -330,7 +331,7 @@ public class EnemyController : MonoBehaviour {
         _AI_FuncList.Add(() => __ENE_AI.__OLD__AI_DeepLearning__BigData_Ver());
         _AI_FuncList.Add(() => __ENE_AI.AI_DeepLearning__BigData_Ver());
 
-        aiLV = __ENE_Stat._GET_ai_Level;
+        aiLV = ENE_Stat._GET_ai_Level;
     }
 
 	// Use this for initialization
@@ -357,7 +358,7 @@ public class EnemyController : MonoBehaviour {
             __ENE_AI_Engine.GetAngleComp(transform, playerTransform);
 
             //아직 살아있을 때
-            if (__ENE_Stat.__PUB__Health_Point > 0)
+            if (ENE_Stat.__PUB__Health_Point > 0)
             {
                 //나중에 EnemyAI 클래스를 따로 만들어서 이하 내용과 같은 기능을 하도록 넣을 것.
                 _AI_FuncList[aiLV]();
@@ -366,44 +367,44 @@ public class EnemyController : MonoBehaviour {
                     movingEffect.Stop();
 
                 //스피드 버프 OR 디버프 지속시간 종료 여부
-                if (__ENE_Stat.__PUB_Stat_IsCoolTimeOn[0])
+                if (ENE_Stat.__PUB_Stat_IsCoolTimeOn[0])
                 {
                     //스피드 버프 OR 디버프 해제
                     __ENE_AI_Engine.__ENE_Engine._unit_Move_Engine.Init_Speed_BUF_Amount();
                     //스피드 버프 해제로 일단 간주
-                    __ENE_Stat.__PUB_Stat_IsCoolTimeOn[0] = false;
+                    ENE_Stat.__PUB_Stat_IsCoolTimeOn[0] = false;
                 }
 
                 //체력 버프 OR 디버프 지속시간 종료 여부
-                if (__ENE_Stat.__PUB_Stat_IsCoolTimeOn[1])
+                if (ENE_Stat.__PUB_Stat_IsCoolTimeOn[1])
                 {
 
                 }
 
                 //기본 마나 회복 지속시간 종료 여부
-                if (__ENE_Stat.__PUB_Stat_IsCoolTimeOn[2])
+                if (ENE_Stat.__PUB_Stat_IsCoolTimeOn[2])
                 {
                     //일단 1씩 회복한다.
-                    __ENE_Stat.__Get_HIT__About_Mana(1, -1);
+                    ENE_Stat.__Get_HIT__About_Mana(1, -1);
                     //다음 기본 마나 회복 시간까지 대기 
-                    __ENE_Stat.__PUB_Stat_IsCoolTimeOn[2] = false;
+                    ENE_Stat.__PUB_Stat_IsCoolTimeOn[2] = false;
 
                     //일단 10초마다 마나를 회복하도록 결정
                     __ENE_AI_Engine.enemyCoolTimer.StartCoroutine(
                         __ENE_AI_Engine.enemyCoolTimer.Timer_Do_Once(10.0f,
-                        (input) => { __ENE_Stat.__PUB_Stat_IsCoolTimeOn[2] = input; },
+                        (input) => { ENE_Stat.__PUB_Stat_IsCoolTimeOn[2] = input; },
                         false)
                         );
                 }
 
                 //PP 버프 OR 디버프 지속시간 종료 여부
-                if (__ENE_Stat.__PUB_Stat_IsCoolTimeOn[3])
+                if (ENE_Stat.__PUB_Stat_IsCoolTimeOn[3])
                 {
 
                 }
 
                 //크리티컬 버프 OR 디버프 지속시간 종료 여부
-                if (__ENE_Stat.__PUB_Stat_IsCoolTimeOn[4])
+                if (ENE_Stat.__PUB_Stat_IsCoolTimeOn[4])
                 {
 
                 }
@@ -429,7 +430,7 @@ public class EnemyController : MonoBehaviour {
     public void _Enemy_Get_Hit(int damage, bool isItCritical)
     {
         //isHit_OR_Heal 부분은 나중에 Enum과 같은 요소로 변경하여 넣을 것
-        __ENE_Stat.__GET_HIT__About_Health(damage, 1);
+        ENE_Stat.__GET_HIT__About_Health(damage, 1);
         //크리티컬 여부에 따라 UI 형식이 달라지기 때문에 관련 정보 송신
         sEnemyUI._SET_isItCritical = isItCritical;
         sEnemyUI.SendMessage("ShowDamage", damage);
@@ -439,14 +440,14 @@ public class EnemyController : MonoBehaviour {
     public void _Enemy__GET_DeBuff(SkillBaseStat whichDeBuffSkill_Hit_Enemy)
     {
         __ENE_AI_Engine.__ENE_Engine._unit_Combat_Engine.Using_Skill(ref enemy_Front, whichDeBuffSkill_Hit_Enemy, false);
-        //__ENE_Engine.__ENE_C_Engine.Using_Skill_ENE(ref enemy_Front, whichDeBuffSkill_Hit_Enemy, __ENE_Stat, this, false);
+        //__ENE_Engine.__ENE_C_Engine.Using_Skill_ENE(ref enemy_Front, whichDeBuffSkill_Hit_Enemy, ENE_Stat, this, false);
     }
 
     //랜덤 데이터 얻을 때에 한해서만 필요한 함수들
     void OnTriggerEnter(Collider other)
     {
-        //if ((__ENE_Stat._GET_ai_Level == 3 || __ENE_Stat._GET_ai_Level == 4 || __ENE_Stat._GET_ai_Level == 5) && transform.GetComponent<Collider>().isTrigger && other.transform.tag == "Player")
-        if ((__ENE_Stat._GET_ai_Level == 3 || __ENE_Stat._GET_ai_Level == 4) && transform.GetComponent<Collider>().isTrigger && other.transform.tag == "Player")
+        //if ((ENE_Stat._GET_ai_Level == 3 || ENE_Stat._GET_ai_Level == 4 || ENE_Stat._GET_ai_Level == 5) && transform.GetComponent<Collider>().isTrigger && other.transform.tag == "Player")
+        if ((ENE_Stat._GET_ai_Level == 3 || ENE_Stat._GET_ai_Level == 4) && transform.GetComponent<Collider>().isTrigger && other.transform.tag == "Player")
         {
             transform.GetComponent<Collider>().isTrigger = false;
         }
@@ -454,8 +455,8 @@ public class EnemyController : MonoBehaviour {
 
     void OnTriggerExit(Collider other)
     {
-        //if ((__ENE_Stat._GET_ai_Level == 3 || __ENE_Stat._GET_ai_Level == 4 || __ENE_Stat._GET_ai_Level == 5) && !transform.GetComponent<Collider>().isTrigger && other.transform.tag == "Player")
-        if ((__ENE_Stat._GET_ai_Level == 3 || __ENE_Stat._GET_ai_Level == 4) && !transform.GetComponent<Collider>().isTrigger && other.transform.tag == "Player")
+        //if ((ENE_Stat._GET_ai_Level == 3 || ENE_Stat._GET_ai_Level == 4 || ENE_Stat._GET_ai_Level == 5) && !transform.GetComponent<Collider>().isTrigger && other.transform.tag == "Player")
+        if ((ENE_Stat._GET_ai_Level == 3 || ENE_Stat._GET_ai_Level == 4) && !transform.GetComponent<Collider>().isTrigger && other.transform.tag == "Player")
         {
             transform.GetComponent<Collider>().isTrigger = true;
         }

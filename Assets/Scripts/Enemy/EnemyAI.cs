@@ -16,7 +16,7 @@ public class EnemyAI : MonoBehaviour
 
     private EnemyDataCollector enemyCollector;
 
-    private EnemyStat __ENE_Stat;
+    private EnemyStat ENE_Stat;
     private EnemyAIEngine __ENE_AI_Engine;
     private UnitBaseEngine __ENE_Engine;
 
@@ -85,7 +85,7 @@ public class EnemyAI : MonoBehaviour
     {
         enemyController = transform.GetComponent<EnemyController>();
 
-        __ENE_Stat = enemyController.__ENE_Stat;
+        ENE_Stat = enemyController.ENE_Stat;
         __ENE_AI_Engine = enemyController._GET__ENE_AI_Engine;
         __ENE_Engine = __ENE_AI_Engine.__ENE_Engine;
 
@@ -104,11 +104,11 @@ public class EnemyAI : MonoBehaviour
 
         sigma = enemyCollector.sigmaValue;
         //체력 관리
-        //enemyController.__ENE_Stat.__PUB__Health_Point = 4;
+        //enemyController.ENE_Stat.__PUB__Health_Point = 4;
 
 
-        moveSpeed = __ENE_Stat.__PUB_Move_Speed;
-        rotSpeed = __ENE_Stat.__PUB_Rotation_Speed;
+        moveSpeed = ENE_Stat.__PUB_Move_Speed;
+        rotSpeed = ENE_Stat.__PUB_Rotation_Speed;
 
         //이동에 관한 함수 리스트
         //이동 없음
@@ -138,11 +138,11 @@ public class EnemyAI : MonoBehaviour
         //공격 없음
         behaveList_Attack.Add(() => AI_DO_Nothing());
         //정면 일반 공격
-        behaveList_Attack.Add(() => __ENE_AI_Engine.Attack_Default(2.0f, ref enemyController.enemy_Front, __ENE_Stat, 1));
+        behaveList_Attack.Add(() => __ENE_AI_Engine.Attack_Default(2.0f, ref enemyController.enemy_Front, ENE_Stat, 1));
         //우측 일반 공격(2번, angleComp > 0)
-        behaveList_Attack.Add(() => __ENE_AI_Engine.Attack_Default(2.0f, ref enemyController.enemy_Right, __ENE_Stat, 1));
+        behaveList_Attack.Add(() => __ENE_AI_Engine.Attack_Default(2.0f, ref enemyController.enemy_Right, ENE_Stat, 1));
         //좌측 일반 공격(3번, angleComp < 0)
-        behaveList_Attack.Add(() => __ENE_AI_Engine.Attack_Default(2.0f, ref enemyController.enemy_Left, __ENE_Stat, 1));
+        behaveList_Attack.Add(() => __ENE_AI_Engine.Attack_Default(2.0f, ref enemyController.enemy_Left, ENE_Stat, 1));
 
         realIndex.InitIntVector3(0, 0, 0);
 
@@ -173,15 +173,15 @@ public class EnemyAI : MonoBehaviour
         if (!isEnd_OF_Stage)
         {
             //체력이 최대 체력의 절반 이하일 때 (도망가야할 때)
-            if (enemyController.__ENE_Stat.__PUB__Health_Point <= enemyController.__ENE_Stat.half_HP)
+            if (enemyController.ENE_Stat.__PUB__Health_Point <= enemyController.ENE_Stat.half_HP)
             {
                 //플레이어 반대 방향을 보도록 한다.
-                __ENE_AI_Engine.Rotate_TO_Direction(enemyController.__ENE_Stat.__PUB_Rotation_Speed, ref enemyController.enemyTransform, enemyController.playerTransform, true);
+                __ENE_AI_Engine.Rotate_TO_Direction(enemyController.ENE_Stat.__PUB_Rotation_Speed, ref enemyController.enemyTransform, enemyController.playerTransform, true);
 
                 //일정 시간동안 해당 유닛의 전방을 향해 이동한다.
                 if ((__ENE_AI_Engine._PUB_enemyCoolTime & 0x000000000001) == 0x000000000001)
                 {
-                    __ENE_AI_Engine.__ENE_Engine._unit_Move_Engine.Move_OBJ(enemyController.__ENE_Stat.__PUB_Move_Speed, ref enemyController.enemyTransform, 1);
+                    __ENE_AI_Engine.__ENE_Engine._unit_Move_Engine.Move_OBJ(enemyController.ENE_Stat.__PUB_Move_Speed, ref enemyController.enemyTransform, 1);
                     //4초 동안 퇴각
                     StartCoroutine(enemyController.enemyCoolTimer.Timer_Do_Once(4.0f, (input) => { __ENE_AI_Engine._PUB_enemy_Is_ON_CoolTime[0] = input; }, true));
                 }
@@ -190,12 +190,12 @@ public class EnemyAI : MonoBehaviour
                     //16초 동안 정지
                     StartCoroutine(enemyController.enemyCoolTimer.Timer_Do_Once(16.0f, (input) => { __ENE_AI_Engine._PUB_enemy_Is_ON_CoolTime[0] = input; }, false));
                     //회복 패턴은 정예 선박만 넣는것이 좋을 것 같다
-                    //StartCoroutine(__ENE_Stat.__Get_HIT__About_Health_FREQ(2.0f, 1.0f, 1, -1));
+                    //StartCoroutine(ENE_Stat.__Get_HIT__About_Health_FREQ(2.0f, 1.0f, 1, -1));
                 }
                 
                 if (__ENE_AI_Engine._PUB_enemy_Is_ON_CoolTime[0])
                 {
-                    __ENE_AI_Engine.__ENE_Engine._unit_Move_Engine.Move_OBJ(enemyController.__ENE_Stat.__PUB_Move_Speed, ref enemyController.enemyTransform, 1);
+                    __ENE_AI_Engine.__ENE_Engine._unit_Move_Engine.Move_OBJ(enemyController.ENE_Stat.__PUB_Move_Speed, ref enemyController.enemyTransform, 1);
                     //4초 동안 퇴각
                     StartCoroutine(enemyController.enemyCoolTimer.Timer_Do_Once(4.0f, (input) => { __ENE_AI_Engine._PUB_enemy_Is_ON_CoolTime[0] = input; }, true));
                 }
@@ -204,7 +204,7 @@ public class EnemyAI : MonoBehaviour
                     //16초 동안 정지
                     StartCoroutine(enemyController.enemyCoolTimer.Timer_Do_Once(16.0f, (input) => { __ENE_AI_Engine._PUB_enemy_Is_ON_CoolTime[0] = input; }, false));
                     //회복 패턴은 정예 선박만 넣는것이 좋을 것 같다
-                    //StartCoroutine(__ENE_Stat.__Get_HIT__About_Health_FREQ(2.0f, 1.0f, 1, -1));
+                    //StartCoroutine(ENE_Stat.__Get_HIT__About_Health_FREQ(2.0f, 1.0f, 1, -1));
                 }
                 
 
@@ -214,10 +214,10 @@ public class EnemyAI : MonoBehaviour
             {
 
                 //플레이어를 바라보도록 한다.
-                __ENE_AI_Engine.Rotate_TO_Direction(__ENE_Stat.__PUB_Rotation_Speed, ref enemyController.enemyTransform, enemyController.playerTransform, false);
+                __ENE_AI_Engine.Rotate_TO_Direction(ENE_Stat.__PUB_Rotation_Speed, ref enemyController.enemyTransform, enemyController.playerTransform, false);
 
                 //전방으로 이동한다.
-                __ENE_AI_Engine.Go_TO_Foward_UNTIL_RayHit(__ENE_Stat.__PUB_Move_Speed, ref enemyController.enemyTransform, enemyController.playerTransform);
+                __ENE_AI_Engine.Go_TO_Foward_UNTIL_RayHit(ENE_Stat.__PUB_Move_Speed, ref enemyController.enemyTransform, enemyController.playerTransform);
 
                 //각도 차에 따라 다른 위치로 발사한다. (아직 미구현)
                 if (__ENE_AI_Engine._PUB_enemy_Is_ON_CoolTime[1])
@@ -227,7 +227,7 @@ public class EnemyAI : MonoBehaviour
                     //플레이어를 거의 정면으로 바라보고 있을 때
                     //if(curAngleComparison <= 10.0f)
                     //쿨타임에 랜덤변수를 더해서 난이도를 조금 올린다.
-                    __ENE_AI_Engine.Attack_Default(sampleTime, ref enemyController.enemy_Front, __ENE_Stat, 1);
+                    __ENE_AI_Engine.Attack_Default(sampleTime, ref enemyController.enemy_Front, ENE_Stat, 1);
 
                     ////20190310
                     ////이속 디버프 스킬을 기본 공격으로 사용하도록 임시로 테스트 한다.
@@ -246,19 +246,19 @@ public class EnemyAI : MonoBehaviour
 
                     //플레이어가 적의 좌측에 있을 때
                     //else if(curAngleComparison <= 100.0f && curAngleComparison >= 80.0f && GET_RotataionDir(curAngle, destiAngle))
-                    //__ENE_AI_Engine.Attack_Default(2.0f + Random.Range(0.0f, 1.0f), ref enemyController.enemy_Left, __ENE_Stat, 1);
+                    //__ENE_AI_Engine.Attack_Default(2.0f + Random.Range(0.0f, 1.0f), ref enemyController.enemy_Left, ENE_Stat, 1);
                     //플레이어가 적의 우측에 있을 때
                     //else if(  curAngleComparison <= 100.0f && curAngleComparison >= 80.0f && !( GET_RotataionDir(curAngle, destiAngle) )  )
-                    //__ENE_AI_Engine.Attack_Default(2.0f + Random.Range(0.0f, 1.0f), ref enemyController.enemy_Right, __ENE_Stat, 1);
+                    //__ENE_AI_Engine.Attack_Default(2.0f + Random.Range(0.0f, 1.0f), ref enemyController.enemy_Right, ENE_Stat, 1);
                 }
                 //측면 공격
                 //if (__ENE_Engine._PUB_enemy_Is_ON_CoolTime[2])
                 //{
-                //    __ENE_Engine.Attack_Default(2.0f, ref default_Ammo, ref enemy_Right, __ENE_Stat.__PUB_ATK__Val, 1);
+                //    __ENE_Engine.Attack_Default(2.0f, ref default_Ammo, ref enemy_Right, ENE_Stat.__PUB_ATK__Val, 1);
                 //}
                 //if (__ENE_Engine._PUB_enemy_Is_ON_CoolTime[3])
                 //{
-                //    __ENE_Engine.Attack_Default(2.0f, ref default_Ammo, ref enemy_Left, __ENE_Stat.__PUB_ATK__Val, 2);
+                //    __ENE_Engine.Attack_Default(2.0f, ref default_Ammo, ref enemy_Left, ENE_Stat.__PUB_ATK__Val, 2);
                 //}
             }         
         }
@@ -295,10 +295,10 @@ public class EnemyAI : MonoBehaviour
         if (!isEnd_OF_Stage)
         {
             //플레이어를 바라보도록 한다.
-            __ENE_AI_Engine.Rotate_TO_Direction(__ENE_Stat.__PUB_Rotation_Speed, ref enemyController.enemyTransform, enemyController.playerTransform, false);
+            __ENE_AI_Engine.Rotate_TO_Direction(ENE_Stat.__PUB_Rotation_Speed, ref enemyController.enemyTransform, enemyController.playerTransform, false);
 
             //전방으로 이동한다.
-            __ENE_AI_Engine.Go_TO_Foward_UNTIL_RayHit(__ENE_Stat.__PUB_Move_Speed, ref enemyController.enemyTransform, enemyController.playerTransform);
+            __ENE_AI_Engine.Go_TO_Foward_UNTIL_RayHit(ENE_Stat.__PUB_Move_Speed, ref enemyController.enemyTransform, enemyController.playerTransform);
 
             //각도 차에 따라 다른 위치로 발사한다. (아직 미구현)
             if (__ENE_AI_Engine._PUB_enemy_Is_ON_CoolTime[1])
@@ -308,7 +308,7 @@ public class EnemyAI : MonoBehaviour
                 //플레이어를 거의 정면으로 바라보고 있을 때
                 //if(curAngleComparison <= 10.0f)
                 //쿨타임에 랜덤변수를 더해서 난이도를 조금 올린다.
-                __ENE_AI_Engine.Attack_Default(2.0f + Random.Range(0.0f, 1.0f), ref enemyController.enemy_Front, __ENE_Stat, 1);
+                __ENE_AI_Engine.Attack_Default(2.0f + Random.Range(0.0f, 1.0f), ref enemyController.enemy_Front, ENE_Stat, 1);
 
                 ////20190310
                 ////이속 디버프 스킬을 기본 공격으로 사용하도록 임시로 테스트 한다.
@@ -327,19 +327,19 @@ public class EnemyAI : MonoBehaviour
 
                 //플레이어가 적의 좌측에 있을 때
                 //else if(curAngleComparison <= 100.0f && curAngleComparison >= 80.0f && GET_RotataionDir(curAngle, destiAngle))
-                //__ENE_AI_Engine.Attack_Default(2.0f + Random.Range(0.0f, 1.0f), ref enemyController.enemy_Left, __ENE_Stat, 1);
+                //__ENE_AI_Engine.Attack_Default(2.0f + Random.Range(0.0f, 1.0f), ref enemyController.enemy_Left, ENE_Stat, 1);
                 //플레이어가 적의 우측에 있을 때
                 //else if(  curAngleComparison <= 100.0f && curAngleComparison >= 80.0f && !( GET_RotataionDir(curAngle, destiAngle) )  )
-                //__ENE_AI_Engine.Attack_Default(2.0f + Random.Range(0.0f, 1.0f), ref enemyController.enemy_Right, __ENE_Stat, 1);
+                //__ENE_AI_Engine.Attack_Default(2.0f + Random.Range(0.0f, 1.0f), ref enemyController.enemy_Right, ENE_Stat, 1);
             }
             //측면 공격
             //if (__ENE_Engine._PUB_enemy_Is_ON_CoolTime[2])
             //{
-            //    __ENE_Engine.Attack_Default(2.0f, ref default_Ammo, ref enemy_Right, __ENE_Stat.__PUB_ATK__Val, 1);
+            //    __ENE_Engine.Attack_Default(2.0f, ref default_Ammo, ref enemy_Right, ENE_Stat.__PUB_ATK__Val, 1);
             //}
             //if (__ENE_Engine._PUB_enemy_Is_ON_CoolTime[3])
             //{
-            //    __ENE_Engine.Attack_Default(2.0f, ref default_Ammo, ref enemy_Left, __ENE_Stat.__PUB_ATK__Val, 2);
+            //    __ENE_Engine.Attack_Default(2.0f, ref default_Ammo, ref enemy_Left, ENE_Stat.__PUB_ATK__Val, 2);
             //}
         }
         //스테이지 경계선과 접촉했을 때
@@ -358,21 +358,21 @@ public class EnemyAI : MonoBehaviour
         {
             //체력이 최대 체력의 절반 초과일 때 (1페이즈)
             //AI_Simple_Level0 + 측면 
-            if (enemyController.__ENE_Stat.__PUB__Health_Point > enemyController.__ENE_Stat.half_HP)
+            if (enemyController.ENE_Stat.__PUB__Health_Point > enemyController.ENE_Stat.half_HP)
             {
                 //플레이어에게 접근 후 정면 공격
                 if (behaveIndex == 0)
                 {
                     //플레이어를 바라보도록 한다.
-                    __ENE_AI_Engine.Rotate_TO_Direction(__ENE_Stat.__PUB_Rotation_Speed, ref enemyController.enemyTransform, enemyController.playerTransform, false);
+                    __ENE_AI_Engine.Rotate_TO_Direction(ENE_Stat.__PUB_Rotation_Speed, ref enemyController.enemyTransform, enemyController.playerTransform, false);
 
                     //전방으로 이동한다.
-                    __ENE_AI_Engine.Go_TO_Foward_UNTIL_RayHit(__ENE_Stat.__PUB_Move_Speed, ref enemyController.enemyTransform, enemyController.playerTransform);
+                    __ENE_AI_Engine.Go_TO_Foward_UNTIL_RayHit(ENE_Stat.__PUB_Move_Speed, ref enemyController.enemyTransform, enemyController.playerTransform);
 
                     //정면 공격 수행
                     if (__ENE_AI_Engine._PUB_enemy_Is_ON_CoolTime[2])
                     {
-                        __ENE_AI_Engine.Attack_Default(2.0f + Random.Range(0.0f, 1.0f), ref enemyController.enemy_Front, __ENE_Stat, 2);
+                        __ENE_AI_Engine.Attack_Default(2.0f + Random.Range(0.0f, 1.0f), ref enemyController.enemy_Front, ENE_Stat, 2);
                         behaveCounter++;
                     }
 
@@ -385,26 +385,26 @@ public class EnemyAI : MonoBehaviour
                     //전방으로 2초 동안 이동
                     if (__ENE_AI_Engine._PUB_enemy_Is_ON_CoolTime[1])
                     {
-                        __ENE_AI_Engine.__ENE_Engine._unit_Move_Engine.Move_OBJ(__ENE_Stat.__PUB_Move_Speed, ref enemyController.enemyTransform, 1);
+                        __ENE_AI_Engine.__ENE_Engine._unit_Move_Engine.Move_OBJ(ENE_Stat.__PUB_Move_Speed, ref enemyController.enemyTransform, 1);
                         StartCoroutine(transform.GetComponent<UnitCoolTimer>().Timer_Do_Once(2.0f, (input) => { __ENE_AI_Engine._PUB_enemy_Is_ON_CoolTime[1] = input; }, true));
                     }
                     else
                     {
                         //플레이어를 바라보도록 한다.
-                        __ENE_AI_Engine.Rotate_TO_Direction(__ENE_Stat.__PUB_Rotation_Speed, ref enemyController.enemyTransform, enemyController.playerTransform, false, enemyController.enemy_Right);
+                        __ENE_AI_Engine.Rotate_TO_Direction(ENE_Stat.__PUB_Rotation_Speed, ref enemyController.enemyTransform, enemyController.playerTransform, false, enemyController.enemy_Right);
 
                         //충분히 가까워질 때까지 느리게 전방으로 이동한다.
-                        __ENE_AI_Engine.Go_TO_Foward_UNTIL_RayHit(__ENE_Stat.__PUB_Move_Speed * 0.3f, ref enemyController.enemyTransform, enemyController.playerTransform);
+                        __ENE_AI_Engine.Go_TO_Foward_UNTIL_RayHit(ENE_Stat.__PUB_Move_Speed * 0.3f, ref enemyController.enemyTransform, enemyController.playerTransform);
 
                         //우현 기본 공격
                         if (__ENE_AI_Engine._PUB_enemy_Is_ON_CoolTime[2] && !(__ENE_AI_Engine._PUB_enemy_Is_ON_CoolTime[3]))
                         {
-                            __ENE_AI_Engine.Attack_Default(2.0f + Random.Range(0.0f, 1.0f), ref enemyController.enemy_Right, __ENE_Stat, 2);
+                            __ENE_AI_Engine.Attack_Default(2.0f + Random.Range(0.0f, 1.0f), ref enemyController.enemy_Right, ENE_Stat, 2);
                         }
                         //우현 산탄 스킬
                         else if (__ENE_AI_Engine._PUB_enemy_Is_ON_CoolTime[3])
                         {
-                            EnemyUsingSkill(3, enemyController.enemy_Right, __ENE_Stat._GET_enemySkillList[0]);
+                            EnemyUsingSkill(3, enemyController.enemy_Right, ENE_Stat._GET_enemySkillList[0]);
                             behaveCounter++;
                         }
 
@@ -417,26 +417,26 @@ public class EnemyAI : MonoBehaviour
                 {
                     if (__ENE_AI_Engine._PUB_enemy_Is_ON_CoolTime[1])
                     {
-                        __ENE_AI_Engine.__ENE_Engine._unit_Move_Engine.Move_OBJ(__ENE_Stat.__PUB_Move_Speed, ref enemyController.enemyTransform, 1);
+                        __ENE_AI_Engine.__ENE_Engine._unit_Move_Engine.Move_OBJ(ENE_Stat.__PUB_Move_Speed, ref enemyController.enemyTransform, 1);
                         StartCoroutine(transform.GetComponent<UnitCoolTimer>().Timer_Do_Once(2.0f, (input) => { __ENE_AI_Engine._PUB_enemy_Is_ON_CoolTime[1] = input; }, true));
                     }
                     else
                     {
                         //플레이어를 바라보도록 한다.
-                        __ENE_AI_Engine.Rotate_TO_Direction(__ENE_Stat.__PUB_Rotation_Speed, ref enemyController.enemyTransform, enemyController.playerTransform, false, enemyController.enemy_Left);
+                        __ENE_AI_Engine.Rotate_TO_Direction(ENE_Stat.__PUB_Rotation_Speed, ref enemyController.enemyTransform, enemyController.playerTransform, false, enemyController.enemy_Left);
 
                         //충분히 가까워질 때까지 느리게 전방으로 이동한다.
-                        __ENE_AI_Engine.Go_TO_Foward_UNTIL_RayHit(__ENE_Stat.__PUB_Move_Speed * 0.3f, ref enemyController.enemyTransform, enemyController.playerTransform);
+                        __ENE_AI_Engine.Go_TO_Foward_UNTIL_RayHit(ENE_Stat.__PUB_Move_Speed * 0.3f, ref enemyController.enemyTransform, enemyController.playerTransform);
 
                         //좌현 기본 공격
                         if (__ENE_AI_Engine._PUB_enemy_Is_ON_CoolTime[2] && !(__ENE_AI_Engine._PUB_enemy_Is_ON_CoolTime[3]))
                         {
-                            __ENE_AI_Engine.Attack_Default(2.0f + Random.Range(0.0f, 1.0f), ref enemyController.enemy_Left, __ENE_Stat, 2);
+                            __ENE_AI_Engine.Attack_Default(2.0f + Random.Range(0.0f, 1.0f), ref enemyController.enemy_Left, ENE_Stat, 2);
                         }
                         //좌현 산탄 스킬
                         else if (__ENE_AI_Engine._PUB_enemy_Is_ON_CoolTime[3])
                         {
-                            EnemyUsingSkill(3, enemyController.enemy_Left, __ENE_Stat._GET_enemySkillList[0]);
+                            EnemyUsingSkill(3, enemyController.enemy_Left, ENE_Stat._GET_enemySkillList[0]);
                             behaveCounter++;
                         }
 
@@ -458,9 +458,9 @@ public class EnemyAI : MonoBehaviour
                 if (__ENE_AI_Engine._PUB_enemy_Is_ON_CoolTime[0])
                 {
                     //플레이어 반대 방향을 보도록 한다.
-                    __ENE_AI_Engine.Rotate_TO_Direction(enemyController.__ENE_Stat.__PUB_Rotation_Speed, ref enemyController.enemyTransform, enemyController.playerTransform, true);
+                    __ENE_AI_Engine.Rotate_TO_Direction(enemyController.ENE_Stat.__PUB_Rotation_Speed, ref enemyController.enemyTransform, enemyController.playerTransform, true);
 
-                    __ENE_AI_Engine.__ENE_Engine._unit_Move_Engine.Move_OBJ(enemyController.__ENE_Stat.__PUB_Move_Speed, ref enemyController.enemyTransform, 1);
+                    __ENE_AI_Engine.__ENE_Engine._unit_Move_Engine.Move_OBJ(enemyController.ENE_Stat.__PUB_Move_Speed, ref enemyController.enemyTransform, 1);
                     //4초 동안 퇴각
                     StartCoroutine(enemyController.enemyCoolTimer.Timer_Do_Once(4.0f, (input) => { __ENE_AI_Engine._PUB_enemy_Is_ON_CoolTime[0] = input; }, true));
                 }
@@ -469,35 +469,35 @@ public class EnemyAI : MonoBehaviour
                     if (behaveIndex != 4)
                     {
                         //궁극기 게이지가 부족하고 스킬을 사용할 수 있으면
-                        if (__ENE_AI_Engine._PUB_enemy_Is_ON_CoolTime[4] && __ENE_Stat.__PUB__Power_Point < __ENE_Stat.__GET_Max_PP)
+                        if (__ENE_AI_Engine._PUB_enemy_Is_ON_CoolTime[4] && ENE_Stat.__PUB__Power_Point < ENE_Stat.__GET_Max_PP)
                         {
                             //게이지를 모은다.
-                            EnemyUsingSkill(4, enemyController.enemy_Left, __ENE_Stat._GET_enemySkillList[1]);
+                            EnemyUsingSkill(4, enemyController.enemy_Left, ENE_Stat._GET_enemySkillList[1]);
                         }
                         //게이지 모을 때까지 쿨타임이 남았다면
-                        else if (!__ENE_AI_Engine._PUB_enemy_Is_ON_CoolTime[4] && __ENE_Stat.__PUB__Power_Point < __ENE_Stat.__GET_Max_PP)
+                        else if (!__ENE_AI_Engine._PUB_enemy_Is_ON_CoolTime[4] && ENE_Stat.__PUB__Power_Point < ENE_Stat.__GET_Max_PP)
                         {
                             //도망친다.
                             __ENE_AI_Engine._PUB_enemy_Is_ON_CoolTime[0] = true;
                         }
                         //궁극기 게이지가 충분하고 궁극기를 사용할 수 있으면
-                        else if (__ENE_AI_Engine._PUB_enemy_Is_ON_CoolTime[5] && __ENE_Stat.__PUB__Power_Point == __ENE_Stat.__GET_Max_PP)
+                        else if (__ENE_AI_Engine._PUB_enemy_Is_ON_CoolTime[5] && ENE_Stat.__PUB__Power_Point == ENE_Stat.__GET_Max_PP)
                         {
                             //플레이어와 일정거리 이하일 때
                             if (Vector3.Distance(transform.position, enemyController.playerTransform.position) <= 10f)
                             {
                                 //궁극기를 사용한다.
-                                EnemyUsingSkill(5, enemyController.enemy_Front, __ENE_Stat._GET_enemySkillList[2]);
-                                StartCoroutine(enemyController.enemyCoolTimer.Timer(__ENE_Stat._GET_enemySkillList[2].__GET_Skill_ING_Time, (input) => { __ENE_AI_Engine._PUB_enemy_Is_ON_CoolTime[6] = input; }, true));
+                                EnemyUsingSkill(5, enemyController.enemy_Front, ENE_Stat._GET_enemySkillList[2]);
+                                StartCoroutine(enemyController.enemyCoolTimer.Timer(ENE_Stat._GET_enemySkillList[2].__GET_Skill_ING_Time, (input) => { __ENE_AI_Engine._PUB_enemy_Is_ON_CoolTime[6] = input; }, true));
                                 behaveIndex = 4;
                             }
                             //플레이어와 일정거리 이상일 때
                             else
                             {
                                 //플레이어에게 접근한다.
-                                __ENE_AI_Engine.Rotate_TO_Direction(enemyController.__ENE_Stat.__PUB_Rotation_Speed, ref enemyController.enemyTransform, enemyController.playerTransform, false);
+                                __ENE_AI_Engine.Rotate_TO_Direction(enemyController.ENE_Stat.__PUB_Rotation_Speed, ref enemyController.enemyTransform, enemyController.playerTransform, false);
 
-                                __ENE_AI_Engine.__ENE_Engine._unit_Move_Engine.Move_OBJ(enemyController.__ENE_Stat.__PUB_Move_Speed, ref enemyController.enemyTransform, 1);
+                                __ENE_AI_Engine.__ENE_Engine._unit_Move_Engine.Move_OBJ(enemyController.ENE_Stat.__PUB_Move_Speed, ref enemyController.enemyTransform, 1);
                             }
                         }
                     }
@@ -516,17 +516,17 @@ public class EnemyAI : MonoBehaviour
                         else
                         {
                             //플레이어를 정면으로 바라보면서
-                            __ENE_AI_Engine.Rotate_TO_Direction(enemyController.__ENE_Stat.__PUB_Rotation_Speed, ref enemyController.enemyTransform, enemyController.playerTransform, false);
+                            __ENE_AI_Engine.Rotate_TO_Direction(enemyController.ENE_Stat.__PUB_Rotation_Speed, ref enemyController.enemyTransform, enemyController.playerTransform, false);
 
                             //정면 기본 공격
                             if (__ENE_AI_Engine._PUB_enemy_Is_ON_CoolTime[2] && !(__ENE_AI_Engine._PUB_enemy_Is_ON_CoolTime[3]))
                             {
-                                __ENE_AI_Engine.Attack_Default(2.0f + Random.Range(0.0f, 1.0f), ref enemyController.enemy_Front, __ENE_Stat, 2);
+                                __ENE_AI_Engine.Attack_Default(2.0f + Random.Range(0.0f, 1.0f), ref enemyController.enemy_Front, ENE_Stat, 2);
                             }
                             //정면 산탄 스킬
                             else if (__ENE_AI_Engine._PUB_enemy_Is_ON_CoolTime[3])
                             {
-                                EnemyUsingSkill(3, enemyController.enemy_Front, __ENE_Stat._GET_enemySkillList[0]);
+                                EnemyUsingSkill(3, enemyController.enemy_Front, ENE_Stat._GET_enemySkillList[0]);
                             }
                         }
                     }
@@ -549,16 +549,16 @@ public class EnemyAI : MonoBehaviour
         //3초 동안 Middle_OF_Stage 방향으로 회전하면서 후진한다.
         if (__ENE_AI_Engine._PUB_enemy_Is_ON_CoolTime[1])
         {
-            __ENE_AI_Engine.Rotate_TO_Direction(__ENE_Stat.__PUB_Rotation_Speed, ref enemyController.enemyTransform, middle_OF_Stage, false);
+            __ENE_AI_Engine.Rotate_TO_Direction(ENE_Stat.__PUB_Rotation_Speed, ref enemyController.enemyTransform, middle_OF_Stage, false);
 
-            __ENE_AI_Engine.__ENE_Engine._unit_Move_Engine.Move_OBJ(__ENE_Stat.__PUB_Move_Speed, ref enemyController.enemyTransform, -1);
+            __ENE_AI_Engine.__ENE_Engine._unit_Move_Engine.Move_OBJ(ENE_Stat.__PUB_Move_Speed, ref enemyController.enemyTransform, -1);
 
             StartCoroutine(enemyController.enemyCoolTimer.Timer_Do_Once(3.0f, (input) => { __ENE_AI_Engine._PUB_enemy_Is_ON_CoolTime[1] = input; }, true));
         }
         //3초 동안 전방으로 이동한다.
         else
         {
-            __ENE_AI_Engine.__ENE_Engine._unit_Move_Engine.Move_OBJ(__ENE_Stat.__PUB_Move_Speed, ref enemyController.enemyTransform, 1);
+            __ENE_AI_Engine.__ENE_Engine._unit_Move_Engine.Move_OBJ(ENE_Stat.__PUB_Move_Speed, ref enemyController.enemyTransform, 1);
             StartCoroutine(enemyController.enemyCoolTimer.Timer_Do_Once(3.0f, (input) => { __ENE_AI_Engine._PUB_enemy_Is_ON_CoolTime[1] = input; }, false));
         }
     }
@@ -585,11 +585,11 @@ public class EnemyAI : MonoBehaviour
         if (__ENE_AI_Engine._PUB_enemy_Is_ON_CoolTime[index])
         {
             //마나가 충분할 때
-            if (__ENE_Stat.__Is_Mana_Enough(whichSkill))
+            if (ENE_Stat.__Is_Mana_Enough(whichSkill))
             {
                 //필요한 마나 또는 궁극기 게이지 소모
-                if (whichSkill.__GET_Skill_Code_M != SkillBaseCode._SKILL_CODE_Main.FIN) __ENE_Stat.__Get_HIT__About_Mana(whichSkill.__GET_Skill_Use_Amount, 1);
-                else __ENE_Stat.__Get_HIT__About_Power(whichSkill.__GET_Skill_Use_Amount, 1);
+                if (whichSkill.__GET_Skill_Code_M != SkillBaseCode._SKILL_CODE_Main.FIN) ENE_Stat.__Get_HIT__About_Mana(whichSkill.__GET_Skill_Use_Amount, 1);
+                else ENE_Stat.__Get_HIT__About_Power(whichSkill.__GET_Skill_Use_Amount, 1);
 
                 //UnitBaseEngine.Using_Skill에서 스킬 기능 처리
                 __ENE_AI_Engine.__ENE_Engine._unit_Combat_Engine.Using_Skill(ref enemyAttacker, whichSkill, true);
@@ -956,16 +956,16 @@ public class EnemyAI : MonoBehaviour
 
             //int behaveScore = (hitCounter * 2) - getDamagedCounter;
 
-            //if (curDist > 50f && enemyController.__ENE_Stat.__PUB__Health_Point > 5)
+            //if (curDist > 50f && enemyController.ENE_Stat.__PUB__Health_Point > 5)
             //    behaveScore -= (int)((curDist - 50) / 10);
-            //else if (curDist > 50f && enemyController.__ENE_Stat.__PUB__Health_Point <= 5)
+            //else if (curDist > 50f && enemyController.ENE_Stat.__PUB__Health_Point <= 5)
             //    behaveScore += (int)((curDist - 50) / 10);
 
             //IntVector3 forSave = new IntVector3(realIndex.vecX, realIndex.vecY, realIndex.vecZ);
             //Debug.Log(behaveScore);
 
             //모든 데이터 통합 관리
-            //if (enemyController.__ENE_Stat.__PUB__Health_Point <= 5)
+            //if (enemyController.ENE_Stat.__PUB__Health_Point <= 5)
             //{
             //    enemyCollector.listSitCUR0.Add(new SituationCUR(behaveID, beforeVec2.x, beforeVec2.y, beforeDist, beforeAngleComp, forSave, time));
             //    enemyCollector.listSitAFT0.Add(new SituationAFT(behaveID, transform.position.x, transform.position.z, curDist, enemyController._GET__ENE_AI_Engine.angleComp, beforeBehaveID, behaveScore, hitCounter, isCloser));
