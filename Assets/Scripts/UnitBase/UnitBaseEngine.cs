@@ -140,7 +140,7 @@ public class UnitBaseEngine : MonoBehaviour
                 else if (_unit_Base_Engine.enemyController != null)
                 {
                     _unit_Base_Engine.enemyController.StartCoroutine(
-                            _unit_Base_Engine.enemyController._GET__ENE_AI_Engine.enemyCoolTimer.Timer_Do_Once(
+                            _unit_Base_Engine.enemyController.GET_enemyAIEngine.enemyCoolTimer.Timer_Do_Once(
                                 whichSkill.__GET_Skill_ING_Time,
                                 (input) => { _unit_Base_Engine._unit_Stat.__PUB_Stat_IsCoolTimeOn[0] = input; },
                                 _unit_Base_Engine._unit_Stat.__PUB_Stat_IsCoolTimeOn[0]

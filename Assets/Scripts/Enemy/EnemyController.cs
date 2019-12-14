@@ -264,14 +264,14 @@ public class EnemyController : MonoBehaviour {
 
     public EnemyStat ENE_Stat = new EnemyStat();
 
-    private EnemyAIEngine __ENE_AI_Engine = new EnemyAIEngine();
-    public EnemyAIEngine _GET__ENE_AI_Engine
+    private EnemyAIEngine enemyAIEngine = new EnemyAIEngine();
+    public EnemyAIEngine GET_enemyAIEngine
     {
-        get { return __ENE_AI_Engine; }
+        get { return enemyAIEngine; }
     }
 
-    private EnemyAI __ENE_AI;
-    public EnemyAI __PUB__ENE_AI { get { return __ENE_AI; } set { __ENE_AI = value; } }
+    private EnemyAI enemyAI;
+    public EnemyAI PUB_enemyAI { get { return enemyAI; } set { enemyAI = value; } }
 
     private EnemyUI sEnemyUI;
 
@@ -299,37 +299,37 @@ public class EnemyController : MonoBehaviour {
         ENE_Stat.InitialLize_Enemy_Stat(IO_CSV.__Get_Searched_EnemyBaseStat(unitID));
 
         //UnitBaseEngine에 Enemy라고 알려준다.
-        __ENE_AI_Engine.__ENE_Engine = transform.GetComponent<UnitBaseEngine>();
+        enemyAIEngine.__ENE_Engine = transform.GetComponent<UnitBaseEngine>();
 
-        __ENE_AI_Engine.enemyCoolTimer = enemyCoolTimer;
+        enemyAIEngine.enemyCoolTimer = enemyCoolTimer;
 
         //CombatEngine에서 해당 클래스에 접근할 수 있도록 밑작업
-        __ENE_AI_Engine.__ENE_Engine.enemyController = this;
-        __ENE_AI_Engine.__ENE_Engine._unit_Combat_Engine.__SET_unit_Base_Engine = __ENE_AI_Engine.__ENE_Engine;
-        __ENE_AI_Engine.__ENE_Engine._unit_Move_Engine._SET_unit_Base_Engine = __ENE_AI_Engine.__ENE_Engine;
+        enemyAIEngine.__ENE_Engine.enemyController = this;
+        enemyAIEngine.__ENE_Engine._unit_Combat_Engine.__SET_unit_Base_Engine = enemyAIEngine.__ENE_Engine;
+        enemyAIEngine.__ENE_Engine._unit_Move_Engine._SET_unit_Base_Engine = enemyAIEngine.__ENE_Engine;
 
-        __ENE_AI_Engine.__ENE_Engine._unit_Move_Engine.movingEffect = this.movingEffect;
+        enemyAIEngine.__ENE_Engine._unit_Move_Engine.movingEffect = this.movingEffect;
 
         //Unit__Base_Engine이 Unit__Base_Stat 내용에 접근할 수 있도록 한다.
-        __ENE_AI_Engine.__ENE_Engine._unit_Stat = ENE_Stat;
+        enemyAIEngine.__ENE_Engine._unit_Stat = ENE_Stat;
 
 
-        __ENE_AI = transform.GetComponent<EnemyAI>();
+        enemyAI = transform.GetComponent<EnemyAI>();
 
 
         //쿨타임을 위한 부울 변수들 초기화
-        __ENE_AI_Engine._PUB_enemyCoolTime = 0x0000000000;
-        for (int index = 0; index < __ENE_AI_Engine._PUB_enemy_Is_ON_CoolTime.Length; index++)
+        enemyAIEngine._PUB_enemyCoolTime = 0x0000000000;
+        for (int index = 0; index < enemyAIEngine._PUB_enemy_Is_ON_CoolTime.Length; index++)
         {
-            __ENE_AI_Engine._PUB_enemy_Is_ON_CoolTime[index] = true;
+            enemyAIEngine._PUB_enemy_Is_ON_CoolTime[index] = true;
         }
 
-        _AI_FuncList.Add(() => __ENE_AI.AI_Simple_Level0());
-        _AI_FuncList.Add(() => __ENE_AI.AI_Simple_Level0_WITH_BOSS());
-        _AI_FuncList.Add(() => __ENE_AI.AI_Simple_Level0_BOSS());
-        _AI_FuncList.Add(() => __ENE_AI.AI_ReinforceLearn_RandomBehave_Ver());
-        _AI_FuncList.Add(() => __ENE_AI.__OLD__AI_DeepLearning__BigData_Ver());
-        _AI_FuncList.Add(() => __ENE_AI.AI_DeepLearning__BigData_Ver());
+        _AI_FuncList.Add(() => enemyAI.AI_Simple_Level0());
+        _AI_FuncList.Add(() => enemyAI.AI_Simple_Level0_WITH_BOSS());
+        _AI_FuncList.Add(() => enemyAI.AI_Simple_Level0_BOSS());
+        _AI_FuncList.Add(() => enemyAI.AI_ReinforceLearn_RandomBehave_Ver());
+        _AI_FuncList.Add(() => enemyAI.__OLD__AI_DeepLearning__BigData_Ver());
+        _AI_FuncList.Add(() => enemyAI.AI_DeepLearning__BigData_Ver());
 
         aiLV = ENE_Stat._GET_ai_Level;
     }
@@ -355,7 +355,7 @@ public class EnemyController : MonoBehaviour {
 
         try
         {
-            __ENE_AI_Engine.GetAngleComp(transform, playerTransform);
+            enemyAIEngine.GetAngleComp(transform, playerTransform);
 
             //아직 살아있을 때
             if (ENE_Stat.__PUB__Health_Point > 0)
@@ -370,7 +370,7 @@ public class EnemyController : MonoBehaviour {
                 if (ENE_Stat.__PUB_Stat_IsCoolTimeOn[0])
                 {
                     //스피드 버프 OR 디버프 해제
-                    __ENE_AI_Engine.__ENE_Engine._unit_Move_Engine.Init_Speed_BUF_Amount();
+                    enemyAIEngine.__ENE_Engine._unit_Move_Engine.Init_Speed_BUF_Amount();
                     //스피드 버프 해제로 일단 간주
                     ENE_Stat.__PUB_Stat_IsCoolTimeOn[0] = false;
                 }
@@ -390,8 +390,8 @@ public class EnemyController : MonoBehaviour {
                     ENE_Stat.__PUB_Stat_IsCoolTimeOn[2] = false;
 
                     //일단 10초마다 마나를 회복하도록 결정
-                    __ENE_AI_Engine.enemyCoolTimer.StartCoroutine(
-                        __ENE_AI_Engine.enemyCoolTimer.Timer_Do_Once(10.0f,
+                    enemyAIEngine.enemyCoolTimer.StartCoroutine(
+                        enemyAIEngine.enemyCoolTimer.Timer_Do_Once(10.0f,
                         (input) => { ENE_Stat.__PUB_Stat_IsCoolTimeOn[2] = input; },
                         false)
                         );
@@ -439,7 +439,7 @@ public class EnemyController : MonoBehaviour {
     //Enemy가 디버프 스킬에 피격받았을 때의 함수
     public void _Enemy__GET_DeBuff(SkillBaseStat whichDeBuffSkill_Hit_Enemy)
     {
-        __ENE_AI_Engine.__ENE_Engine._unit_Combat_Engine.Using_Skill(ref enemy_Front, whichDeBuffSkill_Hit_Enemy, false);
+        enemyAIEngine.__ENE_Engine._unit_Combat_Engine.Using_Skill(ref enemy_Front, whichDeBuffSkill_Hit_Enemy, false);
         //__ENE_Engine.__ENE_C_Engine.Using_Skill_ENE(ref enemy_Front, whichDeBuffSkill_Hit_Enemy, ENE_Stat, this, false);
     }
 

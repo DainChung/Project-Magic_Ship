@@ -78,9 +78,9 @@ public class AmmoBase : MonoBehaviour {
         __Who_Shot = tag;
         __Ammo_Damage = damage;
 
-        enemyAI = _enemy.__PUB__ENE_AI;
+        enemyAI = _enemy.PUB_enemyAI;
 
-        if (_enemy.__PUB__ENE_AI == null) Debug.Log(_enemy.GetInstanceID());
+        if (_enemy.PUB_enemyAI == null) Debug.Log(_enemy.GetInstanceID());
 
         if (enemyAI == null) Debug.Log(enemyAI.GetInstanceID());
 

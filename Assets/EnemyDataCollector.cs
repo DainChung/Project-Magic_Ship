@@ -1740,14 +1740,6 @@ public class EnemyDataCollector : MonoBehaviour {
         //{
         //    IO_CSV.Writer_CSV("/ScoreCAL.csv", listScore_FOR_PPT);
         //}
-    } 
-
-    IEnumerator SaveAFT()
-    {
-        IO_SqlDB.WriteDB_AFT("behaveDataGreatATK_AFT", listSitAFT1);
-        Debug.Log("Save Done");
-
-        yield break;
     }
 
     IEnumerator SaverGreat()
