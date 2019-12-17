@@ -143,7 +143,7 @@ public class UnitCoolTimer : MonoBehaviour {
         else
         {
             //해당하는 값을 1로 바꿔준다.
-            timeLocker(lockVal + index);
+            timeLocker(lockVal | index);
         }
 
         //코루틴 종료

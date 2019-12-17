@@ -63,7 +63,7 @@ public class EnemyUI : MonoBehaviour {
         isEnemyScreenOut = false;
 
         mainCameraTransform = oMainCamera.transform;
-        enemyMaxHP = (float)sEnemyController.ENE_Stat.__GET_Max_HP;
+        enemyMaxHP = (float)sEnemyController.enemyStat.__GET_Max_HP;
     }
 
     void Update()
@@ -93,7 +93,7 @@ public class EnemyUI : MonoBehaviour {
     private void OnGUI()
     {
         
-        iHealthBar.fillAmount = (float)sEnemyController.ENE_Stat.__PUB__Health_Point / enemyMaxHP; // status image udpate
+        iHealthBar.fillAmount = (float)sEnemyController.enemyStat.__PUB__Health_Point / enemyMaxHP; // status image udpate
         // 체력바와 데미지가 잘 보이도록 체력바의 Rotation 업데이트
         try
         {

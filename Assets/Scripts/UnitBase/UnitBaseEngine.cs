@@ -28,10 +28,22 @@ public class UnitBaseEngine : MonoBehaviour
     [HideInInspector]
     public EnemyController enemyController;
 
+    private int _coolTimeCheck = 0x000000000000;
+    public int coolTimeCheck
+    {
+        get { return _coolTimeCheck; }
+        set { _coolTimeCheck = value; }
+    }
+    public enum COOL_TIME_CODE { FORWARD, BACK, RIGHT, LEFT, ATK, HP, MP, PP, SP, CR, EX };
+    float dummy = 0.0f;
+
     //-----------------------------------------
 
     void Awake()
     {
+        //기본 마나 회복 활성화
+        SetCoolTimeCheck(COOL_TIME_CODE.MP);
+
         //플레이어면
         if (playerController != null)
         {
@@ -43,6 +55,72 @@ public class UnitBaseEngine : MonoBehaviour
         {
             //Unit__Base_Combat_Engine에 enemy라는 정보를 전달한다.
             _unit_Combat_Engine._enemyController = enemyController;
+        }
+    }
+
+    public int TimeCodeToINT(COOL_TIME_CODE code)
+    {
+        int timeIndex = 0x000000000001;
+
+        for (int i = 1; i <= (int)(code); i++)
+            timeIndex = timeIndex << 1;
+
+        return timeIndex;
+    }
+
+    public bool CoolTimeCheck(COOL_TIME_CODE code)
+    {
+        int timeIndex = TimeCodeToINT(code);
+
+        return ((coolTimeCheck & timeIndex) == timeIndex);
+    }
+
+    public void SetCoolTimeCheck(COOL_TIME_CODE code)
+    {
+        int timeIndex = TimeCodeToINT(code);
+
+        if ((coolTimeCheck & timeIndex) == timeIndex)
+            coolTimeCheck -= timeIndex;
+        else
+            coolTimeCheck += timeIndex;
+    }
+
+    public void ManageBUF()
+    {
+        //스피드 버프 OR 디버프 지속시간 종료 여부
+        if (CoolTimeCheck(COOL_TIME_CODE.SP))
+        {
+            _unit_Move_Engine.Init_Speed_BUF_Amount();
+        }
+        //기본 마나 회복, 10초당 1번만 작동
+        if (CoolTimeCheck(COOL_TIME_CODE.MP) && (_unit_Stat.__PUB__Mana_Point < _unit_Stat.__GET_Max_MP))
+        {
+            //마나 1 회복
+            //첫 마나 회복 버그 방지용
+            if (CoolTimeCheck(COOL_TIME_CODE.EX))
+                _unit_Stat.__Get_HIT__About_Mana(1, -1);
+            else
+                SetCoolTimeCheck(COOL_TIME_CODE.EX);
+            //잠금
+            SetCoolTimeCheck(COOL_TIME_CODE.MP);
+            //일단 10초마다 마나를 회복하기 위해 타이머 작동
+            if (enemyController != null)
+            {
+                StartCoroutine(enemyController.enemyCoolTimer.Timer_Do_Once(10.0f,
+                        (input) => { coolTimeCheck = input; },
+                        coolTimeCheck,
+                        TimeCodeToINT(COOL_TIME_CODE.MP)
+                        ));
+            }
+            else if (playerController != null)
+            {
+                StartCoroutine(playerController.__PLY_CoolTimer.Timer_Do_Once(10.0f,
+                        (input) => { coolTimeCheck = input; },
+                        coolTimeCheck,
+                        TimeCodeToINT(COOL_TIME_CODE.MP)
+                        ));
+            }
+            else { }
         }
     }
 
@@ -128,22 +206,24 @@ public class UnitBaseEngine : MonoBehaviour
                 //player인 경우
                 if (_unit_Base_Engine.playerController != null)
                 {
-                    _unit_Base_Engine.playerController.StartCoroutine(
+                    _unit_Base_Engine.StartCoroutine(
                         _unit_Base_Engine.playerController.__PLY_CoolTimer.Timer_Do_Once(
                             whichSkill.__GET_Skill_ING_Time,
-                            (input) => { _unit_Base_Engine._unit_Stat.__PUB_Stat_IsCoolTimeOn[0] = input; },
-                            _unit_Base_Engine._unit_Stat.__PUB_Stat_IsCoolTimeOn[0]
+                            (input) => { _unit_Base_Engine.coolTimeCheck = input; },
+                            _unit_Base_Engine.coolTimeCheck,
+                            _unit_Base_Engine.TimeCodeToINT(COOL_TIME_CODE.SP)
                             )
                         );
                 }
                 //enemy인 경우
                 else if (_unit_Base_Engine.enemyController != null)
                 {
-                    _unit_Base_Engine.enemyController.StartCoroutine(
+                    _unit_Base_Engine.StartCoroutine(
                             _unit_Base_Engine.enemyController.GET_enemyAIEngine.enemyCoolTimer.Timer_Do_Once(
                                 whichSkill.__GET_Skill_ING_Time,
-                                (input) => { _unit_Base_Engine._unit_Stat.__PUB_Stat_IsCoolTimeOn[0] = input; },
-                                _unit_Base_Engine._unit_Stat.__PUB_Stat_IsCoolTimeOn[0]
+                                (input) => { _unit_Base_Engine.coolTimeCheck = input; },
+                                _unit_Base_Engine.coolTimeCheck,
+                                _unit_Base_Engine.TimeCodeToINT(COOL_TIME_CODE.SP)
                                 )
                             );
                 }
@@ -152,9 +232,6 @@ public class UnitBaseEngine : MonoBehaviour
                 {
 
                 }
-
-
-                _unit_Base_Engine._unit_Stat.__PUB_Stat_Real_Locker[0] = true;
             }
             //isBuff_OR_DeBuff 값이 1 또는 -1이 아니면 적용되는 Exception으로 대체 예정
             //또는 _unit_Base_Engine.playerController == null && _unit_Base_Engine.enemyController == null 인 경우
@@ -171,7 +248,7 @@ public class UnitBaseEngine : MonoBehaviour
             _unit_Base_Engine._unit_Stat.__PUB_Move_Speed = _unit_Base_Engine._unit_Stat.__GET_FOriginalMoveSpeed;
             _unit_Base_Engine._unit_Stat.__PUB_Rotation_Speed = _unit_Base_Engine._unit_Stat.__GET_FOriginalRotateSpeed;
 
-            _unit_Base_Engine._unit_Stat.__PUB_Stat_Real_Locker[0] = false;
+            _unit_Base_Engine.SetCoolTimeCheck(COOL_TIME_CODE.SP);
         }
     }
 
@@ -395,7 +472,7 @@ public class UnitBaseEngine : MonoBehaviour
             if (whichSkill.__GET_Skill_Code_M == _SKILL_CODE_Main.BUF || !(isUnitUsingThis))
             {
                 //이미 체력 버프나 디버프를 받는 중이 아니면
-                if (    !(_unit_Stat.__PUB_Stat_Real_Locker[1])  )
+                if (    !(CoolTimeCheck(COOL_TIME_CODE.HP))  )
                 {
                     //플레이어가 사용한 HP 도트 힐 스킬이면
                     if (isUnitUsingThis)
@@ -460,7 +537,7 @@ public class UnitBaseEngine : MonoBehaviour
         {
 
             //이미 이동속도 버프나 디버프를 받는 중이 아니면
-            if (!(_unit_Stat.__PUB_Stat_Real_Locker[0]))
+            if (!(CoolTimeCheck(COOL_TIME_CODE.SP)))
             {
                 //유닛이 사용한 거면
                 if (isUnitUsingThis)

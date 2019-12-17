@@ -576,8 +576,6 @@ namespace File_IO {
             if (learnedFCNN.Count == 0 || fcnnIDList.Count == 0)
                 return;
 
-            int valCount = learnedFCNN[0].layers[1].row * learnedFCNN[0].layers[1].col;
-
             using (var dbConnection = new SqliteConnection(fileName))
             {
                 dbConnection.Open();
@@ -951,7 +949,6 @@ namespace File_IO {
 
                     while (reader.Read())
                     {
-                        string id = reader.GetString(0);
                         int CURDo_mov = reader.GetInt32(1);
                         int CURDo_rot = reader.GetInt32(2);
                         int CURDo_atk = reader.GetInt32(3);
@@ -972,8 +969,6 @@ namespace File_IO {
 
                     while (reader.Read())
                     {
-
-                        string id = reader.GetString(0);
                         float CURBo_Time = reader.GetFloat(1);
 
                         cur[index]._time = CURBo_Time;
