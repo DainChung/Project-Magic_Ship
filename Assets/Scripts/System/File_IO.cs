@@ -24,6 +24,32 @@ namespace File_IO {
         //프로토타입 완성 후 경로들 다양하게 바꿀 것
         private static string filePath = Application.persistentDataPath;
 
+        //20191222
+        //딥러닝 용 데이터 베이스를 제외한 게임 구동에 필요한 파일들이 없을 때 자동으로 생성해주는 함수
+        public static void InitFiles()
+        {
+            List<string> values = new List<string>();
+
+            // 스킬, 적 스탯에 대한 파일은 기본적으로 제공해야 한다.
+            try
+            {
+                values = Reader_CSV("/SaveSlot.csv");
+
+                if (string.Compare(values[0], "FileNotFoundException") == 0)
+                    throw new FileNotFoundException();
+            }
+            //SaveSlot.csv 파일이 지정된 경로에 없다면 새로 생성하고 기본 값을 입력한다.
+            catch (FileNotFoundException)
+            {
+                string[,] baseSaveSlotData = {  {"SlotNum","Date","ID", "Name", "Move Speed", "Rotate Speed", "Health", "Mana", "Power", "Damage", "Critical Rate", "Critical Point", "Level", "Exp", "Gold", "Cash", "Equipped Skin", "EquippedSkill0", "EquippedSkill1", "EquippedSkill2", "Stage0Lock"},
+                                                {"0","NULL","1","None","10","30","30", "10", "10", "1", "0.1", "2", "1", "0", "0", "0", "Default Skin", "NORMAL_HP_00", "NORMAL_HP_01", "NORMAL_SP_00", "c000"},
+                                                {"1","NULL","1","None","10","30","30", "10", "10", "1", "0.1", "2", "1", "0", "0", "0", "Default Skin", "NORMAL_HP_00", "NORMAL_HP_01", "NORMAL_SP_00", "c000"},
+                                                {"2","NULL","1","None","10","30","30", "10", "10", "1", "0.1", "2", "1", "0", "0", "0", "Default Skin", "NORMAL_HP_00", "NORMAL_HP_01", "NORMAL_SP_00", "c000"}};
+
+                Writer_CSV("/SaveSlot.csv", baseSaveSlotData);
+            }
+        }
+
         //파일의 처음부터 읽는 함수
         //fileName은 "/어떠어떠한_파일.csv" 형식으로 입력해야됨
         public static List<string> Reader_CSV(string fileName)
@@ -77,6 +103,7 @@ namespace File_IO {
                 readList.Remove(readList[0]);
 
             }
+            //파일이 없을 때
             catch (FileNotFoundException)
             {
                 Debug.Log("FileNotFoundException: You Need " + fileName);
