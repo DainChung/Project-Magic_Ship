@@ -1,0 +1,8 @@
+ID,Name,Move Speed,Rotate Speed,Health,Mana,Power,Damage,Critical Rate,Critical Point,AI Level,Equipped Skill 0,Equipped Skill 1,Equipped Skill 2
+Stage_0_NORMAL_Normal,NULL,10,30,10,10,10,1,0.1,2,0,NULL,NULL,NULL
+Stage_0_NORMAL_WITH_BOSS,보오스 친위대,10,30,10,10,10,1,0,0,1,NULL,NULL,NULL
+Stage_0_NORMAL_Test_Heavy,Test_Heavy,5,15,20,20,10,2,0.2,3,0,NULL,NULL,NULL
+Stage_0_BOSS,보오스,15,60,20,50,10,1,0.1,2,2,NORMAL_ATK_00,NORMAL_PP_00,FIN000
+Random,Random,10,30,20,10,10,0,0,0,3,NULL,NULL,NULL
+BigData,BigData,10,30,20,10,10,0,0,0,4,NULL,NULL,NULL
+Deep,Deep,10,30,15,10,10,1,0,0,5,NULL,NULL,NULL

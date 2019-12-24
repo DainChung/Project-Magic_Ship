@@ -1,0 +1,4 @@
+SlotNum,Date,ID,Name,Move Speed,Rotate Speed,Health,Mana,Power,Damage,Critical Rate,Critical Point,Level,Exp,Gold,Cash,Equipped Skin,EquippedSkill0,EquippedSkill1,EquippedSkill2,Stage0 Lock
+0,NULL,Player_Sample_ID,NEWNEW Writing Success?,10,30,10,10,10,1,0,1,1,325,124,456,Default Skin,NORMAL_HP_00,NORMAL_HP_01,NORMAL_SP_00,c100
+1,NULL,Player_Sample_ID,Writing Success?,20,20,30,10,10,1,0.1,2,2,325,0,456,Default Skin,NORMAL_SP_00,NORMAL_HP_00,NORMAL_HP_01,c210
+2,NULL,Player_Sample_ID,Writing Success?,30,10,30,10,10,1,0.1,2,3,325,1000,456,Default Skin,NORMAL_HP_01,NORMAL_SP_00,NORMAL_HP_00,c221

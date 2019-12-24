@@ -125,6 +125,9 @@ public class Player_Info_Manager : MonoBehaviour {
     {
         playerController = GameObject.Find("SamplePlayer").GetComponent<PlayerController>();
 
+        //SaveSlot.cs 파일이 없다면 값 초기화, 있다면 아무것도 안 함
+        IO_CSV.InitFiles();
+        //SaveSlot.cs 파일에서 플레이어 정보를 읽어온다.
         Read_Player_Info();
     }
 

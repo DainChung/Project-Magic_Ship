@@ -107,7 +107,7 @@ namespace File_IO {
             catch (FileNotFoundException)
             {
                 Debug.Log("FileNotFoundException: You Need " + fileName);
-                readList[0] = "FileNotFoundException";
+                readList.Add("FileNotFoundException");
             }
 
             return readList;

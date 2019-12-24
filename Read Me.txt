@@ -1,1 +1,4 @@
 Made by DainChung & rockatoo
+
+Window10
+All CSV Files in CSV Folder -> C:\Users\[Your Name]\AppData\LocalLow\DefaultCompany\Voxel Pirate
