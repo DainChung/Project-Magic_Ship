@@ -3,7 +3,7 @@ DI &amp; CH
 
 This is just for graduation
 
-Do not Use it For Commercial Purpose OR Graduation without our Permission
+Do NOT use it for Commercial Purpose OR Graduation without our permission
 
 ## 역할분배
 
