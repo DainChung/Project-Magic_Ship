@@ -1,4 +1,4 @@
-# Project-Magic_Ship
+# Project-Magic_Ship (Voxel Pirates)
 DI &amp; CH
 
 This is just for graduation
