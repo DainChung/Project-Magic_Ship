@@ -7,7 +7,7 @@ Do not Use it For Commercial Purpose OR Graduation without our Permission
 
 ## 역할분배
 
- - DainChung : 딥러닝 인공지능 구현 및 학습, 적 표시 UI, 조작법 UI, 유닛 시스템, 파일 IO, 인게임 모델
+ - DainChung : 딥러닝 인공지능 구현 및 학습, 적 표시 UI, [조작법 UI](https://github.com/DainChung/Project-Magic_Ship/blob/master/README.md#31-%EC%A1%B0%EC%9E%91%EB%B2%95-dainchung), 유닛 시스템, 파일 IO, 인게임 모델
  - rockatoo : 플레이어 상태바, 스킬 시스템 및 UI
 
 ## 1. 개요
