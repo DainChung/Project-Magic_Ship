@@ -1,4 +1,4 @@
-# Project-Magic_Ship (Voxel Pirates)
+# Voxel Pirates (가칭 : Project-Magic_Ship)
 DI &amp; CH
 
 This is just for graduation
@@ -15,6 +15,13 @@ Do NOT use it for Commercial Purpose OR Graduation without our permission
 
 
 FCNN으로 학습한 2개의 인공지능 캐릭터를 상대하는 슈팅게임입니다.
+
+
+ - 이름 : Voxel Pirates (가칭 : Project-Magic_Ship)
+ - 장르 : 슈팅 게임
+ - 기간 : 2019-01-20 ~ 2019-11-12 (발표)
+ - 인원 : 2인
+ - 사용 프로그램 : Unity 5.4.6
 
 ## 2. 플레이 영상
 
