@@ -43,7 +43,7 @@ NGUI를 사용하여 만들었습니다.
 
 ------------------------------------------------------------
 ## 출처
-- UI 디자인, 폰트, UI 효과음 및 배경화면 오브젝트 : [Kenny](https://www.kenney.nl/)
+- UI 디자인, 폰트, UI 효과음, 배경화면 오브젝트 : [Kenny](https://www.kenney.nl/)
 - 플레이어 상태바 UI : [OpenGameArt ui-pieces](https://opengameart.org/content/ui-pieces)
 - 적 캐릭터 체력 바 UI : [OpenGameArt sleek-bars](https://opengameart.org/content/sleek-bars)
 - 그 외 출처는 Others Source.txt에 기록되어 있습니다.
