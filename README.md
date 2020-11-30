@@ -31,23 +31,31 @@ FCNN으로 학습한 2개의 인공지능 캐릭터를 상대하는 슈팅게임
 
 > 시작 화면
 
+![Voxel_Pirates_0_시작0](https://user-images.githubusercontent.com/11573611/100620671-06461580-3362-11eb-8891-93a5373212a5.png)
 
+엔터 키를 누르면 아래 화면으로 전환합니다.
+
+![Voxel_Pirates_0_시작1](https://user-images.githubusercontent.com/11573611/100620745-1c53d600-3362-11eb-8a77-8577d6e791cf.png)
 
 > 게임 화면
 
-![그림2](https://user-images.githubusercontent.com/11573611/100609151-e0644500-3350-11eb-9e3e-1de25f5501b9.png)
+![Voxel Pirates 안내_SMALL](https://user-images.githubusercontent.com/11573611/100620273-920b7200-3361-11eb-8c00-f07a3b8fa76e.png)
 
- 1) 플레이어 상태바 : 플레이어의 현재 체력, 마력을 표시합니다.
+ 1) 플레이어 상태바 : 플레이어의 현재 체력, 마력을 표시합니다. 스킬별로 쿨타임을 확인할 수 있습니다.
  2) 현재 공격 방향 : 정면, 우측, 좌측 중 한 곳으로 포탄을 발사할 수 있습니다.
  3) 적 표시 UI : 적이 멀리 있으면 작게, 가까이 있으면 크게 표시됩니다.
  
 > 클리어
 
+![Voxel_Pirates_0_종료_성공](https://user-images.githubusercontent.com/11573611/100620781-25dd3e00-3362-11eb-8cab-818732266904.png)
 
+모든 적을 처치하면 점수와 시간이 출력됩니다.
 
 > 패배
 
+![Voxel_Pirates_0_종료_실패](https://user-images.githubusercontent.com/11573611/100621310-dea37d00-3362-11eb-9e0e-314516c6e293.png)
 
+플레이어 체력이 다 떨어지면 출력됩니다.
 
 ------------------------------------------------------------
 ## 4. 인공지능 (DainChung)
