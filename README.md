@@ -127,45 +127,14 @@ DQN을 사용하여 가장 Q값이 높은 행동을 찾아냅니다.
             }
         }
  </code>
- </pre>
- 
- > DQN
- 
- DQN 함수 중 일부분입니다.
+ </pre>  
+------------------------------------------------------------
+## 느낀 점
 
- <pre>
- <code>
-       FCNN net = new FCNN(6, 36, 36, learningRate);
-       
-       (중략)
-       
-       //무한 루프 방지
-       for(int i= 0; i < 10000; i++)
-       {
-            net.ForwardProp();
-            error = GetError(net.output, target);
+ 응답속도 문제와 딥러닝에 대한 공부와 개발을 병행한 관계로 DQN을 완벽하게 구현하지 못했습니다.
+하지만 완성도에 비해 플레이어를 어느 정도 상대할 수 있는 인공지능을 만들 수 있었습니다.
+직접 구현해보면서 부분적이나마 딥러닝과 인공신경망에 대한 이해를 높일 수 있었던 프로젝트였습니다.
 
-            //평균제곱오차 값에 따라 학습률을 변동시켜 학습속도를 높여줍니다.
-            if (error > 10)
-                 learningRate += pluslR;
-            else if (error <= 10 && error > 1.0)
-                 learningRate -= minuslR0;
-            else if (error <= 1.0 && error > enoughERROR)
-                 learningRate -= minuslR1;
-            else { break; }
-
-            net.learningRate = learningRate;
-            net.BackProp(target);
-       }
-       net.ForwardProp();
- </code>
- </pre>
- 
-  - target : 학습에 사용된 데이터
-  - pluslR : error 값이 아주 클 때, 학습률 증가량
-  - minuslR0 : error 값이 클 때, 학습률 감소량
-  - minuslR1 : error 값이 아주 작을 때, 학습률 감소량
-  
 ------------------------------------------------------------
 ## 출처
 - UI 디자인, 폰트, UI 효과음, 배경화면 오브젝트 : [Kenny](https://www.kenney.nl/)
