@@ -43,6 +43,6 @@ NGUI를 사용하여 만들었습니다.
 
 ------------------------------------------------------------
 ## 출처
-- UI 디자인 출처 : [Kenny](https://www.kenney.nl/)
+- UI 디자인 : [Kenny](https://www.kenney.nl/)
 - 플레이어 상태바 UI : [OpenGameArt ui-pieces](https://opengameart.org/content/ui-pieces)
 - 적 캐릭터 체력 바 UI : [OpenGameArt sleek-bars](https://opengameart.org/content/sleek-bars)
