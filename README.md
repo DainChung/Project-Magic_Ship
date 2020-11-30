@@ -25,7 +25,9 @@ FCNN으로 학습한 2개의 인공지능 캐릭터를 상대하는 슈팅게임
 
 ## 2. 플레이 영상
 
+[![Video Label](http://img.youtube.com/vi/PUOweO88Ll4/0.jpg)](https://youtu.be/PUOweO88Ll4)
 
+[유튜브 링크](https://youtu.be/PUOweO88Ll4)
 
 ## 3. UI
 
