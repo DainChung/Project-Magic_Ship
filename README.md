@@ -29,7 +29,10 @@ FCNN으로 학습한 2개의 인공지능 캐릭터를 상대하는 슈팅게임
 
 ## 3. UI
 
-NGUI를 사용하여 만들었습니다.
+- NGUI를 사용하여 만들었습니다.
+- UI 디자인 출처 : https://www.kenney.nl/
+- 플레이어 상태바 UI : https://opengameart.org/content/ui-pieces
+- 적 캐릭터 체력 바 UI : https://opengameart.org/content/sleek-bars
 
 ### 3.1. 적 표시 UI (DainChung)
 
