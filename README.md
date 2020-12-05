@@ -31,11 +31,9 @@ FCNN으로 학습한 2개의 인공지능 캐릭터를 상대하는 슈팅게임
 
 > 시작 화면
 
-![Voxel_Pirates_0_시작0](https://user-images.githubusercontent.com/11573611/100620671-06461580-3362-11eb-8891-93a5373212a5.png)
+![Voxel_Pirates_0_시작](https://user-images.githubusercontent.com/11573611/101238784-d7df8600-3725-11eb-862d-725f5891acd4.png)
 
-엔터 키를 누르면 아래 화면으로 전환합니다.
-
-![Voxel_Pirates_0_시작1](https://user-images.githubusercontent.com/11573611/100620745-1c53d600-3362-11eb-8a77-8577d6e791cf.png)
+엔터키를 누르면 버튼이 나타납니다.
 
 > 게임 화면
 
@@ -45,17 +43,13 @@ FCNN으로 학습한 2개의 인공지능 캐릭터를 상대하는 슈팅게임
  2) 현재 공격 방향 : 정면, 우측, 좌측 중 한 곳으로 포탄을 발사할 수 있습니다.
  3) 적 표시 UI : 적이 멀리 있으면 작게, 가까이 있으면 크게 표시됩니다.
  
-> 클리어
+> 결과화면
 
-![Voxel_Pirates_0_종료_성공](https://user-images.githubusercontent.com/11573611/100620781-25dd3e00-3362-11eb-8cab-818732266904.png)
+![Voxel_Pirates_1_결과](https://user-images.githubusercontent.com/11573611/101238786-d910b300-3725-11eb-8653-fc1fa47ef0c8.png)
+__________클리어 화면______________________패배 화면______________
 
-모든 적을 처치하면 점수와 시간이 출력됩니다.
-
-> 패배
-
-![Voxel_Pirates_0_종료_실패](https://user-images.githubusercontent.com/11573611/100621310-dea37d00-3362-11eb-9e0e-314516c6e293.png)
-
-플레이어 체력이 다 떨어지면 출력됩니다.
+ - 클리어 화면: 모든 적을 처치하면 점수와 시간이 출력됩니다.
+ - 패배 화면: 플레이어 체력이 다 떨어지면 출력됩니다.
 
 ------------------------------------------------------------
 ## 4. 인공지능 (DainChung)
@@ -127,7 +121,41 @@ DQN을 사용하여 가장 Q값이 높은 행동을 찾아냅니다.
             }
         }
  </code>
- </pre>  
+ </pre> 
+ 
+ > DQN 함수
+ 
+ - DQN 함수 중 일부분 입니다.
+ - 개발과 학습을 병행한 관계로 학습률(learningRate) 조정에 대한 이해가 부족해서 아래와 같이 구현하게 되었습니다.
+ - 
+ 
+ <pre>
+ <code>
+            
+            //무한 루프 방지
+            for(int i= 0; i < 10000; i++)
+            {
+                //FCNN net의 출력값 계산
+                net.ForwardProp();
+                //net의 출력값과 실제 데이터 간의 평균제곱오차 계산
+                error = GetError(net.output, target);
+
+                //평균제곱오차에 따라 학습률 조정
+                if (error > 10)
+                    learningRate += pluslR;
+                else if (error <= 10 && error > 1.0)
+                    learningRate -= minuslR0;
+                else if (error <= 1.0 && error > enoughERROR)
+                    learningRate -= minuslR1;
+                else { break; }
+ 
+                //net의 학습률 업데이트 후 역전파
+                net.learningRate = learningRate;
+                net.BackProp(target);
+            }
+            net.ForwardProp();
+ </code>
+ </pre>
 
 ------------------------------------------------------------
 ## 출처
