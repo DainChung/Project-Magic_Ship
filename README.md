@@ -10,6 +10,8 @@ Do NOT use it for Commercial Purpose OR Graduation without our permission
  - DainChung : [딥러닝 인공지능 구현 및 학습](https://github.com/DainChung/Project-Magic_Ship/blob/master/README.md#4-%EC%9D%B8%EA%B3%B5%EC%A7%80%EB%8A%A5-dainchung), 적 표시 UI, 유닛 시스템, 파일 IO, 캐릭터 모델링
  - rockatoo : 플레이어 상태바, 스킬 시스템 및 UI, 적 캐릭터 체력 바 UI
 
+<br/><br/>
+
 ## 1. 개요
 
 FCNN으로 학습한 2개의 인공지능 캐릭터를 상대하는 슈팅게임입니다.
@@ -21,11 +23,15 @@ FCNN으로 학습한 2개의 인공지능 캐릭터를 상대하는 슈팅게임
  - 인원 : 2인 (프로그래머 2명)
  - 사용 프로그램 : Unity 5.4.5p5, MagicaVoxel 0.98.2(모델링)
 
+<br/><br/>
+
 ## 2. 플레이 영상
 
 [![Video Label](http://img.youtube.com/vi/PUOweO88Ll4/0.jpg)](https://youtu.be/PUOweO88Ll4)
 
 [유튜브 링크](https://youtu.be/PUOweO88Ll4)
+
+<br/><br/>
 
 ## 3. UI 구성
 
@@ -34,6 +40,8 @@ FCNN으로 학습한 2개의 인공지능 캐릭터를 상대하는 슈팅게임
 ![Voxel_Pirates_0_시작](https://user-images.githubusercontent.com/11573611/101238784-d7df8600-3725-11eb-862d-725f5891acd4.png)
 
 엔터키를 누르면 버튼이 나타납니다.
+
+<br/><br/>
 
 > 게임 화면
 
@@ -51,19 +59,20 @@ FCNN으로 학습한 2개의 인공지능 캐릭터를 상대하는 슈팅게임
  - 클리어 화면: 모든 적을 처치하면 점수와 시간이 출력됩니다.
  - 패배 화면: 플레이어 체력이 다 떨어지면 출력됩니다.
 
-------------------------------------------------------------
+<br/><br/>
+
 ## 4. 인공지능 (DainChung)
 
 ![캡처](https://user-images.githubusercontent.com/11573611/100614192-1a394980-3359-11eb-8826-443dd2cea58d.PNG)
 
 DQN을 사용하여 가장 Q값이 높은 행동을 찾아냅니다.\
 응답시간을 줄이기 위해 인공신경망이 판단한 결과를 FCNNed_QData.db파일에 저장했습니다.\
-게임 상의 인공지능 캐릭터는 DB파일을 사용하여 움직입니다.\
-
+게임 상의 인공지능 캐릭터는 DB파일을 사용하여 움직입니다.
+<br/>
  - 학습목표 : 플레이어와 일정 거리를 유지하면서 플레이어에게 데미지를 줄수록 Q값이 높아집니다.
  - 인공신경망 입력값 : 벡터, 행동을 지속한 시간 등 인게임 데이터
  - 인공신경망 출력값 : 36가지 행동별 Q값
- 
+ <br/>
  > FCNN의 생성자
  <pre>
  <code>
@@ -122,16 +131,15 @@ DQN을 사용하여 가장 Q값이 높은 행동을 찾아냅니다.\
         }
  </code>
  </pre> 
- 
+ <br/>
  > DQN 함수
  
  - DQN 함수 중 일부분 입니다.
  - 개발과 학습을 병행한 관계로 학습률(learningRate) 조정에 대한 이해가 부족해서 아래와 같이 구현하게 되었습니다.
- - 
+ - net의 출력값과 실제 데이터 간의 평균제곱오차가 0.00001(enoughError) 이하가 되면 학습을 중지합니다.
  
  <pre>
- <code>
-            
+ <code>        
             //무한 루프 방지
             for(int i= 0; i < 10000; i++)
             {
